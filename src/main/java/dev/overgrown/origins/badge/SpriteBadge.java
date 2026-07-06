@@ -6,7 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 public record SpriteBadge(ResourceLocation spriteId) implements Badge {
@@ -31,11 +31,11 @@ public record SpriteBadge(ResourceLocation spriteId) implements Badge {
                               ResourceLocation powerId, float time) {}
 
     @Override
-    public void toNetwork(FriendlyByteBuf buf) {
+    public void toNetwork(RegistryFriendlyByteBuf buf) {
         buf.writeResourceLocation(spriteId);
     }
 
-    public static SpriteBadge fromNetwork(FriendlyByteBuf buf) {
+    public static SpriteBadge fromNetwork(RegistryFriendlyByteBuf buf) {
         return new SpriteBadge(buf.readResourceLocation());
     }
 }

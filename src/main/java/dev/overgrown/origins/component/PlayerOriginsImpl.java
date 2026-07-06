@@ -9,9 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-
 public final class PlayerOriginsImpl {
-
     private final Map<ResourceLocation, ResourceLocation> originsByLayer;
     private boolean selectingOrigin;
     private int livesUntilRandomise = -1;

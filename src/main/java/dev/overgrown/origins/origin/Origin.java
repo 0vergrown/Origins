@@ -8,7 +8,9 @@ import dev.overgrown.apoli.data.ItemStackData;
 import dev.overgrown.apoli.data.TextComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+
 
 public record Origin(
     ResourceLocation id,
@@ -37,12 +40,14 @@ public record Origin(
         icon = icon.copy();
     }
 
+    
     public List<ResourceLocation> powers() {
         List<ResourceLocation> out = new ArrayList<>();
         for (OriginPowerEntry entry : powerEntries) out.addAll(entry.powers());
         return out;
     }
 
+    
     public List<ResourceLocation> powersFor(Player player) {
         List<ResourceLocation> out = new ArrayList<>();
         for (OriginPowerEntry entry : powerEntries) {
@@ -51,6 +56,7 @@ public record Origin(
         return out;
     }
 
+    
     private static final Codec<ItemStack> ICON_CODEC = Codec.either(
         ResourceLocation.CODEC.xmap(
             rl -> new ItemStack(BuiltInRegistries.ITEM.get(rl)),
@@ -61,6 +67,7 @@ public record Origin(
         stack -> Either.<ItemStack, ItemStack>left(stack)
     );
 
+    
     private static final Codec<Impact> IMPACT_CODEC = Codec.either(
         Codec.STRING.xmap(s -> Impact.byName(s, Impact.NONE), Impact::getSerializedName),
         Codec.INT.xmap(Origin::impactByLevel, Impact::level)
@@ -76,6 +83,7 @@ public record Origin(
         return Impact.NONE;
     }
 
+    
     public static MapCodec<Origin> codec(ResourceLocation id) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
             OriginPowerEntry.CODEC.listOf().optionalFieldOf("powers", List.of()).forGetter(Origin::powerEntries),
@@ -90,10 +98,12 @@ public record Origin(
             new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description)));
     }
 
+    
     public Component name() {
         return nameText.orElseGet(() -> Component.translatable("origin." + id.getNamespace() + "." + id.getPath() + ".name"));
     }
 
+    
     public Component description() {
         return descriptionText.orElseGet(() -> Component.translatable("origin." + id.getNamespace() + "." + id.getPath() + ".description"));
     }
@@ -107,30 +117,30 @@ public record Origin(
             Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty());
     }
 
-    public void write(FriendlyByteBuf buf) {
+    public void write(RegistryFriendlyByteBuf buf) {
         buf.writeResourceLocation(id);
         buf.writeCollection(powerEntries, (b, e) -> e.write(b));
-        buf.writeItem(icon);
+        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, icon);
         buf.writeEnum(impact);
         buf.writeVarInt(order);
         buf.writeVarInt(loadingPriority);
         buf.writeBoolean(unchoosable);
         buf.writeBoolean(special);
-        buf.writeOptional(nameText, FriendlyByteBuf::writeComponent);
-        buf.writeOptional(descriptionText, FriendlyByteBuf::writeComponent);
+        ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, nameText);
+        ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, descriptionText);
     }
 
-    public static Origin read(FriendlyByteBuf buf) {
+    public static Origin read(RegistryFriendlyByteBuf buf) {
         ResourceLocation id = buf.readResourceLocation();
         List<OriginPowerEntry> powerEntries = buf.readList(OriginPowerEntry::read);
-        ItemStack icon = buf.readItem();
+        ItemStack icon = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
         Impact impact = buf.readEnum(Impact.class);
         int order = buf.readVarInt();
         int loadingPriority = buf.readVarInt();
         boolean unchoosable = buf.readBoolean();
         boolean special = buf.readBoolean();
-        Optional<Component> nameText = buf.readOptional(FriendlyByteBuf::readComponent);
-        Optional<Component> descriptionText = buf.readOptional(FriendlyByteBuf::readComponent);
+        Optional<Component> nameText = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
+        Optional<Component> descriptionText = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
             nameText, descriptionText);
     }

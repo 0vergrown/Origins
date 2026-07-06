@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+
 public record OriginPowerEntry(@Nullable EntityCondition condition, List<ResourceLocation> powers) {
     public OriginPowerEntry {
         powers = List.copyOf(powers);
     }
 
+    
     public static final Codec<OriginPowerEntry> CODEC = Codec.either(
         ResourceLocation.CODEC,
         RecordCodecBuilder.<OriginPowerEntry>create(instance -> instance.group(
@@ -33,6 +35,7 @@ public record OriginPowerEntry(@Nullable EntityCondition condition, List<Resourc
             : Either.right(e)
     );
 
+    
     public boolean visible(Player player) {
         if (condition == null) return true;
         return condition.test(new EntityCtx(player, player.level()));

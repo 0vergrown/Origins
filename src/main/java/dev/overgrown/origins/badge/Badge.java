@@ -5,7 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 public interface Badge {
@@ -22,14 +22,14 @@ public interface Badge {
     void renderTooltip(GuiGraphics graphics, Font font, int mouseX, int mouseY, int widthLimit,
                        ResourceLocation powerId, float time);
 
-    void toNetwork(FriendlyByteBuf buf);
+    void toNetwork(RegistryFriendlyByteBuf buf);
 
-    static Badge fromNetwork(FriendlyByteBuf buf) {
+    static Badge fromNetwork(RegistryFriendlyByteBuf buf) {
         ResourceLocation typeId = buf.readResourceLocation();
         return BadgeTypes.readerFor(typeId).apply(buf);
     }
 
-    static void writeNetwork(FriendlyByteBuf buf, Badge badge) {
+    static void writeNetwork(RegistryFriendlyByteBuf buf, Badge badge) {
         buf.writeResourceLocation(badge.typeId());
         badge.toNetwork(buf);
     }

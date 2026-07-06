@@ -11,19 +11,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
+
 public final class OriginsConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FILE = "origins.json";
+
+    
     private static String guiTheme = "seasonal";
     private static boolean loaded = false;
 
     private OriginsConfig() {}
 
+    
     public static String guiTheme() {
         if (!loaded) load();
         return guiTheme;
     }
 
+    
     public static boolean seasonalGuiEnabled() {
         return "seasonal".equals(guiTheme());
     }
@@ -53,6 +58,7 @@ public final class OriginsConfig {
         loaded = true;
     }
 
+    
     private static String normalize(String raw) {
         String v = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
         switch (v) {

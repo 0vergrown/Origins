@@ -135,7 +135,7 @@ public final class OriginCommands {
         }
         MutableComponent list = Component.literal("Origins:").withStyle(ChatFormatting.BOLD);
         for (ServerPlayer player : players) {
-            list.append(Component.literal("-" + player.getGameProfile().getName() + ": ").withStyle(ChatFormatting.WHITE))
+            list.append(Component.literal(" - " + player.getGameProfile().getName() + ": ").withStyle(ChatFormatting.WHITE))
                 .append(originsOf(player));
         }
         source.sendSuccess(() -> list, false);

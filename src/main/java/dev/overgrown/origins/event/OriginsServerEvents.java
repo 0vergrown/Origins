@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
+
 public final class OriginsServerEvents {
     private OriginsServerEvents() {}
 
@@ -27,16 +28,27 @@ public final class OriginsServerEvents {
             OriginsServerNetwork.sendRegistries(player);
             OriginsServerNetwork.sendBadges(player);
             OriginManager.reapplyAll(player);
+            
+            
             OriginRandomizer.onFirstJoin(player);
 
             PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
 
+            
+            
+            
+            
+            
+            
             OriginsServerNetwork.sendPlayerOriginsTo(player, player);
             for (ServerPlayer other : server.getPlayerList().getPlayers()) {
                 if (other == player) continue;
                 OriginsServerNetwork.sendPlayerOriginsTo(player, other);
                 OriginsServerNetwork.sendPlayerOriginsTo(other, player);
             }
+            
+            
+            
             dev.overgrown.origins.Origins.LOGGER.info(
                 "[Origins] {} joined — persisted origins={}, firstJoinDone={}",
                 player.getName().getString(), state.snapshot(), state.firstJoinDone());
@@ -47,10 +59,13 @@ public final class OriginsServerEvents {
             }
         });
 
+        
+        
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
             if (!alive) OriginRandomizer.onDeath(newPlayer);
         });
 
+        
         EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> {
             if (entity instanceof ServerPlayer player && ((Player) player).isSleepingLongEnough()) {
                 OriginRandomizer.onSleep(player);
@@ -61,18 +76,22 @@ public final class OriginsServerEvents {
             PlayerOriginsImpl state = PlayerOriginsAttachment.get(handler.player);
             if (state != null) {
                 state.setSelectingOrigin(false);
+                
                 dev.overgrown.origins.Origins.LOGGER.info(
                     "[Origins] {} disconnecting — origins to persist={}",
                     handler.player.getName().getString(), state.snapshot());
             }
         });
 
+        
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> {
             if (!success) return;
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 OriginsServerNetwork.sendRegistries(player);
                 OriginsServerNetwork.sendBadges(player);
                 OriginManager.reapplyAll(player);
+                
+                
                 OriginsServerNetwork.broadcastPlayerOrigins(server, player);
             }
         });

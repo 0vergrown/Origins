@@ -18,7 +18,8 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Apoli — pulled in from the sibling repo via composite build (see settings.gradle).
+	// Apoli — pulled from the sibling repo published to the local maven cache.
+	// Run `./gradlew publishToMavenLocal` on Apoli-Fabric-1.21.1 first.
 	modImplementation "dev.overgrown.apoli:apoli:${project.apoli_version}"
 }
 
@@ -45,13 +46,13 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {

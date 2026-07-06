@@ -105,9 +105,8 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             if (originSelection.isEmpty() && randomOrigin == null) return;
             OriginLayer currentLayer = layerList.get(currentLayerIndex);
             Origin chosen = getCurrentOriginInternal();
-            
             ResourceLocation originId = chosen == randomOrigin
-                ? new ResourceLocation("origins", "random")
+                ? ResourceLocation.fromNamespaceAndPath("origins", "random")
                 : chosen.id();
             OriginsClientNetwork.sendChoose(currentLayer.id(), originId, fromOrb);
             openNextLayerScreen();
@@ -133,7 +132,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
     }
 
     private void initRandomOrigin() {
-        ResourceLocation randomId = new ResourceLocation("origins", "random");
+        ResourceLocation randomId = ResourceLocation.fromNamespaceAndPath("origins", "random");
         this.randomOrigin = new Origin(
             randomId,
             java.util.Collections.emptyList(),

@@ -90,7 +90,7 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
     private static ResourceLocation trim(ResourceLocation loc, String dir) {
         String path = loc.getPath();
         path = path.substring(dir.length() + 1, path.length() - ".json".length());
-        return new ResourceLocation(loc.getNamespace(), path);
+        return ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), path);
     }
 
     private static JsonElement read(Resource resource, ResourceLocation loc) {

@@ -16,16 +16,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
+
 public final class OriginRandomizer {
 
     private static final RandomSource RNG = RandomSource.create();
 
     private OriginRandomizer() {}
 
+    
     public static @Nullable ResourceLocation roll(Player player, OriginLayer layer) {
         return roll(player, layer, null);
     }
 
+    
     public static @Nullable ResourceLocation roll(Player player, OriginLayer layer, @Nullable ResourceLocation avoid) {
         LinkedHashSet<ResourceLocation> eligible = new LinkedHashSet<>();
         for (ResourceLocation id : layer.availableOrigins(player)) {
@@ -60,6 +63,11 @@ public final class OriginRandomizer {
         return list.get(RNG.nextInt(list.size()));
     }
 
+    
+    
+    
+    
+
     public enum Reason {
         FIRST_JOIN("first_join"), DEATH("death"), SLEEP("sleep"), COMMAND("command");
         private final String key;
@@ -67,6 +75,7 @@ public final class OriginRandomizer {
         public String key() { return key; }
     }
 
+    
     public static void randomise(ServerPlayer player, OriginLayer layer, Reason reason) {
         OriginLayer.RandomiserConfig cfg = layer.randomiser();
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
@@ -91,6 +100,7 @@ public final class OriginRandomizer {
         }
     }
 
+    
     public static void onDeath(ServerPlayer player) {
         List<OriginLayer> layers = randomiserLayers(player, OriginLayer.RandomiserConfig::onDeath);
         if (layers.isEmpty()) return;
@@ -119,6 +129,7 @@ public final class OriginRandomizer {
         }
     }
 
+    
     public static void onSleep(ServerPlayer player) {
         List<OriginLayer> layers = randomiserLayers(player, OriginLayer.RandomiserConfig::onSleep);
         if (layers.isEmpty()) return;
@@ -135,6 +146,7 @@ public final class OriginRandomizer {
         }
     }
 
+    
     public static boolean onFirstJoin(ServerPlayer player) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
         if (state.firstJoinDone()) return false;

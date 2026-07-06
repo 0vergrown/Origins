@@ -1,5 +1,6 @@
 package dev.overgrown.origins.badge;
 
+import com.mojang.serialization.JsonOps;
 import dev.overgrown.apoli.power.ApoliPowers;
 import dev.overgrown.apoli.power.Power;
 import dev.overgrown.apoli.power.builtin.ActionOnKeyPressPower;
@@ -7,8 +8,9 @@ import dev.overgrown.apoli.power.builtin.MultiplePower;
 import dev.overgrown.apoli.power.builtin.RecipePower;
 import dev.overgrown.apoli.power.builtin.TogglePower;
 import dev.overgrown.origins.Origins;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -21,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public final class BadgeManager {
 
@@ -45,7 +46,7 @@ public final class BadgeManager {
 
     public static Map<ResourceLocation, List<Badge>> collectForSend(MinecraftServer server) {
         RecipeManager recipes = server.getRecipeManager();
-        RegistryAccess registries = server.registryAccess();
+        HolderLookup.Provider registries = server.registryAccess();
 
         Map<ResourceLocation, List<Badge>> out = new LinkedHashMap<>();
         for (Map.Entry<ResourceLocation, Power> entry : ApoliPowers.view().entrySet()) {
@@ -57,7 +58,7 @@ public final class BadgeManager {
     }
 
     private static List<Badge> badgesFor(ResourceLocation id, Power power, RecipeManager recipes,
-                                         RegistryAccess registries) {
+                                         HolderLookup.Provider registries) {
         List<Badge> explicit = BY_POWER.get(id);
         if (explicit != null && !explicit.isEmpty()) {
             return resolve(explicit, recipes, registries);
@@ -75,7 +76,7 @@ public final class BadgeManager {
         return autoBadges(id, power, recipes, registries);
     }
 
-    private static List<Badge> resolve(List<Badge> badges, RecipeManager recipes, RegistryAccess registries) {
+    private static List<Badge> resolve(List<Badge> badges, RecipeManager recipes, HolderLookup.Provider registries) {
         List<Badge> out = new LinkedList<>();
         for (Badge badge : badges) {
             out.add(badge instanceof CraftingRecipeBadge crafting ? crafting.resolve(recipes, registries) : badge);
@@ -84,7 +85,7 @@ public final class BadgeManager {
     }
 
     private static List<Badge> autoBadges(ResourceLocation id, Power power, RecipeManager recipes,
-                                          RegistryAccess registries) {
+                                          HolderLookup.Provider registries) {
         Object cfg = power.config();
         if (power.type() instanceof TogglePower && cfg instanceof TogglePower.Config toggle) {
             return List.of(new KeybindBadge(TOGGLE_SPRITE, "origins.gui.badge.toggle", toggle.key().key()));
@@ -99,19 +100,16 @@ public final class BadgeManager {
         return List.of();
     }
 
-    private static CraftingRecipeBadge recipeAutoBadge(RecipePower.Config cfg, RegistryAccess registries) {
+    private static CraftingRecipeBadge recipeAutoBadge(RecipePower.Config cfg, HolderLookup.Provider registries) {
         if (cfg.recipeId() == null) return null;
-        Recipe<?> recipe;
-        try {
-            recipe = RecipeManager.fromJson(cfg.recipeId(), cfg.recipe());
-        } catch (Exception e) {
-            Origins.LOGGER.warn("Bad recipe for auto badge {}: {}", cfg.recipeId(), e.toString());
-            return null;
-        }
+        RegistryOps<com.google.gson.JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registries);
+        Recipe<?> recipe = Recipe.CODEC.parse(ops, cfg.recipe())
+            .resultOrPartial(err -> Origins.LOGGER.warn("Bad recipe for auto badge {}: {}", cfg.recipeId(), err))
+            .orElse(null);
         if (!(recipe instanceof CraftingRecipe crafting)) return null;
         String type = crafting instanceof ShapedRecipe ? "shaped" : crafting instanceof ShapelessRecipe ? "shapeless" : "unknown";
         Component prefix = Component.translatable("origins.gui.badge.recipe.crafting." + type);
         return CraftingRecipeBadge.fromRecipe(RECIPE_SPRITE, cfg.recipeId(), crafting,
-            Optional.of(prefix), Optional.empty(), registries);
+            java.util.Optional.of(prefix), java.util.Optional.empty(), registries);
     }
 }

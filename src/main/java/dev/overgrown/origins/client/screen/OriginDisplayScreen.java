@@ -108,19 +108,18 @@ public abstract class OriginDisplayScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics) {
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (showDirtBackground) {
-            this.renderDirtBackground(graphics);
+            this.renderMenuBackground(graphics);
         } else {
-            super.renderBackground(graphics);
+            super.renderBackground(graphics, mouseX, mouseY, partialTick);
         }
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
-        this.renderOriginWindow(graphics, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderOriginWindow(graphics, mouseX, mouseY);
         if (origin != null) {
             renderScrollbar(graphics, mouseX, mouseY);
         }
@@ -340,9 +339,9 @@ public abstract class OriginDisplayScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        boolean ret = super.mouseScrolled(mouseX, mouseY, amount);
-        int next = this.scrollPos - (int) amount * 4;
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        boolean ret = super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        int next = this.scrollPos - (int) scrollY * 4;
         this.scrollPos = next < 0 ? 0 : Math.min(next, this.currentMaxScroll);
         return ret;
     }

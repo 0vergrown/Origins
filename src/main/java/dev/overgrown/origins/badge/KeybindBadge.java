@@ -1,8 +1,8 @@
 package dev.overgrown.origins.badge;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.Codec;
 import dev.overgrown.apoli.client.ApoliKeyMappings;
 import dev.overgrown.apoli.data.Key;
 import net.fabricmc.api.EnvType;
@@ -10,7 +10,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -52,13 +52,13 @@ public record KeybindBadge(ResourceLocation spriteId, String text, String keyId)
     }
 
     @Override
-    public void toNetwork(FriendlyByteBuf buf) {
+    public void toNetwork(RegistryFriendlyByteBuf buf) {
         buf.writeResourceLocation(spriteId);
         buf.writeUtf(text);
         buf.writeUtf(keyId);
     }
 
-    public static KeybindBadge fromNetwork(FriendlyByteBuf buf) {
+    public static KeybindBadge fromNetwork(RegistryFriendlyByteBuf buf) {
         ResourceLocation sprite = buf.readResourceLocation();
         String text = buf.readUtf();
         String keyId = buf.readUtf();
