@@ -1,0 +1,15 @@
+{
+	"powers": [
+		"origins:elytrian/elytra",
+		"origins:elytrian/launch_into_air",
+		"origins:elytrian/aerial_combatant",
+		"origins:elytrian/light_armor",
+		"origins:elytrian/claustrophobia",
+		"origins:elytrian/more_kinetic_damage"
+	],
+	"icon": {
+		"item": "minecraft:elytra"
+	},
+	"order": 3,
+	"impact": 1
+}

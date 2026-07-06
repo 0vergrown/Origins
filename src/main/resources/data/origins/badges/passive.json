@@ -1,0 +1,9 @@
+{
+  "type": "origins:tooltip",
+  "sprite": "origins:textures/gui/badge/passive.png",
+  "text": {
+    "translate": "origins.gui.badge.passive",
+    "fallback": "Passive power — always active, no input needed.",
+    "color": "gray"
+  }
+}

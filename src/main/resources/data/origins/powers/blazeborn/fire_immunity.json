@@ -1,0 +1,7 @@
+{
+  "type": "apoli:invulnerability",
+  "damage_condition": {
+    "type": "apoli:in_tag",
+    "tag": "minecraft:is_fire"
+  }
+}

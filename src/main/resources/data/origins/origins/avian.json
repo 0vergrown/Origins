@@ -1,0 +1,15 @@
+{
+	"powers": [
+		"origins:avian/featherweight",
+		"origins:avian/fresh_air",
+		"origins:avian/like_air",
+		"origins:avian/tailwind",
+		"origins:avian/lay_eggs",
+		"origins:avian/vegetarian"
+	],
+	"icon": {
+		"item": "minecraft:feather"
+	},
+	"order": 0,
+	"impact": 1
+}

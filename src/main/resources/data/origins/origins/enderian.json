@@ -1,0 +1,15 @@
+{
+	"powers": [
+		"origins:enderian/throw_ender_pearl",
+		"origins:enderian/water_vulnerability",
+		"origins:enderian/pumpkin_hate",
+		"origins:enderian/extra_reach",
+		"origins:enderian/ender_particles",
+		"origins:enderian/damage_from_potions"
+	],
+	"icon": {
+		"item": "minecraft:ender_pearl"
+	},
+	"order": 1,
+	"impact": 2
+}

@@ -1,0 +1,18 @@
+{
+	"powers": [
+		"origins:blazeborn/status_bar_texture",
+		"origins:blazeborn/fire_immunity",
+		"origins:blazeborn/nether_spawn",
+		"origins:blazeborn/burning_wrath",
+		"origins:blazeborn/hotblooded",
+		"origins:blazeborn/water_vulnerability",
+		"origins:blazeborn/flame_particles",
+		"origins:blazeborn/damage_from_snowballs",
+		"origins:blazeborn/damage_from_potions"
+	],
+	"icon": {
+		"item": "minecraft:blaze_powder"
+	},
+	"order": 1,
+	"impact": 3
+}

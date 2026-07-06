@@ -1,0 +1,17 @@
+{
+	"powers": [
+		"origins:merling/water_breathing",
+		"origins:merling/water_vision",
+		"origins:merling/aqua_affinity",
+		"origins:merling/swim_speed",
+		"origins:merling/like_water",
+		"origins:merling/aquatic",
+		"origins:merling/conduit_power_on_land",
+		"origins:merling/air_from_potions"
+	],
+	"icon": {
+		"item": "minecraft:cod"
+	},
+	"order": 0,
+	"impact": 3
+}

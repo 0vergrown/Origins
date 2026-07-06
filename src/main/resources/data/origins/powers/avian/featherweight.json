@@ -1,0 +1,32 @@
+{
+  "type":"origins:action_over_time",
+  "rising_action":{
+    "type":"origins:apply_effect",
+    "effect":{
+      "effect":"minecraft:slow_falling",
+      "duration":-1,
+      "amplifier":0,
+      "is_ambient":false,
+      "show_particles":false,
+      "show_icon":false
+    }
+  },
+  "falling_action":{
+    "type":"origins:clear_effect",
+    "effect":"minecraft:slow_falling"
+  },
+  "interval":1,
+  "condition":{
+    "type":"origins:and",
+    "conditions":[
+      {
+        "type":"origins:sneaking",
+        "inverted":true
+      },
+      {
+        "type":"origins:fall_flying",
+        "inverted":true
+      }
+    ]
+  }
+}

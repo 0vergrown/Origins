@@ -1,0 +1,12 @@
+{
+  "type": "origins:modify_damage_taken",
+  "modifier": {
+    "operation": "addition",
+    "value": 3
+  },
+  "damage_condition": {
+    "type": "origins:projectile",
+    "projectile": "minecraft:snowball"
+  },
+  "hidden": true
+}

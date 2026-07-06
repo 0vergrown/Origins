@@ -1,0 +1,10 @@
+{
+  "type": "origins:modify_damage_dealt",
+  "modifier": {
+    "operation": "addition",
+    "value": 3.00
+  },
+  "condition": {
+    "type": "origins:on_fire"
+  }
+}

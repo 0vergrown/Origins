@@ -1,0 +1,31 @@
+{
+  "type":"origins:action_on_key_press",
+  "entity_action":{
+    "type":"origins:and",
+    "actions":[
+      {
+        "type":"origins:add_velocity",
+        "x":0.00,
+        "y":2.00,
+        "z":0.00,
+        "space":"world",
+        "set":false
+      },
+      {
+        "type":"origins:play_sound",
+        "sound":"minecraft:entity.parrot.fly",
+        "volume":1.00,
+        "pitch":1.00
+      }
+    ]
+  },
+  "cooldown":600,
+  "hud_render":{
+    "sprite_location":"apoli:textures/gui/resource_bar.png",
+    "bar_index":4
+  },
+  "key":{
+    "key":"key.origins.primary_active",
+    "continuous":true
+  }
+}

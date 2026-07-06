@@ -1,0 +1,10 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "origins:item/orb_of_origin/default/orb_of_origin"
+    },
+    "overrides": [
+        { "predicate": { "origins:season": 0.5 }, "model": "origins:item/orb_of_origin_rainbow" },
+        { "predicate": { "origins:season": 1.0 }, "model": "origins:item/orb_of_origin_frigid" }
+    ]
+}

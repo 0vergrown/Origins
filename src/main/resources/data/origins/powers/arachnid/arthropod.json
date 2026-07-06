@@ -1,0 +1,20 @@
+{
+  "type": "origins:modify_damage_taken",
+  "bientity_condition": {
+    "type": "origins:actor_condition",
+    "condition": {
+      "type": "origins:equipped_item",
+      "equipment_slot": "mainhand",
+      "item_condition": {
+        "type": "origins:enchantment",
+        "enchantment": "minecraft:bane_of_arthropods",
+        "comparison": ">=",
+        "compare_to": 1
+      }
+    }
+  },
+  "modifier": {
+    "operation": "addition",
+    "value": 5.5
+  }
+}
