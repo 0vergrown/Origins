@@ -11,9 +11,11 @@ import java.util.Set;
 
 
 public final class PlayerOriginsImpl {
-
+    
     private final Map<ResourceLocation, ResourceLocation> originsByLayer;
     private boolean selectingOrigin;
+
+    
     private int livesUntilRandomise = -1;
     private int lives = -1;
     private int sleepsUntilRandomise = -1;
@@ -67,37 +69,17 @@ public final class PlayerOriginsImpl {
         this.selectingOrigin = selecting;
     }
 
-    public int livesUntilRandomise() {
-        return livesUntilRandomise;
-    }
+    public int livesUntilRandomise() { return livesUntilRandomise; }
+    public void setLivesUntilRandomise(int value) { this.livesUntilRandomise = value; }
 
-    public void setLivesUntilRandomise(int value) {
-        this.livesUntilRandomise = value;
-    }
+    public int lives() { return lives; }
+    public void setLives(int value) { this.lives = value; }
 
-    public int lives() {
-        return lives;
-    }
+    public int sleepsUntilRandomise() { return sleepsUntilRandomise; }
+    public void setSleepsUntilRandomise(int value) { this.sleepsUntilRandomise = value; }
 
-    public void setLives(int value) {
-        this.lives = value;
-    }
-
-    public int sleepsUntilRandomise() {
-        return sleepsUntilRandomise;
-    }
-
-    public void setSleepsUntilRandomise(int value) {
-        this.sleepsUntilRandomise = value;
-    }
-
-    public boolean firstJoinDone() {
-        return firstJoinDone;
-    }
-
-    public void setFirstJoinDone(boolean value) {
-        this.firstJoinDone = value;
-    }
+    public boolean firstJoinDone() { return firstJoinDone; }
+    public void setFirstJoinDone(boolean value) { this.firstJoinDone = value; }
 
     public static final Codec<PlayerOriginsImpl> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC)

@@ -32,13 +32,6 @@
               "offset_x": -0.01,
               "offset_z": -0.01,
               "offset_y": 0
-            },
-            {
-              "type": "origins:in_block_anywhere",
-              "block_condition": {
-                "type": "origins:in_tag",
-                "tag": "origins:cobwebs"
-              }
             }
           ]
         },

@@ -4,18 +4,28 @@
     "type": "origins:and",
     "conditions": [
       {
+        "type": "origins:or",
+        "conditions": [
+          {
+            "type": "origins:ingredient",
+            "ingredient": {
+              "tag": "origins:meat"
+            }
+          },
+          {
+            "type": "origins:meat"
+          }
+        ],
+        "inverted": true
+      },
+      {
         "type": "origins:food"
       },
       {
         "type": "origins:ingredient",
-        "ingredient": [
-          {
-            "tag": "origins:ignore_diet"
-          },
-          {
-            "tag": "origins:meat"
-          }
-        ],
+        "ingredient": {
+          "tag": "origins:ignore_diet"
+        },
         "inverted": true
       }
     ]

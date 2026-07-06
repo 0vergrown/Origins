@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+
 public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoader.Prepared> {
 
     private static final Gson GSON = new GsonBuilder().setLenient().create();
@@ -33,6 +34,7 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
         Map<ResourceLocation, Badge> standalone = new LinkedHashMap<>();
         Map<ResourceLocation, List<Badge>> byPower = new LinkedHashMap<>();
 
+        
         rm.listResources(BADGES_DIR, loc -> loc.getPath().endsWith(".json")).forEach((loc, resource) -> {
             ResourceLocation badgeId = trim(loc, BADGES_DIR);
             JsonElement json = read(resource, loc);
@@ -42,6 +44,7 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
                 .ifPresent(badge -> standalone.put(badgeId, badge));
         });
 
+        
         rm.listResources(POWERS_DIR, loc -> loc.getPath().endsWith(".json")).forEach((loc, resource) -> {
             ResourceLocation powerId = trim(loc, POWERS_DIR);
             JsonElement json = read(resource, loc);
@@ -71,6 +74,7 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
 
     private static Badge readBadge(JsonElement element, Map<ResourceLocation, Badge> standalone, ResourceLocation powerId) {
         if (element instanceof JsonObject object) {
+            
             if (!object.has("type")) object.addProperty("type", BadgeTypes.DEFAULT.toString());
             return Badge.CODEC.parse(JsonOps.INSTANCE, object)
                 .resultOrPartial(err -> Origins.LOGGER.error("Bad inline badge on power {}: {}", powerId, err))
@@ -87,10 +91,11 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
         return null;
     }
 
+    
     private static ResourceLocation trim(ResourceLocation loc, String dir) {
         String path = loc.getPath();
         path = path.substring(dir.length() + 1, path.length() - ".json".length());
-        return new ResourceLocation(loc.getNamespace(), path);
+        return ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), path);
     }
 
     private static JsonElement read(Resource resource, ResourceLocation loc) {

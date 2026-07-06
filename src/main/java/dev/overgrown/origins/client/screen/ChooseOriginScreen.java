@@ -6,8 +6,6 @@ import dev.overgrown.origins.origin.Impact;
 import dev.overgrown.origins.origin.Origin;
 import dev.overgrown.origins.origin.OriginLayer;
 import dev.overgrown.origins.origin.OriginRegistry;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -21,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Environment(EnvType.CLIENT)
+
 public final class ChooseOriginScreen extends OriginDisplayScreen {
 
     private final ArrayList<OriginLayer> layerList;
@@ -54,6 +52,8 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             .comparingInt((Origin o) -> o.impact().level())
             .thenComparingInt(Origin::order));
         maxSelection = originSelection.size();
+        
+        
         boolean randomRollable = currentLayer.allowRandom() && player != null
             && (!originSelection.isEmpty()
                 || (currentLayer.randomAllowsUnchoosable() && !currentLayer.availableOrigins(player).isEmpty()));
@@ -64,8 +64,11 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             Origin first = getCurrentOriginInternal();
             showOrigin(first, layerList.get(currentLayerIndex), first == randomOrigin);
         }
+        
+        
     }
 
+    
     public ChooseOriginScreen(OriginLayer layer, boolean fromOrb) {
         this(singletonList(layer), 0, false, fromOrb);
     }
@@ -107,7 +110,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             Origin chosen = getCurrentOriginInternal();
             
             ResourceLocation originId = chosen == randomOrigin
-                ? new ResourceLocation("origins", "random")
+                ? ResourceLocation.fromNamespaceAndPath("origins", "random")
                 : chosen.id();
             OriginsClientNetwork.sendChoose(currentLayer.id(), originId, fromOrb);
             openNextLayerScreen();
@@ -118,6 +121,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
     protected Component getTitleText() {
         OriginLayer layer = getCurrentLayer();
         if (layer == null) return super.getTitleText();
+        
         if (!layer.chooseTitleKey().isEmpty()) {
             return layer.chooseTitle();
         }
@@ -133,11 +137,11 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
     }
 
     private void initRandomOrigin() {
-        ResourceLocation randomId = new ResourceLocation("origins", "random");
+        ResourceLocation randomId = ResourceLocation.fromNamespaceAndPath("origins", "random");
         this.randomOrigin = new Origin(
             randomId,
             java.util.Collections.emptyList(),
-            new ItemStack(OriginsItems.ORB_OF_ORIGIN),
+            new ItemStack(OriginsItems.ORB_OF_ORIGIN.get()),
             Impact.NONE,
             -1,
             Integer.MAX_VALUE,
@@ -173,6 +177,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (maxSelection == 0) {
+            
             Minecraft.getInstance().setScreen(null);
             return;
         }

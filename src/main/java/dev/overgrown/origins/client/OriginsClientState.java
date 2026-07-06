@@ -1,14 +1,12 @@
 package dev.overgrown.origins.client;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Environment(EnvType.CLIENT)
+
 public final class OriginsClientState {
     private static final Map<UUID, Map<ResourceLocation, ResourceLocation>> ORIGINS_BY_PLAYER = new HashMap<>();
 

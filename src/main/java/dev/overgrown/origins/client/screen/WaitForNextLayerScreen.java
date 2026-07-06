@@ -1,15 +1,13 @@
 package dev.overgrown.origins.client.screen;
 
 import dev.overgrown.origins.origin.OriginLayer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 
-@Environment(EnvType.CLIENT)
+
 public final class WaitForNextLayerScreen extends Screen {
 
     private final ArrayList<OriginLayer> layerList;
@@ -32,16 +30,11 @@ public final class WaitForNextLayerScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
-    }
-
-    @Override
-    public void renderBackground(GuiGraphics graphics) {
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (showDirtBackground) {
-            this.renderDirtBackground(graphics);
+            this.renderMenuBackground(graphics);
         } else {
-            super.renderBackground(graphics);
+            super.renderBackground(graphics, mouseX, mouseY, partialTick);
         }
     }
 }

@@ -28,20 +28,26 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.Collection;
 import java.util.List;
 
+
 public final class OriginCommands {
 
     private OriginCommands() {}
 
     private static final SuggestionProvider<CommandSourceStack> LAYERS = (ctx, b) ->
         SharedSuggestionProvider.suggestResource(OriginLayers.all().stream().map(OriginLayer::id), b);
+    
+    
     private static final SuggestionProvider<CommandSourceStack> ORIGINS = (ctx, b) -> {
         OriginLayer layer = layerArg(ctx);
+        
+        
         java.util.stream.Stream<ResourceLocation> ids = layer != null
             ? java.util.stream.Stream.concat(layer.allOrigins().stream(), java.util.stream.Stream.of(OriginRegistry.EMPTY_ID))
             : OriginRegistry.all().stream().map(Origin::id);
         return SharedSuggestionProvider.suggestResource(ids, b);
     };
 
+    
     private static OriginLayer layerArg(CommandContext<CommandSourceStack> ctx) {
         try {
             return OriginLayers.get(ResourceLocationArgument.getId(ctx, "layer"));
@@ -97,6 +103,9 @@ public final class OriginCommands {
             ctx.getSource().sendFailure(Component.literal("Unknown origin: " + originId));
             return 0;
         }
+        
+        
+        
         if (!origin.special() && !layer.allOrigins().contains(originId)) {
             ctx.getSource().sendFailure(Component.literal("Origin " + originId + " is not part of layer " + layerId));
             return 0;
@@ -125,6 +134,7 @@ public final class OriginCommands {
         return count;
     }
 
+    
     private static int getAll(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         MinecraftServer server = source.getServer();
@@ -142,6 +152,7 @@ public final class OriginCommands {
         return players.size();
     }
 
+    
     private static int getOne(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
         ResourceLocation layerId = ResourceLocationArgument.getId(ctx, "layer");

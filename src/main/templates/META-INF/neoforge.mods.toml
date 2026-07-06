@@ -1,0 +1,38 @@
+# neoforge.mods.toml for the Origins addon. Placeholders are expanded by the
+# generateModMetadata Gradle task from gradle.properties.
+
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="Overgrown"
+description='''
+Adds the Origins system on top of the Apoli library: origins, layers, choose-on-first-join
+screen, and the Orb of Origin. Power types, actions, and conditions are supplied by Apoli.
+'''
+
+# Apoli does all the heavy lifting — required.
+[[dependencies.${mod_id}]]
+    modId="apoli"
+    type="required"
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

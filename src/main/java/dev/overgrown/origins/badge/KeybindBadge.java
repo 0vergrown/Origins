@@ -1,21 +1,22 @@
 package dev.overgrown.origins.badge;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.Codec;
 import dev.overgrown.apoli.client.ApoliKeyMappings;
 import dev.overgrown.apoli.data.Key;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
+
 
 public record KeybindBadge(ResourceLocation spriteId, String text, String keyId) implements Badge {
 
@@ -35,7 +36,7 @@ public record KeybindBadge(ResourceLocation spriteId, String text, String keyId)
         return text != null && !text.isEmpty();
     }
 
-    @Environment(EnvType.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Override
     public void renderTooltip(GuiGraphics graphics, Font font, int mouseX, int mouseY, int widthLimit,
                               ResourceLocation powerId, float time) {
@@ -52,13 +53,13 @@ public record KeybindBadge(ResourceLocation spriteId, String text, String keyId)
     }
 
     @Override
-    public void toNetwork(FriendlyByteBuf buf) {
+    public void toNetwork(RegistryFriendlyByteBuf buf) {
         buf.writeResourceLocation(spriteId);
         buf.writeUtf(text);
         buf.writeUtf(keyId);
     }
 
-    public static KeybindBadge fromNetwork(FriendlyByteBuf buf) {
+    public static KeybindBadge fromNetwork(RegistryFriendlyByteBuf buf) {
         ResourceLocation sprite = buf.readResourceLocation();
         String text = buf.readUtf();
         String keyId = buf.readUtf();

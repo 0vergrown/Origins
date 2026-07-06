@@ -3,6 +3,7 @@ package dev.overgrown.origins.origin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 
+
 public enum Impact implements StringRepresentable {
     NONE("none", 0),
     LOW("low", 1),

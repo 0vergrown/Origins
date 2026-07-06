@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+
 public record OriginLayer(
     ResourceLocation id,
     int order,
@@ -45,9 +46,12 @@ public record OriginLayer(
         excludedFromRandom = List.copyOf(excludedFromRandom);
     }
 
+    
     public record RandomConfig(Style style, Map<ResourceLocation, Integer> weights) {
         public enum Style { UNIFORM, WEIGHTED }
         public static final RandomConfig DEFAULT = new RandomConfig(Style.UNIFORM, Map.of());
+
+        
         public static final MapCodec<RandomConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.xmap(
                 s -> "weighted".equalsIgnoreCase(s) ? Style.WEIGHTED : Style.UNIFORM,
@@ -61,11 +65,13 @@ public record OriginLayer(
             weights = Map.copyOf(weights);
         }
 
+        
         public int weight(ResourceLocation id) {
             return Math.max(0, weights.getOrDefault(id, 1));
         }
     }
 
+    
     public record RandomiserConfig(boolean onFirstJoin, boolean onDeath, boolean onSleep,
                                    int deathsBetween, int sleepsBetween,
                                    boolean livesEnabled, int startingLives,
@@ -97,6 +103,7 @@ public record OriginLayer(
         }
     }
 
+    
     private record Lives(boolean enabled, int starting) {
         static final Lives DEFAULT = new Lives(false, 10);
         static final Codec<Lives> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -105,6 +112,7 @@ public record OriginLayer(
         ).apply(instance, Lives::new));
     }
 
+    
     private record GuiTitle(String choose, String view) {
         static final GuiTitle DEFAULT = new GuiTitle("", "");
         static final Codec<GuiTitle> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -113,6 +121,7 @@ public record OriginLayer(
         ).apply(instance, GuiTitle::new));
     }
 
+    
     private record RandomBlock(boolean allow, boolean allowUnchoosable, List<ResourceLocation> exclude, RandomConfig config) {
         static final RandomBlock DEFAULT = new RandomBlock(false, false, List.of(), RandomConfig.DEFAULT);
         static final Codec<RandomBlock> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -138,6 +147,7 @@ public record OriginLayer(
         return Component.translatable(key);
     }
 
+    
     public List<ResourceLocation> availableOrigins(Player player) {
         List<ResourceLocation> out = new ArrayList<>();
         for (ConditionedOrigin co : conditionedOrigins) {
@@ -146,6 +156,7 @@ public record OriginLayer(
         return out;
     }
 
+    
     public List<ResourceLocation> allOrigins() {
         List<ResourceLocation> out = new ArrayList<>();
         for (ConditionedOrigin co : conditionedOrigins) out.addAll(co.origins());
@@ -157,6 +168,7 @@ public record OriginLayer(
         return Integer.compare(order, o.order);
     }
 
+    
     public static MapCodec<OriginLayer> codec(ResourceLocation id) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
             ConditionedOrigin.CODEC.listOf().fieldOf("origins").forGetter(OriginLayer::conditionedOrigins),
@@ -185,6 +197,7 @@ public record OriginLayer(
             .orElseThrow(() -> new JsonParseException("Invalid origin layer: " + id));
     }
 
+    
     private static JsonObject migrate(JsonObject json) {
         if (json.has("random") && json.get("random").isJsonObject()) {
             JsonObject random = json.getAsJsonObject("random");
@@ -240,6 +253,8 @@ public record OriginLayer(
         ResourceLocation defaultOrigin = buf.readOptional(FriendlyByteBuf::readResourceLocation).orElse(null);
         boolean autoChoose = buf.readBoolean();
         boolean hidden = buf.readBoolean();
+        
+        
         return new OriginLayer(id, order, enabled, conditioned, nameKey, chooseTitleKey, viewTitleKey,
             missingNameKey, missingDescriptionKey, allowRandom, randomAllowsUnchoosable,
             excludedFromRandom, defaultOrigin, autoChoose, hidden,

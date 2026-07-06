@@ -64,74 +64,49 @@
 
 	"origin.origins.merling.name": "Merling",
 	"origin.origins.merling.description": "These natural inhabitants of the ocean are not used to being out of the water for too long.",
-	"power.origins.merling/water_breathing.name": "Gills",
-	"power.origins.merling/water_breathing.description": "You can breathe underwater, but not on land.",
-	"power.origins.merling/water_vision.name": "Wet Eyes",
-	"power.origins.merling/water_vision.description": "Your vision underwater is perfect.",
-	"power.origins.merling/aqua_affinity.name": "Aqua Affinity",
-	"power.origins.merling/aqua_affinity.description": "You may break blocks underwater as others do on land.",
-	"power.origins.merling/swim_speed.name": "Fins",
-	"power.origins.merling/swim_speed.description": "Your underwater speed is increased.",
-	"power.origins.merling/like_water.name": "Like Water",
-	"power.origins.merling/like_water.description": "When underwater, you do not sink to the ground unless you want to.",
 
 	"origin.origins.arachnid.name": "Arachnid",
 	"origin.origins.arachnid.description": "Their climbing abilities and the ability to trap their foes in spiderweb make the Arachnid perfect hunters.",
-	"power.origins.arachnid/webbing.name": "Webbing",
-	"power.origins.arachnid/webbing.description": "When you hit an enemy in melee, they get stuck in cobweb.",
-	"power.origins.arachnid/climbing.name": "Climbing",
-	"power.origins.arachnid/climbing.description": "You are able to climb up any kind of wall, not just ladders.",
-	"power.origins.arachnid/master_of_webs.name": "Master of Webs",
-	"power.origins.arachnid/master_of_webs.description": "You navigate cobweb perfectly, and are able to climb in them. When you hit an enemy in melee, they get stuck in cobweb for a while. Non-arthropods stuck in cobweb will be sensed by you. You are able to craft cobweb from string.",
-	"power.origins.arachnid/carnivore.name": "Carnivore",
-	"power.origins.arachnid/carnivore.description": "Your diet is restricted to meat, you can't eat vegetables.",
-	"power.origins.arachnid/fragile.name": "Fragile",
-	"power.origins.arachnid/fragile.description": "You have 3 less hearts of health than humans.",
 
 	"origin.origins.blazeborn.name": "Blazeborn",
 	"origin.origins.blazeborn.description": "Late descendants of the Blaze, the Blazeborn are naturally immune to the perils of the Nether.",
-	"power.origins.blazeborn/fire_immunity.name": "Fire Immunity",
-	"power.origins.blazeborn/fire_immunity.description": "You are immune to all types of fire damage.",
-	"power.origins.blazeborn/nether_spawn.name": "Nether Inhabitant",
-	"power.origins.blazeborn/nether_spawn.description": "Your natural spawn will be in the Nether.",
-	"power.origins.blazeborn/burning_wrath.name": "Burning Wrath",
-	"power.origins.blazeborn/burning_wrath.description": "When on fire, you deal additional damage with your attacks.",
-	"power.origins.blazeborn/hotblooded.name": "Hotblooded",
-	"power.origins.blazeborn/hotblooded.description": "Due to your hot body, venoms burn up, making you immune to poison and hunger status effects.",
-	"power.origins.blazeborn/water_vulnerability.name": "Hydrophobia",
-	"power.origins.blazeborn/water_vulnerability.description": "You receive damage over time while in contact with water.",
 
 	"origin.origins.avian.name": "Avian",
 	"origin.origins.avian.description": "The Avian race has lost their ability to fly a long time ago. Now these peaceful creatures can be seen gliding from one place to another.",
+
 	"power.origins.avian/tailwind.name": "Tailwind",
 	"power.origins.avian/tailwind.description": "You are a little bit quicker on foot than others.",
+
 	"power.origins.avian/featherweight.name": "Featherweight",
 	"power.origins.avian/featherweight.description": "You fall as gently to the ground as a feather would, unless you sneak.",
+
 	"power.origins.avian/vegetarian.name": "Vegetarian",
 	"power.origins.avian/vegetarian.description": "You can't digest any meat.",
+
 	"power.origins.avian/fresh_air.name": "Fresh Air",
 	"power.origins.avian/fresh_air.description": "When sleeping, your bed needs to be at an altitude of at least 86 blocks, so you can breathe fresh air.",
-	"power.origins.avian/like_air.name": "Like Air",
-	"power.origins.avian/like_air.description": "Modifiers to your walking speed also apply while you're airborne.",
-	"power.origins.avian/lay_eggs.name": "Oviparous",
-	"power.origins.avian/lay_eggs.description": "Whenever you wake up in the morning, you will lay an egg.",
+
 
 	"origin.origins.phantom.name": "Phantom",
 	"origin.origins.phantom.description": "As half-human and half-phantom beings, these creatures can switch between a Phantom and a normal form.",
+
 	"power.origins.phantom/phasing.name": "Phasing",
 	"power.origins.phantom/phasing.description": "While phantomized, you can walk through solid material, except Obsidian.",
+
 	"power.origins.phantom/invisibility.name": "Invisibility",
 	"power.origins.phantom/invisibility.description": "While phantomized, you are invisible.",
+
 	"power.origins.phantom/hunger_over_time.name": "Fast Metabolism",
 	"power.origins.phantom/hunger_over_time.description": "Being phantomized causes you to become hungry.",
+
 	"power.origins.phantom/burn_in_daylight.name": "Photoallergic",
 	"power.origins.phantom/burn_in_daylight.description": "You begin to burn in daylight if you are not invisible.",
+
 	"power.origins.phantom/translucent.name": "Translucent",
 	"power.origins.phantom/translucent.description": "Your skin is translucent.",
+
 	"power.origins.phantom/fragile.name": "Fragile",
 	"power.origins.phantom/fragile.description": "You have 3 less hearts of health than humans.",
-	"power.origins.phantom/phantomize.name": "Phantom Form",
-	"power.origins.phantom/phantomize.description": "You can switch between human and phantom form at will, but only while you are saturated enough to sprint.",
 
 	"origin.origins.feline.name": "Feline",
 	"origin.origins.feline.description": "With their cat-like appearance, the Feline scare creepers away. With the dexterity of cats, they always land safely on their feet.",
@@ -144,6 +119,45 @@
 
 	"origin.origins.shulk.name": "Shulk",
 	"origin.origins.shulk.description": "Related to Shulkers, the bodies of the Shulk are outfitted with a protective shell-like skin.",
+
+	"power.origins.water_breathing.name": "Gills",
+	"power.origins.water_breathing.description": "You can breathe underwater, but not on land.",
+
+	"power.origins.aqua_affinity.name": "Aqua Affinity",
+	"power.origins.aqua_affinity.description": "You may break blocks underwater as others do on land.",
+
+	"power.origins.water_vision.name": "Wet Eyes",
+	"power.origins.water_vision.description": "Your vision underwater is perfect.",
+
+	"power.origins.swim_speed.name": "Fins",
+	"power.origins.swim_speed.description": "Your underwater speed is increased.",
+
+	"power.origins.like_water.name": "Like Water",
+	"power.origins.like_water.description": "When underwater, you do not sink to the ground unless you want to.",
+
+	"power.origins.webbing.name": "Webbing",
+	"power.origins.webbing.description": "When you hit an enemy in melee, they get stuck in cobweb.",
+
+	"power.origins.climbing.name": "Climbing",
+	"power.origins.climbing.description": "You are able to climb up any kind of wall, not just ladders.",
+
+	"power.origins.carnivore.name": "Carnivore",
+	"power.origins.carnivore.description": "Your diet is restricted to meat, you can't eat vegetables.",
+
+	"power.origins.fire_immunity.name": "Fire Immunity",
+	"power.origins.fire_immunity.description": "You are immune to all types of fire damage.",
+
+	"power.origins.nether_spawn.name": "Nether Inhabitant",
+	"power.origins.nether_spawn.description": "Your natural spawn will be in the Nether.",
+
+	"power.origins.burning_wrath.name": "Burning Wrath",
+	"power.origins.burning_wrath.description": "When on fire, you deal additional damage with your attacks.",
+
+	"power.origins.hotblooded.name": "Hotblooded",
+	"power.origins.hotblooded.description": "Due to your hot body, venoms burn up, making you immune to poison and hunger status effects.",
+
+	"power.origins.water_vulnerability.name": "Hydrophobia",
+	"power.origins.water_vulnerability.description": "You receive damage over time while in contact with water.",
 
 	"power.origins.fall_immunity.name": "Acrobatics",
 	"power.origins.fall_immunity.description": "You never take fall damage, no matter from which height you fall.",
@@ -204,6 +218,18 @@
 
 	"power.origins.strong_arms.name": "Strong Arms",
 	"power.origins.strong_arms.description": "You are strong enough to break natural stones without using a pickaxe.",
+
+	"power.origins.master_of_webs.name": "Master of Webs",
+	"power.origins.master_of_webs.description": "You navigate cobweb perfectly, and are able to climb in them. When you hit an enemy in melee, they get stuck in cobweb for a while. Non-arthropods stuck in cobweb will be sensed by you. You are able to craft cobweb from string.",
+
+	"power.origins.avian/lay_eggs.name": "Oviparous",
+	"power.origins.avian/lay_eggs.description": "Whenever you wake up in the morning, you will lay an egg.",
+
+	"power.origins.phantom/phantomize.name": "Phantom Form",
+	"power.origins.phantom/phantomize.description": "You can switch between human and phantom form at will, but only while you are saturated enough to sprint.",
+
+	"power.origins.avian/like_air.name": "Like Air",
+	"power.origins.avian/like_air.description": "Modifiers to your walking speed also apply while you're airborne.",
 
 	"power.origins.velvet_paws.name": "Velvet Paws",
 	"power.origins.velvet_paws.description": "Your footsteps don't cause any vibrations which could otherwise be picked up by nearby lifeforms."

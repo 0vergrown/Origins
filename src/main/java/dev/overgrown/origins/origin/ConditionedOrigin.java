@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+
 public record ConditionedOrigin(@Nullable EntityCondition condition, List<ResourceLocation> origins) {
     public ConditionedOrigin {
         origins = List.copyOf(origins);
     }
 
+    
     public static final Codec<ConditionedOrigin> CODEC = Codec.either(
         ResourceLocation.CODEC,
         RecordCodecBuilder.<ConditionedOrigin>create(instance -> instance.group(

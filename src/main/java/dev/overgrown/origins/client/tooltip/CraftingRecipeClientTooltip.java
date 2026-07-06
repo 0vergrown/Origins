@@ -2,15 +2,16 @@ package dev.overgrown.origins.client.tooltip;
 
 import dev.overgrown.origins.Origins;
 import dev.overgrown.origins.badge.CraftingRecipeTooltipData;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-@Environment(EnvType.CLIENT)
+
+@OnlyIn(Dist.CLIENT)
 public final class CraftingRecipeClientTooltip implements ClientTooltipComponent {
 
     private static final ResourceLocation TEXTURE = Origins.id("textures/gui/tooltip/recipe_tooltip.png");

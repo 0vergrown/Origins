@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new Gson();
     private static final String DIR = "origin_layers";
@@ -33,7 +34,7 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
                          ProfilerFiller profiler) {
         List<OriginLayer> layers = new ArrayList<>();
         for (ResourceLocation id : entries.keySet()) {
-            ResourceLocation fullPath = new ResourceLocation(
+            ResourceLocation fullPath = ResourceLocation.fromNamespaceAndPath(
                 id.getNamespace(), DIR + "/" + id.getPath() + ".json");
             try {
                 JsonObject merged = mergeStack(resourceManager.getResourceStack(fullPath), id);
@@ -49,6 +50,7 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
         Origins.LOGGER.info("Loaded {} origin layers.", OriginLayers.size());
     }
 
+    
     private static JsonObject mergeStack(List<Resource> stack, ResourceLocation id) {
         JsonObject acc = null;
         for (Resource resource : stack) {
@@ -70,6 +72,7 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
         return acc;
     }
 
+    
     private static void mergeInto(JsonObject acc, JsonObject src) {
         JsonArray origins = acc.has("origins") && acc.get("origins").isJsonArray()
             ? acc.getAsJsonArray("origins") : new JsonArray();
@@ -77,10 +80,11 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
         for (JsonElement e : origins) seen.add(e.toString());
         if (src.has("origins") && src.get("origins").isJsonArray()) {
             for (JsonElement e : src.getAsJsonArray("origins")) {
-                if (seen.add(e.toString())) origins.add(e);
+                if (seen.add(e.toString())) origins.add(e); 
             }
         }
         acc.add("origins", origins);
+        
         for (Map.Entry<String, JsonElement> e : src.entrySet()) {
             String key = e.getKey();
             if (key.equals("origins") || key.equals("replace")) continue;

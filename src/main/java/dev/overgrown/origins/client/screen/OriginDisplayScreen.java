@@ -10,8 +10,6 @@ import dev.overgrown.origins.client.Season;
 import dev.overgrown.origins.origin.Impact;
 import dev.overgrown.origins.origin.Origin;
 import dev.overgrown.origins.origin.OriginLayer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -26,14 +24,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-@Environment(EnvType.CLIENT)
+
 public abstract class OriginDisplayScreen extends Screen {
 
     protected static final int windowWidth = 176;
     protected static final int windowHeight = 182;
 
+    
     private GuiTextures tex = GuiTextures.of(Season.DEFAULT);
 
+    
     private record GuiTextures(ResourceLocation background, ResourceLocation border,
                                ResourceLocation namePlate, ResourceLocation slot, ResourceLocation handle,
                                ResourceLocation pressed, ResourceLocation[] impact) {
@@ -66,6 +66,7 @@ public abstract class OriginDisplayScreen extends Screen {
     protected int scrollPos = 0;
     private int currentMaxScroll = 0;
 
+    
     private Badge hoveredBadge;
     private ResourceLocation hoveredBadgePowerId;
 
@@ -108,22 +109,23 @@ public abstract class OriginDisplayScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics) {
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (showDirtBackground) {
-            this.renderDirtBackground(graphics);
+            this.renderMenuBackground(graphics);
         } else {
-            super.renderBackground(graphics);
+            super.renderBackground(graphics, mouseX, mouseY, partialTick);
         }
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
-        this.renderOriginWindow(graphics, mouseX, mouseY);
+        
         super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderOriginWindow(graphics, mouseX, mouseY);
         if (origin != null) {
             renderScrollbar(graphics, mouseX, mouseY);
         }
+        
         if (hoveredBadge != null && hoveredBadge.hasTooltip()) {
             int widthLimit = Math.max(120, this.width - mouseX - 24);
             hoveredBadge.renderTooltip(graphics, this.font, mouseX, mouseY, widthLimit, hoveredBadgePowerId, partialTick);
@@ -136,6 +138,7 @@ public abstract class OriginDisplayScreen extends Screen {
         if (origin != null) {
             renderOriginContent(graphics, mouseX, mouseY);
         }
+        
         graphics.blit(tex.border(), guiLeft, guiTop, 0.0F, 0.0F, windowWidth, windowHeight, windowWidth, windowHeight);
         if (origin != null) {
             graphics.pose().pushPose();
@@ -153,9 +156,12 @@ public abstract class OriginDisplayScreen extends Screen {
         graphics.blit(tex.namePlate(), guiLeft + 10, guiTop + 10, 0.0F, 0.0F, 150, 26, 150, 26);
         ItemStack icon = origin.icon();
         graphics.renderItem(icon, guiLeft + 15, guiTop + 15);
+        
+        
         drawScrollingName(graphics, origin.name(), guiLeft + 39, guiLeft + 124, guiTop + 19, 0xFFFFFF);
     }
 
+    
     private void drawScrollingName(GuiGraphics graphics, Component text, int minX, int maxX, int y, int color) {
         int boxWidth = maxX - minX;
         int textWidth = font.width(text);
@@ -188,6 +194,7 @@ public abstract class OriginDisplayScreen extends Screen {
     }
 
     private void renderOriginContent(GuiGraphics graphics, int mouseX, int mouseY) {
+        
         int x = guiLeft + 18;
         int textWidth = windowWidth - 48;
         int y = guiTop + 50;
@@ -195,9 +202,11 @@ public abstract class OriginDisplayScreen extends Screen {
         int endY = y - 72 + windowHeight;
         y -= scrollPos;
 
+        
         hoveredBadge = null;
         hoveredBadgePowerId = null;
 
+        
         Component description = origin.description();
         List<FormattedCharSequence> descLines = font.split(description, textWidth);
         for (FormattedCharSequence line : descLines) {
@@ -208,6 +217,7 @@ public abstract class OriginDisplayScreen extends Screen {
         }
 
         if (isOriginRandom) {
+            
             List<FormattedCharSequence> drawLines = font.split(randomOriginText, textWidth);
             for (FormattedCharSequence line : drawLines) {
                 y += 12;
@@ -217,11 +227,18 @@ public abstract class OriginDisplayScreen extends Screen {
             }
             y += 14;
         } else {
+            
+            
             Player viewer = this.minecraft.player;
             List<ResourceLocation> shownPowers = viewer != null ? origin.powersFor(viewer) : origin.powers();
             for (ResourceLocation powerId : shownPowers) {
                 Power power = ApoliPowers.get(powerId);
                 if (power == null || power.hidden()) continue;
+
+                
+                
+                
+                
                 MutableComponent underlined = Component.empty().withStyle(ChatFormatting.UNDERLINE)
                     .append(power.displayName(powerId).copy());
                 List<FormattedCharSequence> nameLines = font.split(underlined, textWidth);
@@ -235,10 +252,12 @@ public abstract class OriginDisplayScreen extends Screen {
                     if (li < nameLines.size() - 1) y += 12;
                 }
 
+                
                 int extraBadgeRows = drawBadges(graphics, BadgeClientState.get(powerId), powerId,
                     x, y, lastNameWidth, mouseX, mouseY, startY, endY);
                 y += extraBadgeRows * 10;
 
+                
                 Component descComp = power.displayDescription(powerId);
                 for (FormattedCharSequence line : font.split(descComp, textWidth)) {
                     y += 12;
@@ -256,6 +275,7 @@ public abstract class OriginDisplayScreen extends Screen {
         }
     }
 
+    
     private int drawBadges(GuiGraphics graphics, List<Badge> badges, ResourceLocation powerId,
                            int x, int nameLineY, int nameWidth, int mouseX, int mouseY, int startY, int endY) {
         if (badges.isEmpty()) return 0;
@@ -340,9 +360,9 @@ public abstract class OriginDisplayScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        boolean ret = super.mouseScrolled(mouseX, mouseY, amount);
-        int next = this.scrollPos - (int) amount * 4;
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        boolean ret = super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        int next = this.scrollPos - (int) scrollY * 4;
         this.scrollPos = next < 0 ? 0 : Math.min(next, this.currentMaxScroll);
         return ret;
     }
@@ -369,6 +389,7 @@ public abstract class OriginDisplayScreen extends Screen {
         };
     }
 
+    
     protected Font fontRef() {
         return this.font;
     }

@@ -1,14 +1,15 @@
 package dev.overgrown.origins.client;
 
 import dev.overgrown.origins.badge.Badge;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.Map;
 
-@Environment(EnvType.CLIENT)
+
+@OnlyIn(Dist.CLIENT)
 public final class BadgeClientState {
 
     private static volatile Map<ResourceLocation, List<Badge>> BY_POWER = Map.of();

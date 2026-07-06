@@ -3,16 +3,18 @@ package dev.overgrown.origins.badge;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.overgrown.apoli.data.TextComponent;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
+
 
 public record TooltipBadge(ResourceLocation spriteId, Component text) implements Badge {
 
@@ -31,7 +33,7 @@ public record TooltipBadge(ResourceLocation spriteId, Component text) implements
         return true;
     }
 
-    @Environment(EnvType.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Override
     public void renderTooltip(GuiGraphics graphics, Font font, int mouseX, int mouseY, int widthLimit,
                               ResourceLocation powerId, float time) {
@@ -41,14 +43,14 @@ public record TooltipBadge(ResourceLocation spriteId, Component text) implements
     }
 
     @Override
-    public void toNetwork(FriendlyByteBuf buf) {
+    public void toNetwork(RegistryFriendlyByteBuf buf) {
         buf.writeResourceLocation(spriteId);
-        buf.writeComponent(text);
+        ComponentSerialization.STREAM_CODEC.encode(buf, text);
     }
 
-    public static TooltipBadge fromNetwork(FriendlyByteBuf buf) {
+    public static TooltipBadge fromNetwork(RegistryFriendlyByteBuf buf) {
         ResourceLocation sprite = buf.readResourceLocation();
-        Component text = buf.readComponent();
+        Component text = ComponentSerialization.STREAM_CODEC.decode(buf);
         return new TooltipBadge(sprite, text);
     }
 }

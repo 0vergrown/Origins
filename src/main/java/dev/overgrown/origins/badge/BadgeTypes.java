@@ -4,12 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import dev.overgrown.origins.Origins;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+
 
 public final class BadgeTypes {
 
@@ -27,6 +28,7 @@ public final class BadgeTypes {
     public static final BadgeType<CraftingRecipeBadge> CRAFTING_RECIPE = register(
         new BadgeType<>(Origins.id("crafting_recipe"), CraftingRecipeBadge.CODEC, CraftingRecipeBadge::fromNetwork));
 
+    
     public static final ResourceLocation DEFAULT = KEYBIND.id();
 
     private BadgeTypes() {}
@@ -36,6 +38,7 @@ public final class BadgeTypes {
         return type;
     }
 
+    
     public static final Codec<ResourceLocation> ID_CODEC = ResourceLocation.CODEC.flatXmap(
         id -> TYPES.containsKey(id)
             ? DataResult.success(id)
@@ -43,13 +46,15 @@ public final class BadgeTypes {
                 + "use one of " + TYPES.keySet() + " (e.g. origins:tooltip)"),
         DataResult::success);
 
-    public static com.mojang.serialization.Codec<? extends Badge> codecFor(ResourceLocation typeId) {
-        return TYPES.getOrDefault(typeId, KEYBIND).codec().codec();
+    public static MapCodec<? extends Badge> codecFor(ResourceLocation typeId) {
+        return TYPES.getOrDefault(typeId, KEYBIND).codec();
     }
 
-    public static Function<FriendlyByteBuf, ? extends Badge> readerFor(ResourceLocation typeId) {
+    public static Function<RegistryFriendlyByteBuf, ? extends Badge> readerFor(ResourceLocation typeId) {
         return TYPES.getOrDefault(typeId, KEYBIND).networkReader();
     }
 
-    public static void touch() {}
+    public static void touch() {
+        
+    }
 }

@@ -6,8 +6,6 @@ import dev.overgrown.origins.origin.OriginLayer;
 import dev.overgrown.origins.origin.OriginLayers;
 import dev.overgrown.origins.origin.OriginManager;
 import dev.overgrown.origins.origin.OriginRegistry;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -20,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
 
-@Environment(EnvType.CLIENT)
+
 public final class ViewOriginScreen extends OriginDisplayScreen {
 
     private final ArrayList<Tuple<OriginLayer, Origin>> originLayers;
@@ -32,6 +30,9 @@ public final class ViewOriginScreen extends OriginDisplayScreen {
         Player player = Minecraft.getInstance().player;
         this.originLayers = new ArrayList<>();
         if (player != null) {
+            
+            
+            
             Map<ResourceLocation, ResourceLocation> picks = OriginsClientState.get(player.getUUID());
             for (OriginLayer layer : OriginLayers.enabledOrdered()) {
                 if (layer.hidden()) continue;
@@ -39,6 +40,8 @@ public final class ViewOriginScreen extends OriginDisplayScreen {
                 Origin chosen = OriginRegistry.get(chosenId);
                 boolean choosable = OriginManager.hasChoosableOrigins(player, layer);
                 boolean isEmpty = chosen == null || chosenId.equals(OriginRegistry.EMPTY_ID);
+                
+                
                 if (!isEmpty || choosable) {
                     if (chosen == null) chosen = OriginRegistry.getOrEmpty(chosenId);
                     originLayers.add(new Tuple<>(layer, chosen));
