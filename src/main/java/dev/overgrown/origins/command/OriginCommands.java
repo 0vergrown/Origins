@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import dev.overgrown.apoli.command.ApoliPermissions;
 import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.OriginsServerNetwork;
@@ -52,7 +53,7 @@ public final class OriginCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("origin")
-            .then(Commands.literal("set").requires(s -> s.hasPermission(2))
+            .then(Commands.literal("set").requires(ApoliPermissions.require("origins.command.origin.set", 2))
                 .then(Commands.argument("targets", EntityArgument.players())
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
@@ -67,20 +68,21 @@ public final class OriginCommands {
                 .then(Commands.argument("target", EntityArgument.player())
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(OriginCommands::getOne))))
-            .then(Commands.literal("gui").requires(s -> s.hasPermission(2))
+            .then(Commands.literal("gui").requires(ApoliPermissions.require("origins.command.origin.gui", 2))
                 .executes(ctx -> gui(ctx, List.of(ctx.getSource().getPlayerOrException()), null))
                 .then(Commands.argument("targets", EntityArgument.players())
                     .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"), null))
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"),
                             ResourceLocationArgument.getId(ctx, "layer"))))))
-            .then(Commands.literal("random").requires(s -> s.hasPermission(2))
+            .then(Commands.literal("random").requires(ApoliPermissions.require("origins.command.origin.random", 2))
                 .executes(ctx -> random(ctx, List.of(ctx.getSource().getPlayerOrException()), null))
                 .then(Commands.argument("targets", EntityArgument.players())
                     .executes(ctx -> random(ctx, EntityArgument.getPlayers(ctx, "targets"), null))
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(ctx -> random(ctx, EntityArgument.getPlayers(ctx, "targets"),
-                            ResourceLocationArgument.getId(ctx, "layer")))))));
+                            ResourceLocationArgument.getId(ctx, "layer"))))))
+            .then(StorageCommands.build()));
     }
 
     private static int set(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -187,6 +189,7 @@ public final class OriginCommands {
                 ResourceLocation pick = OriginRandomizer.roll(player, layer);
                 if (pick != null) {
                     OriginManager.chooseOrigin(player, layer.id(), pick, false);
+                    OriginsServerNetwork.sendOriginRoll(player, layer, pick);
                     rolled++;
                 }
             }

@@ -10,6 +10,7 @@ public final class OriginsPackets {
     public static final ResourceLocation SYNC_BADGES = Origins.id("sync_badges");
     public static final ResourceLocation SYNC_PLAYER_ORIGINS = Origins.id("sync_player_origins");
     public static final ResourceLocation OPEN_CHOOSE_SCREEN = Origins.id("open_choose_screen");
+    public static final ResourceLocation ORIGIN_ROLL = Origins.id("origin_roll");
     public static final ResourceLocation CLOSE_CHOOSE_SCREEN = Origins.id("close_choose_screen");
     public static final ResourceLocation CHOOSE_ORIGIN = Origins.id("choose_origin");
 }

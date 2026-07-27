@@ -72,6 +72,18 @@ public final class OriginsClientNetwork {
             });
         });
 
+        ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.ORIGIN_ROLL, (client, handler, buf, sender) -> {
+            ResourceLocation layerId = buf.readResourceLocation();
+            ResourceLocation originId = buf.readResourceLocation();
+            int duration = buf.readVarInt();
+            client.execute(() -> dev.overgrown.origins.client.OriginRollQueue.enqueue(layerId, originId, duration));
+        });
+
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
+            client -> dev.overgrown.origins.client.OriginRollQueue.tick(client));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
+            (handler, client) -> dev.overgrown.origins.client.OriginRollQueue.clear());
+
         ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.CLOSE_CHOOSE_SCREEN, (client, handler, buf, sender) -> {
             client.execute(() -> {
                 if (Minecraft.getInstance().screen instanceof ChooseOriginScreen

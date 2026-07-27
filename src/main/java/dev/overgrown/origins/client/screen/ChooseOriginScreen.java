@@ -12,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -105,7 +104,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             if (originSelection.isEmpty() && randomOrigin == null) return;
             OriginLayer currentLayer = layerList.get(currentLayerIndex);
             Origin chosen = getCurrentOriginInternal();
-            
+
             ResourceLocation originId = chosen == randomOrigin
                 ? new ResourceLocation("origins", "random")
                 : chosen.id();
@@ -147,7 +146,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             java.util.Optional.empty()
         );
         Player player = Minecraft.getInstance().player;
-        MutableComponent text = Component.empty();
+        List<Component> names = new ArrayList<>();
         if (player != null) {
             List<ResourceLocation> randoms = new ArrayList<>(
                 layerList.get(currentLayerIndex).availableOrigins(player));
@@ -164,10 +163,10 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             for (ResourceLocation id : randoms) {
                 Origin o = OriginRegistry.get(id);
                 if (o == null) continue;
-                text.append(o.name()).append(Component.literal(" "));
+                names.add(o.name());
             }
         }
-        setRandomOriginText(text);
+        setRandomOriginText(names);
     }
 
     @Override

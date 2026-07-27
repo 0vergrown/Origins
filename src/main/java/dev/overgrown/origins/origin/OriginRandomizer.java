@@ -46,7 +46,9 @@ public final class OriginRandomizer {
 
     private static ResourceLocation pick(List<ResourceLocation> list, OriginLayer.RandomConfig config) {
         if (list.size() == 1) return list.get(0);
-        if (config.style() == OriginLayer.RandomConfig.Style.WEIGHTED) {
+        boolean weighted = config.style() == OriginLayer.RandomConfig.Style.WEIGHTED
+            || (config.style() == OriginLayer.RandomConfig.Style.ROLL && !config.weights().isEmpty());
+        if (weighted) {
             int total = 0;
             for (ResourceLocation id : list) total += config.weight(id);
             if (total > 0) {
@@ -73,15 +75,20 @@ public final class OriginRandomizer {
         ResourceLocation current = state.getOrigin(layer.id());
 
         ResourceLocation pick;
+        boolean rolled = false;
         if (cfg.resetToDefaultOnDeath() && reason == Reason.DEATH && layer.defaultOrigin() != null) {
             pick = layer.defaultOrigin();
         } else {
             pick = roll(player, layer, cfg.allowDuplicate() ? null : current);
+            rolled = true;
         }
         if (pick == null) return;
 
         OriginManager.chooseOrigin(player, layer.id(), pick, false);
         OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
+        if (rolled) {
+            OriginsServerNetwork.sendOriginRoll(player, layer, pick);
+        }
 
         if (cfg.broadcastMessages()) {
             Origin origin = OriginRegistry.get(pick);

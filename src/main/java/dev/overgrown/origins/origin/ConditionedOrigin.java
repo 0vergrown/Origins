@@ -51,7 +51,7 @@ public record ConditionedOrigin(@Nullable EntityCondition condition, List<Resour
     public static ConditionedOrigin read(FriendlyByteBuf buf) {
         EntityCondition condition = buf.readOptional(b -> {
             String json = b.readUtf(32767);
-            return EntityCondition.CODEC.parse(JsonOps.INSTANCE, com.google.gson.JsonParser.parseString(json))
+            return EntityCondition.CODEC.parse(JsonOps.INSTANCE, net.minecraft.util.GsonHelper.parse(json))
                 .resultOrPartial(err -> {})
                 .orElse(null);
         }).orElse(null);

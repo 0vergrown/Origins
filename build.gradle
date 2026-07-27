@@ -8,7 +8,7 @@ group = project.maven_group
 
 repositories {
 	mavenCentral()
-	mavenLocal()
+	maven { url = "https://api.modrinth.com/maven" }
 }
 
 dependencies {
@@ -18,8 +18,8 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Apoli — pulled in from the sibling repo via composite build (see settings.gradle).
-	modImplementation "dev.overgrown.apoli:apoli:${project.apoli_version}"
+	// Apoli — pulled from Modrinth (maven.modrinth:opoli:<version>).
+	modImplementation "maven.modrinth:opoli:${project.apoli_version}"
 }
 
 loom {

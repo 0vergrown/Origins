@@ -1,7 +1,6 @@
 package dev.overgrown.origins.origin;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
@@ -10,7 +9,6 @@ import dev.overgrown.origins.Origins;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,16 +43,20 @@ public record OriginLayer(
         excludedFromRandom = List.copyOf(excludedFromRandom);
     }
 
-    public record RandomConfig(Style style, Map<ResourceLocation, Integer> weights) {
-        public enum Style { UNIFORM, WEIGHTED }
-        public static final RandomConfig DEFAULT = new RandomConfig(Style.UNIFORM, Map.of());
+    public record RandomConfig(Style style, Map<ResourceLocation, Integer> weights, int rollDuration) {
+        public enum Style { UNIFORM, WEIGHTED, ROLL }
+        public static final RandomConfig DEFAULT = new RandomConfig(Style.UNIFORM, Map.of(), 80);
+
         public static final MapCodec<RandomConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.xmap(
-                s -> "weighted".equalsIgnoreCase(s) ? Style.WEIGHTED : Style.UNIFORM,
-                style -> style == Style.WEIGHTED ? "weighted" : "uniform"
+                s -> "weighted".equalsIgnoreCase(s) ? Style.WEIGHTED
+                    : ("roll".equalsIgnoreCase(s) || "gacha".equalsIgnoreCase(s)) ? Style.ROLL
+                    : Style.UNIFORM,
+                style -> style == Style.WEIGHTED ? "weighted" : style == Style.ROLL ? "roll" : "uniform"
             ).optionalFieldOf("style", Style.UNIFORM).forGetter(RandomConfig::style),
             Codec.unboundedMap(ResourceLocation.CODEC, Codec.INT.xmap(v -> Math.max(0, v), Function.identity()))
-                .optionalFieldOf("weights", Map.of()).forGetter(RandomConfig::weights)
+                .optionalFieldOf("weights", Map.of()).forGetter(RandomConfig::weights),
+            Codec.INT.optionalFieldOf("roll_duration", 80).forGetter(RandomConfig::rollDuration)
         ).apply(instance, RandomConfig::new));
 
         public RandomConfig {
@@ -113,12 +115,11 @@ public record OriginLayer(
         ).apply(instance, GuiTitle::new));
     }
 
-    private record RandomBlock(boolean allow, boolean allowUnchoosable, List<ResourceLocation> exclude, RandomConfig config) {
-        static final RandomBlock DEFAULT = new RandomBlock(false, false, List.of(), RandomConfig.DEFAULT);
+    private record RandomBlock(boolean allow, boolean allowUnchoosable, Optional<List<ResourceLocation>> exclude, RandomConfig config) {
         static final Codec<RandomBlock> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("allow", true).forGetter(RandomBlock::allow),
             Codec.BOOL.optionalFieldOf("allow_unchoosable", false).forGetter(RandomBlock::allowUnchoosable),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("exclude", List.of()).forGetter(RandomBlock::exclude),
+            ResourceLocation.CODEC.listOf().optionalFieldOf("exclude").forGetter(RandomBlock::exclude),
             RandomConfig.CODEC.forGetter(RandomBlock::config)
         ).apply(instance, RandomBlock::new));
     }
@@ -167,43 +168,44 @@ public record OriginLayer(
                 .forGetter(l -> new GuiTitle(l.chooseTitleKey(), l.viewTitleKey())),
             Codec.STRING.optionalFieldOf("missing_name", "").forGetter(OriginLayer::missingNameKey),
             Codec.STRING.optionalFieldOf("missing_description", "").forGetter(OriginLayer::missingDescriptionKey),
-            RandomBlock.CODEC.optionalFieldOf("random", RandomBlock.DEFAULT)
-                .forGetter(l -> new RandomBlock(l.allowRandom(), l.randomAllowsUnchoosable(), l.excludedFromRandom(), l.random())),
+            RandomBlock.CODEC.optionalFieldOf("random")
+                .forGetter(l -> Optional.of(new RandomBlock(l.allowRandom(), l.randomAllowsUnchoosable(),
+                    Optional.of(l.excludedFromRandom()), l.random()))),
+            Codec.BOOL.optionalFieldOf("allow_random", false).forGetter(l -> false),
+            Codec.BOOL.optionalFieldOf("allow_random_unchoosable", false).forGetter(l -> false),
+            ResourceLocation.CODEC.listOf().optionalFieldOf("exclude_random", List.of()).forGetter(l -> List.of()),
             ResourceLocation.CODEC.optionalFieldOf("default_origin").forGetter(l -> Optional.ofNullable(l.defaultOrigin())),
             Codec.BOOL.optionalFieldOf("auto_choose", false).forGetter(OriginLayer::autoChooseIfNoChoice),
             Codec.BOOL.optionalFieldOf("hidden", false).forGetter(OriginLayer::hidden),
             RandomiserConfig.CODEC.optionalFieldOf("randomiser", RandomiserConfig.DEFAULT).forGetter(OriginLayer::randomiser)
-        ).apply(instance, (origins, order, enabled, name, gui, missingName, missingDesc, random, defaultOrigin, autoChoose, hidden, randomiser) ->
-            new OriginLayer(id, order, enabled, origins, name, gui.choose(), gui.view(), missingName, missingDesc,
-                random.allow(), random.allowUnchoosable(), random.exclude(), defaultOrigin.orElse(null), autoChoose, hidden,
-                random.config(), randomiser)));
-    }
-
-    public static OriginLayer fromJson(ResourceLocation id, JsonObject json) {
-        return codec(id).codec().parse(JsonOps.INSTANCE, migrate(json))
-            .resultOrPartial(err -> Origins.LOGGER.error("Failed to load origin layer {}: {}", id, err))
-            .orElseThrow(() -> new JsonParseException("Invalid origin layer: " + id));
-    }
-
-    private static JsonObject migrate(JsonObject json) {
-        if (json.has("random") && json.get("random").isJsonObject()) {
-            JsonObject random = json.getAsJsonObject("random");
-            if (!random.has("exclude") && json.has("exclude_random") && json.get("exclude_random").isJsonArray()) {
-                JsonObject copy = json.deepCopy();
-                copy.getAsJsonObject("random").add("exclude", json.getAsJsonArray("exclude_random"));
-                return copy;
+        ).apply(instance, (origins, order, enabled, name, gui, missingName, missingDesc, randomBlock,
+                           legacyAllow, legacyUnchoosable, legacyExclude, defaultOrigin, autoChoose, hidden, randomiser) -> {
+            boolean allowRandom;
+            boolean allowUnchoosable;
+            List<ResourceLocation> exclude;
+            RandomConfig randomConfig;
+            if (randomBlock.isPresent()) {
+                RandomBlock rb = randomBlock.get();
+                allowRandom = rb.allow();
+                allowUnchoosable = rb.allowUnchoosable();
+                exclude = rb.exclude().orElse(legacyExclude);
+                randomConfig = rb.config();
+            } else {
+                allowRandom = legacyAllow;
+                allowUnchoosable = legacyUnchoosable;
+                exclude = legacyExclude;
+                randomConfig = RandomConfig.DEFAULT;
             }
-            return json;
-        }
-        JsonObject copy = json.deepCopy();
-        JsonObject random = new JsonObject();
-        random.addProperty("allow", GsonHelper.getAsBoolean(json, "allow_random", false));
-        random.addProperty("allow_unchoosable", GsonHelper.getAsBoolean(json, "allow_random_unchoosable", false));
-        if (json.has("exclude_random") && json.get("exclude_random").isJsonArray()) {
-            random.add("exclude", json.getAsJsonArray("exclude_random"));
-        }
-        copy.add("random", random);
-        return copy;
+            return new OriginLayer(id, order, enabled, origins, name, gui.choose(), gui.view(), missingName, missingDesc,
+                allowRandom, allowUnchoosable, exclude, defaultOrigin.orElse(null), autoChoose, hidden,
+                randomConfig, randomiser);
+        }));
+    }
+
+    public static OriginLayer fromJson(ResourceLocation id, JsonElement json) {
+        return codec(id).codec().parse(JsonOps.INSTANCE, json)
+            .resultOrPartial(err -> Origins.LOGGER.error("Failed to load origin layer {}: {}", id, err))
+            .orElseThrow(() -> new IllegalArgumentException("Invalid origin layer: " + id));
     }
 
     public void write(FriendlyByteBuf buf) {
@@ -222,6 +224,20 @@ public record OriginLayer(
         buf.writeOptional(Optional.ofNullable(defaultOrigin), FriendlyByteBuf::writeResourceLocation);
         buf.writeBoolean(autoChooseIfNoChoice);
         buf.writeBoolean(hidden);
+        buf.writeEnum(random.style());
+        buf.writeVarInt(random.rollDuration());
+        buf.writeMap(random.weights(), FriendlyByteBuf::writeResourceLocation, FriendlyByteBuf::writeVarInt);
+        buf.writeBoolean(randomiser.onFirstJoin());
+        buf.writeBoolean(randomiser.onDeath());
+        buf.writeBoolean(randomiser.onSleep());
+        buf.writeVarInt(randomiser.deathsBetween());
+        buf.writeVarInt(randomiser.sleepsBetween());
+        buf.writeBoolean(randomiser.livesEnabled());
+        buf.writeVarInt(randomiser.startingLives());
+        buf.writeBoolean(randomiser.resetToDefaultOnDeath());
+        buf.writeBoolean(randomiser.showScreenOnDeath());
+        buf.writeBoolean(randomiser.allowDuplicate());
+        buf.writeBoolean(randomiser.broadcastMessages());
     }
 
     public static OriginLayer read(FriendlyByteBuf buf) {
@@ -240,9 +256,19 @@ public record OriginLayer(
         ResourceLocation defaultOrigin = buf.readOptional(FriendlyByteBuf::readResourceLocation).orElse(null);
         boolean autoChoose = buf.readBoolean();
         boolean hidden = buf.readBoolean();
+        RandomConfig.Style style = buf.readEnum(RandomConfig.Style.class);
+        int rollDuration = buf.readVarInt();
+        Map<ResourceLocation, Integer> weights = buf.readMap(FriendlyByteBuf::readResourceLocation, FriendlyByteBuf::readVarInt);
+        RandomConfig randomConfig = new RandomConfig(style, weights, rollDuration);
+        RandomiserConfig randomiserConfig = new RandomiserConfig(
+            buf.readBoolean(), buf.readBoolean(), buf.readBoolean(),
+            buf.readVarInt(), buf.readVarInt(),
+            buf.readBoolean(), buf.readVarInt(),
+            buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
+
         return new OriginLayer(id, order, enabled, conditioned, nameKey, chooseTitleKey, viewTitleKey,
             missingNameKey, missingDescriptionKey, allowRandom, randomAllowsUnchoosable,
             excludedFromRandom, defaultOrigin, autoChoose, hidden,
-            RandomConfig.DEFAULT, RandomiserConfig.DEFAULT);
+            randomConfig, randomiserConfig);
     }
 }

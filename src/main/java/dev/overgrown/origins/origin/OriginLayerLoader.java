@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -38,7 +37,7 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
             try {
                 JsonObject merged = mergeStack(resourceManager.getResourceStack(fullPath), id);
                 if (merged == null && entries.get(id).isJsonObject()) {
-                    merged = entries.get(id).getAsJsonObject(); 
+                    merged = entries.get(id).getAsJsonObject();
                 }
                 if (merged != null) layers.add(OriginLayer.fromJson(id, merged));
             } catch (Exception e) {
@@ -54,7 +53,7 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
         for (Resource resource : stack) {
             JsonObject json;
             try (Reader reader = resource.openAsReader()) {
-                JsonElement el = JsonParser.parseReader(reader);
+                JsonElement el = GsonHelper.parse(reader, true);
                 if (!el.isJsonObject()) continue;
                 json = el.getAsJsonObject();
             } catch (Exception e) {

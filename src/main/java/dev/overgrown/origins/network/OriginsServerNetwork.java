@@ -92,7 +92,8 @@ public final class OriginsServerNetwork {
             Origins.LOGGER.warn("{} tried to choose unknown layer {}", player.getName().getString(), layerId);
             return;
         }
-        if (originId.equals(RANDOM_ORIGIN)) {
+        boolean wasRandom = originId.equals(RANDOM_ORIGIN);
+        if (wasRandom) {
             if (!layer.allowRandom()) {
                 Origins.LOGGER.warn("{} tried to roll random on layer {} which doesn't allow it",
                     player.getName().getString(), layerId);
@@ -123,6 +124,9 @@ public final class OriginsServerNetwork {
         OriginManager.chooseOrigin(player, layerId, originId, fromOrb);
         broadcastPlayerOrigins(player.getServer(), player);
         advanceOrClose(player, fromOrb);
+        if (wasRandom) {
+            sendOriginRoll(player, layer, originId);
+        }
     }
 
     private static void advanceOrClose(ServerPlayer player, boolean fromOrb) {
@@ -142,5 +146,25 @@ public final class OriginsServerNetwork {
 
     private static ResourceLocation rollRandom(ServerPlayer player, OriginLayer layer) {
         return dev.overgrown.origins.origin.OriginRandomizer.roll(player, layer);
+    }
+
+    public static void sendOriginRoll(ServerPlayer player, OriginLayer layer, ResourceLocation pick) {
+        if (layer.random().style() != OriginLayer.RandomConfig.Style.ROLL) {
+            Origins.LOGGER.info("[Origins] Origin roll skipped for {}: layer {} random style is {} (needs \"roll\")",
+                player.getGameProfile().getName(), layer.id(), layer.random().style());
+            return;
+        }
+        if (!ServerPlayNetworking.canSend(player, OriginsPackets.ORIGIN_ROLL)) {
+            Origins.LOGGER.warn("[Origins] Origin roll skipped for {}: client cannot receive origins:origin_roll (older Origins build on the client?)",
+                player.getGameProfile().getName());
+            return;
+        }
+        Origins.LOGGER.debug("[Origins] Origin roll sent to {}: {} in layer {} ({} ticks)",
+            player.getGameProfile().getName(), pick, layer.id(), layer.random().rollDuration());
+        net.minecraft.network.FriendlyByteBuf buf = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+        buf.writeResourceLocation(layer.id());
+        buf.writeResourceLocation(pick);
+        buf.writeVarInt(layer.random().rollDuration());
+        ServerPlayNetworking.send(player, OriginsPackets.ORIGIN_ROLL, buf);
     }
 }

@@ -30,11 +30,18 @@ public record Origin(
     boolean unchoosable,
     boolean special,
     Optional<Component> nameText,
-    Optional<Component> descriptionText
+    Optional<Component> descriptionText,
+    float nameScrollSpeed
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
         icon = icon.copy();
+    }
+
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, ItemStack icon, Impact impact,
+                  int order, int loadingPriority, boolean unchoosable, boolean special,
+                  Optional<Component> nameText, Optional<Component> descriptionText) {
+        this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText, 1.0f);
     }
 
     public List<ResourceLocation> powers() {
@@ -85,9 +92,10 @@ public record Origin(
             Codec.INT.optionalFieldOf("loading_priority", 0).forGetter(Origin::loadingPriority),
             Codec.BOOL.optionalFieldOf("unchoosable", false).forGetter(Origin::unchoosable),
             TextComponent.CODEC.optionalFieldOf("name").forGetter(Origin::nameText),
-            TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText)
-        ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description) ->
-            new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description)));
+            TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText),
+            Codec.FLOAT.optionalFieldOf("name_scroll_speed", 1.0f).forGetter(Origin::nameScrollSpeed)
+        ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description, nameScrollSpeed) ->
+            new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description, nameScrollSpeed)));
     }
 
     public Component name() {
@@ -118,6 +126,7 @@ public record Origin(
         buf.writeBoolean(special);
         buf.writeOptional(nameText, FriendlyByteBuf::writeComponent);
         buf.writeOptional(descriptionText, FriendlyByteBuf::writeComponent);
+        buf.writeFloat(nameScrollSpeed);
     }
 
     public static Origin read(FriendlyByteBuf buf) {
@@ -131,7 +140,8 @@ public record Origin(
         boolean special = buf.readBoolean();
         Optional<Component> nameText = buf.readOptional(FriendlyByteBuf::readComponent);
         Optional<Component> descriptionText = buf.readOptional(FriendlyByteBuf::readComponent);
+        float nameScrollSpeed = buf.readFloat();
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
-            nameText, descriptionText);
+            nameText, descriptionText, nameScrollSpeed);
     }
 }

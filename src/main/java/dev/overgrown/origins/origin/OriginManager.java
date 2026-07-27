@@ -1,6 +1,7 @@
 package dev.overgrown.origins.origin;
 
 import dev.overgrown.apoli.PowerContainerAttachment;
+import dev.overgrown.apoli.power.ApoliPowers;
 import dev.overgrown.apoli.power.PowerContainer;
 import dev.overgrown.apoli.power.builtin.ActionOnCallbackPower;
 import dev.overgrown.origins.Origins;
@@ -74,11 +75,17 @@ public final class OriginManager {
 
     public static void reapplyAll(ServerPlayer player) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
+        PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         for (var entry : state.snapshot().entrySet()) {
             OriginLayer layer = OriginLayers.get(entry.getKey());
             Origin origin = OriginRegistry.get(entry.getValue());
             if (layer == null || origin == null) continue;
             applyOriginPowers(player, layer, origin);
+            if (container != null) {
+                for (ResourceLocation powerId : origin.powers()) {
+                    if (ApoliPowers.get(powerId) == null) container.removeAllFromSource(powerId);
+                }
+            }
         }
         revalidateGatedLayers(player);
     }
