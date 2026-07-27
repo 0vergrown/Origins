@@ -19,7 +19,6 @@ import net.minecraft.world.level.Level;
 
 import java.util.Map;
 
-
 public final class OrbOfOriginItem extends Item {
 
     public OrbOfOriginItem() {
@@ -35,7 +34,6 @@ public final class OrbOfOriginItem extends Item {
 
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
 
-        
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         for (Map.Entry<ResourceLocation, ResourceLocation> entry : state.snapshot().entrySet()) {
             if (container != null) {
@@ -44,7 +42,6 @@ public final class OrbOfOriginItem extends Item {
             state.clearOrigin(entry.getKey());
         }
 
-        
         OriginLayer first = OriginManager.firstUnchosenLayer(player, state);
         if (first != null) {
             state.setSelectingOrigin(true);
@@ -52,14 +49,12 @@ public final class OrbOfOriginItem extends Item {
         }
         OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
 
-        
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);
         }
         return InteractionResultHolder.success(stack);
     }
 
-    
     private static ResourceLocation layerSource(ResourceLocation layerId) {
         return ResourceLocation.fromNamespaceAndPath(layerId.getNamespace(), "layer/" + layerId.getPath());
     }

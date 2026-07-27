@@ -1,7 +1,5 @@
 package dev.overgrown.origins.badge;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -12,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 import java.io.Reader;
@@ -22,7 +21,6 @@ import java.util.Map;
 
 public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoader.Prepared> {
 
-    private static final Gson GSON = new GsonBuilder().setLenient().create();
     private static final String BADGES_DIR = "badges";
     private static final String POWERS_DIR = "powers";
 
@@ -46,7 +44,7 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
             ResourceLocation powerId = trim(loc, POWERS_DIR);
             JsonElement json = read(resource, loc);
             if (!(json instanceof JsonObject obj) || !obj.has(BADGES_DIR)) return;
-            if (obj.has("hidden") && obj.get("hidden").getAsBoolean()) return;
+            if (GsonHelper.getAsBoolean(obj, "hidden", false)) return;
             if (!(obj.get(BADGES_DIR) instanceof JsonArray array)) return;
 
             List<Badge> badges = new LinkedList<>();
@@ -95,7 +93,7 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
 
     private static JsonElement read(Resource resource, ResourceLocation loc) {
         try (Reader reader = resource.openAsReader()) {
-            return GSON.fromJson(reader, JsonElement.class);
+            return GsonHelper.parse(reader, true);
         } catch (Exception e) {
             Origins.LOGGER.error("Failed to read badge resource {}: {}", loc, e.toString());
             return null;

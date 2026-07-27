@@ -21,11 +21,9 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public final class OriginsServerNetwork {
     private OriginsServerNetwork() {}
 
-    
     public static final ResourceLocation RANDOM_ORIGIN = ResourceLocation.fromNamespaceAndPath("origins", "random");
 
     public static void register() {
@@ -35,37 +33,31 @@ public final class OriginsServerNetwork {
         });
     }
 
-    
     public static void sendRegistries(ServerPlayer player) {
         ServerPlayNetworking.send(player, new SyncRegistriesS2C(
             new ArrayList<>(OriginRegistry.all()), new ArrayList<>(OriginLayers.all())));
     }
 
-    
     public static void sendBadges(ServerPlayer player) {
         ServerPlayNetworking.send(player, new dev.overgrown.origins.network.payload.SyncBadgesS2C(
             dev.overgrown.origins.badge.BadgeManager.collectForSend(player.server)));
     }
 
-    
     public static void sendPlayerOriginsTo(ServerPlayer recipient, ServerPlayer subject) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(subject);
         ServerPlayNetworking.send(recipient, new SyncPlayerOriginsS2C(subject.getUUID(), state.snapshot()));
     }
 
-    
     public static void broadcastPlayerOrigins(MinecraftServer server, ServerPlayer subject) {
         for (ServerPlayer recipient : server.getPlayerList().getPlayers()) {
             sendPlayerOriginsTo(recipient, subject);
         }
     }
 
-    
     public static void openChooseScreen(ServerPlayer player, OriginLayer layer, boolean fromOrb) {
         ServerPlayNetworking.send(player, new OpenChooseScreenS2C(layer.id(), fromOrb));
     }
 
-    
     public static void closeChooseScreen(ServerPlayer player) {
         ServerPlayNetworking.send(player, CloseChooseScreenS2C.INSTANCE);
     }
@@ -78,10 +70,8 @@ public final class OriginsServerNetwork {
             return;
         }
 
-        
-        
-        
-        if (originId.equals(RANDOM_ORIGIN)) {
+        boolean wasRandom = originId.equals(RANDOM_ORIGIN);
+        if (wasRandom) {
             if (!layer.allowRandom()) {
                 Origins.LOGGER.warn("{} tried to roll random on layer {} which doesn't allow it",
                     player.getName().getString(), layerId);
@@ -112,9 +102,11 @@ public final class OriginsServerNetwork {
         OriginManager.chooseOrigin(player, layerId, originId, fromOrb);
         broadcastPlayerOrigins(player.getServer(), player);
         advanceOrClose(player, fromOrb);
+        if (wasRandom) {
+            sendOriginRoll(player, layer, originId);
+        }
     }
 
-    
     private static void advanceOrClose(ServerPlayer player, boolean fromOrb) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
         OriginLayer nextUnchosen = OriginManager.firstUnchosenLayer(player, state);
@@ -127,5 +119,22 @@ public final class OriginsServerNetwork {
 
     private static ResourceLocation rollRandom(ServerPlayer player, OriginLayer layer) {
         return dev.overgrown.origins.origin.OriginRandomizer.roll(player, layer);
+    }
+
+    public static void sendOriginRoll(ServerPlayer player, OriginLayer layer, ResourceLocation pick) {
+        if (layer.random().style() != OriginLayer.RandomConfig.Style.ROLL) {
+            Origins.LOGGER.info("[Origins] Origin roll skipped for {}: layer {} random style is {} (needs \"roll\")",
+                player.getGameProfile().getName(), layer.id(), layer.random().style());
+            return;
+        }
+        if (!ServerPlayNetworking.canSend(player, dev.overgrown.origins.network.payload.OriginRollS2C.TYPE)) {
+            Origins.LOGGER.warn("[Origins] Origin roll skipped for {}: client cannot receive origins:origin_roll (older Origins build on the client?)",
+                player.getGameProfile().getName());
+            return;
+        }
+        Origins.LOGGER.debug("[Origins] Origin roll sent to {}: {} in layer {} ({} ticks)",
+            player.getGameProfile().getName(), pick, layer.id(), layer.random().rollDuration());
+        ServerPlayNetworking.send(player,
+            new dev.overgrown.origins.network.payload.OriginRollS2C(layer.id(), pick, layer.random().rollDuration()));
     }
 }

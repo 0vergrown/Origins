@@ -10,7 +10,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public record SyncRegistriesS2C(List<Origin> origins, List<OriginLayer> layers) implements CustomPacketPayload {
     public static final Type<SyncRegistriesS2C> TYPE = new Type<>(Origins.id("sync_registries"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SyncRegistriesS2C> STREAM_CODEC = StreamCodec.of(

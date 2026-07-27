@@ -1,6 +1,7 @@
 package dev.overgrown.origins.origin;
 
 import dev.overgrown.apoli.PowerContainerAttachment;
+import dev.overgrown.apoli.power.ApoliPowers;
 import dev.overgrown.apoli.power.PowerContainer;
 import dev.overgrown.apoli.power.builtin.ActionOnCallbackPower;
 import dev.overgrown.origins.Origins;
@@ -16,16 +17,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 public final class OriginManager {
     private OriginManager() {}
 
-    
     private static ResourceLocation sourceFor(ResourceLocation layerId) {
         return ResourceLocation.fromNamespaceAndPath(layerId.getNamespace(), "layer/" + layerId.getPath());
     }
 
-    
     public static void chooseOrigin(ServerPlayer player, ResourceLocation layerId,
                                     ResourceLocation originId, boolean fromOrb) {
         OriginLayer layer = OriginLayers.get(layerId);
@@ -45,7 +43,6 @@ public final class OriginManager {
         }
     }
 
-    
     public static void removeOrigin(ServerPlayer player, ResourceLocation layerId) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
         if (state == null || !state.hasOrigin(layerId)) return;
@@ -55,7 +52,6 @@ public final class OriginManager {
         revalidateGatedLayers(player);
     }
 
-    
     public static boolean transferOrigin(ServerPlayer donor, ServerPlayer recipient,
                                          ResourceLocation fromLayer, ResourceLocation toLayer, boolean copy) {
         PlayerOriginsImpl donorState = PlayerOriginsAttachment.get(donor);
@@ -66,7 +62,6 @@ public final class OriginManager {
 
         chooseOrigin(recipient, toLayer, originId, false);
 
-        
         boolean donorChanged = !copy && !(donor == recipient && fromLayer.equals(toLayer));
         if (donorChanged) removeOrigin(donor, fromLayer);
 
@@ -78,19 +73,23 @@ public final class OriginManager {
         return true;
     }
 
-    
     public static void reapplyAll(ServerPlayer player) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
+        PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         for (var entry : state.snapshot().entrySet()) {
             OriginLayer layer = OriginLayers.get(entry.getKey());
             Origin origin = OriginRegistry.get(entry.getValue());
             if (layer == null || origin == null) continue;
             applyOriginPowers(player, layer, origin);
+            if (container != null) {
+                for (ResourceLocation powerId : origin.powers()) {
+                    if (ApoliPowers.get(powerId) == null) container.removeAllFromSource(powerId);
+                }
+            }
         }
         revalidateGatedLayers(player);
     }
 
-    
     private static void revalidateGatedLayers(Player player) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
         if (state == null) return;
@@ -106,16 +105,9 @@ public final class OriginManager {
     }
 
     private static void applyOriginPowers(Player player, OriginLayer layer, Origin origin) {
-        
-        
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         if (container == null) return;
         ResourceLocation source = sourceFor(layer.id());
-
-        
-        
-        
-        
         Set<ResourceLocation> desired = new HashSet<>(origin.powers());
         Set<ResourceLocation> current = new HashSet<>();
         for (ResourceLocation power : container.allPowers()) {
@@ -129,7 +121,6 @@ public final class OriginManager {
         }
     }
 
-    
     public static boolean hasChosenAllLayers(Player player, PlayerOriginsImpl state) {
         for (OriginLayer layer : OriginLayers.enabledFor(player)) {
             if (!hasChoosableOrigins(player, layer)) continue;
@@ -138,7 +129,6 @@ public final class OriginManager {
         return true;
     }
 
-    
     public static OriginLayer firstUnchosenLayer(Player player, PlayerOriginsImpl state) {
         for (OriginLayer layer : OriginLayers.enabledFor(player)) {
             if (!hasChoosableOrigins(player, layer)) continue;
@@ -147,10 +137,7 @@ public final class OriginManager {
         return null;
     }
 
-    
     public static boolean hasChoosableOrigins(Player player, OriginLayer layer) {
-        
-        
         boolean randomRollsUnchoosable = layer.allowRandom() && layer.randomAllowsUnchoosable();
         for (ResourceLocation id : layer.availableOrigins(player)) {
             Origin origin = OriginRegistry.get(id);

@@ -61,7 +61,7 @@ public abstract class OriginDisplayScreen extends Screen {
     private Origin origin;
     private OriginLayer layer;
     private boolean isOriginRandom;
-    private Component randomOriginText = Component.empty();
+    private List<Component> randomOriginText = List.of();
 
     protected int scrollPos = 0;
     private int currentMaxScroll = 0;
@@ -87,8 +87,8 @@ public abstract class OriginDisplayScreen extends Screen {
         this.scrollPos = 0;
     }
 
-    public void setRandomOriginText(Component text) {
-        this.randomOriginText = text == null ? Component.empty() : text;
+    public void setRandomOriginText(List<Component> names) {
+        this.randomOriginText = names == null ? List.of() : names;
     }
 
     public @Nullable Origin getCurrentOrigin() {
@@ -152,21 +152,24 @@ public abstract class OriginDisplayScreen extends Screen {
         graphics.blit(tex.namePlate(), guiLeft + 10, guiTop + 10, 0.0F, 0.0F, 150, 26, 150, 26);
         ItemStack icon = origin.icon();
         graphics.renderItem(icon, guiLeft + 15, guiTop + 15);
-        drawScrollingName(graphics, origin.name(), guiLeft + 39, guiLeft + 124, guiTop + 19, 0xFFFFFF);
+        drawScrollingName(graphics, origin.name(), guiLeft + 39, guiLeft + 124, guiTop + 19, 0xFFFFFF, origin.nameScrollSpeed());
     }
 
-    private void drawScrollingName(GuiGraphics graphics, Component text, int minX, int maxX, int y, int color) {
+    private void drawScrollingName(GuiGraphics graphics, Component text, int minX, int maxX, int y, int color, float speedMultiplier) {
         int boxWidth = maxX - minX;
         int textWidth = font.width(text);
         if (textWidth <= boxWidth) {
             graphics.drawString(font, text, minX, y, color, true);
             return;
         }
-        double overflow = textWidth - boxWidth;
-        double time = net.minecraft.Util.getMillis() / 1000.0;
-        double speed = Math.max(overflow * 0.5, 3.0);
-        double phase = Math.sin((Math.PI / 2.0) * Math.cos((Math.PI * 2.0) * time / speed)) / 2.0 + 0.5;
-        int scroll = (int) net.minecraft.util.Mth.lerp(phase, 0.0, overflow);
+        int scroll = 0;
+        if (speedMultiplier > 0f) {
+            double overflow = textWidth - boxWidth;
+            double time = net.minecraft.Util.getMillis() / 1000.0;
+            double period = Math.max(overflow * 0.5, 3.0) / speedMultiplier;
+            double phase = Math.sin((Math.PI / 2.0) * Math.cos((Math.PI * 2.0) * time / period)) / 2.0 + 0.5;
+            scroll = (int) net.minecraft.util.Mth.lerp(phase, 0.0, textWidth - boxWidth);
+        }
         graphics.enableScissor(minX, y - 2, maxX, y + 11);
         graphics.drawString(font, text, minX - scroll, y, color, true);
         graphics.disableScissor();
@@ -207,11 +210,12 @@ public abstract class OriginDisplayScreen extends Screen {
         }
 
         if (isOriginRandom) {
-            List<FormattedCharSequence> drawLines = font.split(randomOriginText, textWidth);
-            for (FormattedCharSequence line : drawLines) {
-                y += 12;
-                if (y >= startY - 24 && y <= endY + 12) {
-                    graphics.drawString(font, line, x + 2, y, 0xCCCCCC, false);
+            for (Component name : randomOriginText) {
+                for (FormattedCharSequence line : font.split(name, textWidth)) {
+                    y += 12;
+                    if (y >= startY - 24 && y <= endY + 12) {
+                        graphics.drawString(font, line, x + 2, y, 0xCCCCCC, false);
+                    }
                 }
             }
             y += 14;

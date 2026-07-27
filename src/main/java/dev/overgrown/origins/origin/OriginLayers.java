@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public final class OriginLayers {
     private static final Map<ResourceLocation, OriginLayer> BY_ID = new HashMap<>();
 
@@ -33,7 +32,6 @@ public final class OriginLayers {
         return BY_ID.size();
     }
 
-    
     public static List<OriginLayer> enabledOrdered() {
         List<OriginLayer> out = new ArrayList<>();
         for (OriginLayer l : BY_ID.values()) {
@@ -43,7 +41,6 @@ public final class OriginLayers {
         return out;
     }
 
-    
     public static List<OriginLayer> enabledFor(Player player) {
         List<OriginLayer> out = new ArrayList<>();
         for (OriginLayer l : enabledOrdered()) {

@@ -15,13 +15,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-
 public record OriginPowerEntry(@Nullable EntityCondition condition, List<ResourceLocation> powers) {
     public OriginPowerEntry {
         powers = List.copyOf(powers);
     }
 
-    
     public static final Codec<OriginPowerEntry> CODEC = Codec.either(
         ResourceLocation.CODEC,
         RecordCodecBuilder.<OriginPowerEntry>create(instance -> instance.group(
@@ -35,7 +33,6 @@ public record OriginPowerEntry(@Nullable EntityCondition condition, List<Resourc
             : Either.right(e)
     );
 
-    
     public boolean visible(Player player) {
         if (condition == null) return true;
         return condition.test(new EntityCtx(player, player.level()));
@@ -54,7 +51,7 @@ public record OriginPowerEntry(@Nullable EntityCondition condition, List<Resourc
     public static OriginPowerEntry read(FriendlyByteBuf buf) {
         EntityCondition condition = buf.readOptional(b -> {
             String json = b.readUtf(32767);
-            return EntityCondition.CODEC.parse(JsonOps.INSTANCE, com.google.gson.JsonParser.parseString(json))
+            return EntityCondition.CODEC.parse(JsonOps.INSTANCE, net.minecraft.util.GsonHelper.parse(json))
                 .resultOrPartial(err -> {})
                 .orElse(null);
         }).orElse(null);

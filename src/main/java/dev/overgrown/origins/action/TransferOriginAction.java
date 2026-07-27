@@ -14,7 +14,6 @@ import net.minecraft.util.StringRepresentable;
 
 import java.util.Optional;
 
-
 public final class TransferOriginAction implements ActionType<BiEntityCtx, TransferOriginAction.Cfg> {
 
     public enum Mode implements StringRepresentable {

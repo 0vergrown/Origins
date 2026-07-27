@@ -6,7 +6,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-
 public record OpenChooseScreenS2C(ResourceLocation layerId, boolean fromOrb) implements CustomPacketPayload {
     public static final Type<OpenChooseScreenS2C> TYPE = new Type<>(Origins.id("open_choose_screen"));
     public static final StreamCodec<RegistryFriendlyByteBuf, OpenChooseScreenS2C> STREAM_CODEC = StreamCodec.of(

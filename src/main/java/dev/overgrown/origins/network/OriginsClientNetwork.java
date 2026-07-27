@@ -19,7 +19,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
-
 @Environment(EnvType.CLIENT)
 public final class OriginsClientNetwork {
     private OriginsClientNetwork() {}
@@ -44,6 +43,15 @@ public final class OriginsClientNetwork {
                 Minecraft.getInstance().setScreen(new ChooseOriginScreen(layer, payload.fromOrb()));
             }));
 
+        ClientPlayNetworking.registerGlobalReceiver(dev.overgrown.origins.network.payload.OriginRollS2C.TYPE, (payload, context) ->
+            context.client().execute(() -> dev.overgrown.origins.client.OriginRollQueue.enqueue(
+                payload.layerId(), payload.originId(), payload.duration())));
+
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
+            client -> dev.overgrown.origins.client.OriginRollQueue.tick(client));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
+            (handler, client) -> dev.overgrown.origins.client.OriginRollQueue.clear());
+
         ClientPlayNetworking.registerGlobalReceiver(CloseChooseScreenS2C.TYPE, (payload, context) ->
             context.client().execute(() -> {
                 if (Minecraft.getInstance().screen instanceof ChooseOriginScreen
@@ -53,7 +61,6 @@ public final class OriginsClientNetwork {
             }));
     }
 
-    
     public static void sendChoose(ResourceLocation layerId, ResourceLocation originId, boolean fromOrb) {
         ClientPlayNetworking.send(new ChooseOriginC2S(layerId, originId, fromOrb));
     }

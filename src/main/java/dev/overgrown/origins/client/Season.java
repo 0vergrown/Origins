@@ -25,7 +25,7 @@ public enum Season {
     }
 
     public static Season current() {
-        
+
         switch (dev.overgrown.origins.OriginsConfig.guiTheme()) {
             case "default": return DEFAULT;
             case "rainbow": return RAINBOW;

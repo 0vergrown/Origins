@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
 public record SyncPlayerOriginsS2C(UUID subject, Map<ResourceLocation, ResourceLocation> picks)
     implements CustomPacketPayload {
 

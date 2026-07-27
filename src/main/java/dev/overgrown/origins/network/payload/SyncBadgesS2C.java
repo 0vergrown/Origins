@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-
 public record SyncBadgesS2C(Map<ResourceLocation, List<Badge>> badgesByPower) implements CustomPacketPayload {
 
     public static final Type<SyncBadgesS2C> TYPE = new Type<>(Origins.id("sync_badges"));
