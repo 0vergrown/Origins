@@ -1,6 +1,8 @@
 # Origins
 
-**Origins** lets every player pick a species when they join the world, each with its own strengths, weaknesses, and playstyle. Choose to be a spider-climbing Arachnid, a Nether-immune Blazeborn, a water-bound Merling, or one of several others, each built entirely from [Apoli](https://github.com/0vergrown/Apoli) powers and data.
+**Origins** lets every player pick a species when they join the world — each with its own strengths, weaknesses, and playstyle. Choose to be a spider-climbing Arachnid, a Nether-immune Blazeborn, a water-bound Merling, or one of several others, each built entirely from [Apoli](https://github.com/0vergrown/Apoli) powers and data.
+
+> **This branch:** `NeoForge-1.21.1` — NeoForge, Minecraft 1.21.1. Requires [Apoli](https://github.com/0vergrown/Apoli).
 
 ## Branches
 
