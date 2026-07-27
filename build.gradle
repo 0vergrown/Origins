@@ -10,7 +10,7 @@ group = mod_group_id
 
 repositories {
     mavenCentral()
-    mavenLocal()
+    maven { url = "https://api.modrinth.com/maven" }
 }
 
 base {
@@ -58,9 +58,8 @@ configurations {
 }
 
 dependencies {
-    // Apoli — pulled from the sibling repo published to the local maven cache.
-    // Run `./gradlew publishToMavenLocal` on Apoli-NeoForge-1.21.1 first.
-    implementation "dev.overgrown.apoli:apoli:${apoli_version}"
+    // Apoli — pulled from Modrinth (maven.modrinth:opoli:<version>).
+    implementation "maven.modrinth:opoli:${apoli_version}"
 }
 
 // Expand the placeholders in neoforge.mods.toml with the gradle.properties values.

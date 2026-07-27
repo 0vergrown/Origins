@@ -10,7 +10,6 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-
 @OnlyIn(Dist.CLIENT)
 public final class CraftingRecipeClientTooltip implements ClientTooltipComponent {
 

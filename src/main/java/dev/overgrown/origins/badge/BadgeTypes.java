@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-
 public final class BadgeTypes {
 
     private static final Map<ResourceLocation, BadgeType<? extends Badge>> TYPES = new LinkedHashMap<>();
@@ -28,7 +27,6 @@ public final class BadgeTypes {
     public static final BadgeType<CraftingRecipeBadge> CRAFTING_RECIPE = register(
         new BadgeType<>(Origins.id("crafting_recipe"), CraftingRecipeBadge.CODEC, CraftingRecipeBadge::fromNetwork));
 
-    
     public static final ResourceLocation DEFAULT = KEYBIND.id();
 
     private BadgeTypes() {}
@@ -38,7 +36,6 @@ public final class BadgeTypes {
         return type;
     }
 
-    
     public static final Codec<ResourceLocation> ID_CODEC = ResourceLocation.CODEC.flatXmap(
         id -> TYPES.containsKey(id)
             ? DataResult.success(id)
@@ -55,6 +52,6 @@ public final class BadgeTypes {
     }
 
     public static void touch() {
-        
+
     }
 }

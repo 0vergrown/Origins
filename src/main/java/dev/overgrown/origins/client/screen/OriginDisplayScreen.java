@@ -24,16 +24,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-
 public abstract class OriginDisplayScreen extends Screen {
 
     protected static final int windowWidth = 176;
     protected static final int windowHeight = 182;
 
-    
     private GuiTextures tex = GuiTextures.of(Season.DEFAULT);
 
-    
     private record GuiTextures(ResourceLocation background, ResourceLocation border,
                                ResourceLocation namePlate, ResourceLocation slot, ResourceLocation handle,
                                ResourceLocation pressed, ResourceLocation[] impact) {
@@ -61,12 +58,11 @@ public abstract class OriginDisplayScreen extends Screen {
     private Origin origin;
     private OriginLayer layer;
     private boolean isOriginRandom;
-    private Component randomOriginText = Component.empty();
+    private List<Component> randomOriginText = List.of();
 
     protected int scrollPos = 0;
     private int currentMaxScroll = 0;
 
-    
     private Badge hoveredBadge;
     private ResourceLocation hoveredBadgePowerId;
 
@@ -88,8 +84,8 @@ public abstract class OriginDisplayScreen extends Screen {
         this.scrollPos = 0;
     }
 
-    public void setRandomOriginText(Component text) {
-        this.randomOriginText = text == null ? Component.empty() : text;
+    public void setRandomOriginText(List<Component> names) {
+        this.randomOriginText = names == null ? List.of() : names;
     }
 
     public @Nullable Origin getCurrentOrigin() {
@@ -119,13 +115,13 @@ public abstract class OriginDisplayScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        
+
         super.render(graphics, mouseX, mouseY, partialTick);
         this.renderOriginWindow(graphics, mouseX, mouseY);
         if (origin != null) {
             renderScrollbar(graphics, mouseX, mouseY);
         }
-        
+
         if (hoveredBadge != null && hoveredBadge.hasTooltip()) {
             int widthLimit = Math.max(120, this.width - mouseX - 24);
             hoveredBadge.renderTooltip(graphics, this.font, mouseX, mouseY, widthLimit, hoveredBadgePowerId, partialTick);
@@ -138,7 +134,7 @@ public abstract class OriginDisplayScreen extends Screen {
         if (origin != null) {
             renderOriginContent(graphics, mouseX, mouseY);
         }
-        
+
         graphics.blit(tex.border(), guiLeft, guiTop, 0.0F, 0.0F, windowWidth, windowHeight, windowWidth, windowHeight);
         if (origin != null) {
             graphics.pose().pushPose();
@@ -156,24 +152,25 @@ public abstract class OriginDisplayScreen extends Screen {
         graphics.blit(tex.namePlate(), guiLeft + 10, guiTop + 10, 0.0F, 0.0F, 150, 26, 150, 26);
         ItemStack icon = origin.icon();
         graphics.renderItem(icon, guiLeft + 15, guiTop + 15);
-        
-        
-        drawScrollingName(graphics, origin.name(), guiLeft + 39, guiLeft + 124, guiTop + 19, 0xFFFFFF);
+
+        drawScrollingName(graphics, origin.name(), guiLeft + 39, guiLeft + 124, guiTop + 19, 0xFFFFFF, origin.nameScrollSpeed());
     }
 
-    
-    private void drawScrollingName(GuiGraphics graphics, Component text, int minX, int maxX, int y, int color) {
+    private void drawScrollingName(GuiGraphics graphics, Component text, int minX, int maxX, int y, int color, float speedMultiplier) {
         int boxWidth = maxX - minX;
         int textWidth = font.width(text);
         if (textWidth <= boxWidth) {
             graphics.drawString(font, text, minX, y, color, true);
             return;
         }
-        double overflow = textWidth - boxWidth;
-        double time = net.minecraft.Util.getMillis() / 1000.0;
-        double speed = Math.max(overflow * 0.5, 3.0);
-        double phase = Math.sin((Math.PI / 2.0) * Math.cos((Math.PI * 2.0) * time / speed)) / 2.0 + 0.5;
-        int scroll = (int) net.minecraft.util.Mth.lerp(phase, 0.0, overflow);
+        int scroll = 0;
+        if (speedMultiplier > 0f) {
+            double overflow = textWidth - boxWidth;
+            double time = net.minecraft.Util.getMillis() / 1000.0;
+            double period = Math.max(overflow * 0.5, 3.0) / speedMultiplier;
+            double phase = Math.sin((Math.PI / 2.0) * Math.cos((Math.PI * 2.0) * time / period)) / 2.0 + 0.5;
+            scroll = (int) net.minecraft.util.Mth.lerp(phase, 0.0, textWidth - boxWidth);
+        }
         graphics.enableScissor(minX, y - 2, maxX, y + 11);
         graphics.drawString(font, text, minX - scroll, y, color, true);
         graphics.disableScissor();
@@ -194,7 +191,7 @@ public abstract class OriginDisplayScreen extends Screen {
     }
 
     private void renderOriginContent(GuiGraphics graphics, int mouseX, int mouseY) {
-        
+
         int x = guiLeft + 18;
         int textWidth = windowWidth - 48;
         int y = guiTop + 50;
@@ -202,11 +199,9 @@ public abstract class OriginDisplayScreen extends Screen {
         int endY = y - 72 + windowHeight;
         y -= scrollPos;
 
-        
         hoveredBadge = null;
         hoveredBadgePowerId = null;
 
-        
         Component description = origin.description();
         List<FormattedCharSequence> descLines = font.split(description, textWidth);
         for (FormattedCharSequence line : descLines) {
@@ -217,28 +212,23 @@ public abstract class OriginDisplayScreen extends Screen {
         }
 
         if (isOriginRandom) {
-            
-            List<FormattedCharSequence> drawLines = font.split(randomOriginText, textWidth);
-            for (FormattedCharSequence line : drawLines) {
-                y += 12;
-                if (y >= startY - 24 && y <= endY + 12) {
-                    graphics.drawString(font, line, x + 2, y, 0xCCCCCC, false);
+            for (Component name : randomOriginText) {
+                for (FormattedCharSequence line : font.split(name, textWidth)) {
+                    y += 12;
+                    if (y >= startY - 24 && y <= endY + 12) {
+                        graphics.drawString(font, line, x + 2, y, 0xCCCCCC, false);
+                    }
                 }
             }
             y += 14;
         } else {
-            
-            
+
             Player viewer = this.minecraft.player;
             List<ResourceLocation> shownPowers = viewer != null ? origin.powersFor(viewer) : origin.powers();
             for (ResourceLocation powerId : shownPowers) {
                 Power power = ApoliPowers.get(powerId);
                 if (power == null || power.hidden()) continue;
 
-                
-                
-                
-                
                 MutableComponent underlined = Component.empty().withStyle(ChatFormatting.UNDERLINE)
                     .append(power.displayName(powerId).copy());
                 List<FormattedCharSequence> nameLines = font.split(underlined, textWidth);
@@ -252,12 +242,10 @@ public abstract class OriginDisplayScreen extends Screen {
                     if (li < nameLines.size() - 1) y += 12;
                 }
 
-                
                 int extraBadgeRows = drawBadges(graphics, BadgeClientState.get(powerId), powerId,
                     x, y, lastNameWidth, mouseX, mouseY, startY, endY);
                 y += extraBadgeRows * 10;
 
-                
                 Component descComp = power.displayDescription(powerId);
                 for (FormattedCharSequence line : font.split(descComp, textWidth)) {
                     y += 12;
@@ -275,7 +263,6 @@ public abstract class OriginDisplayScreen extends Screen {
         }
     }
 
-    
     private int drawBadges(GuiGraphics graphics, List<Badge> badges, ResourceLocation powerId,
                            int x, int nameLineY, int nameWidth, int mouseX, int mouseY, int startY, int endY) {
         if (badges.isEmpty()) return 0;
@@ -389,7 +376,6 @@ public abstract class OriginDisplayScreen extends Screen {
         };
     }
 
-    
     protected Font fontRef() {
         return this.font;
     }

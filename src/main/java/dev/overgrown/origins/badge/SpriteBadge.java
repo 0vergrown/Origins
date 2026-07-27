@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
-
 public record SpriteBadge(ResourceLocation spriteId) implements Badge {
 
     public static final MapCodec<SpriteBadge> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -30,7 +29,7 @@ public record SpriteBadge(ResourceLocation spriteId) implements Badge {
     @Override
     public void renderTooltip(GuiGraphics graphics, Font font, int mouseX, int mouseY, int widthLimit,
                               ResourceLocation powerId, float time) {
-        
+
     }
 
     @Override

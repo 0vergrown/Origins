@@ -18,8 +18,7 @@ import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
 
-
-@EventBusSubscriber(modid = Origins.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = Origins.MOD_ID)
 public final class OriginsServerEvents {
     private OriginsServerEvents() {}
 
@@ -44,15 +43,11 @@ public final class OriginsServerEvents {
         OriginsServerNetwork.sendRegistries(player);
         OriginsServerNetwork.sendBadges(player);
         OriginManager.reapplyAll(player);
-        
+
         OriginRandomizer.onFirstJoin(player);
 
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
 
-        
-        
-        
-        
         OriginsServerNetwork.sendPlayerOriginsTo(player, player);
         for (ServerPlayer other : server.getPlayerList().getPlayers()) {
             if (other == player) continue;
@@ -66,7 +61,6 @@ public final class OriginsServerEvents {
         }
     }
 
-    
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!event.isEndConquered() && event.getEntity() instanceof ServerPlayer player) {
@@ -74,7 +68,6 @@ public final class OriginsServerEvents {
         }
     }
 
-    
     @SubscribeEvent
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.isSleepingLongEnough()) {
@@ -91,14 +84,13 @@ public final class OriginsServerEvents {
 
     @SubscribeEvent
     public static void onDatapackSync(OnDatapackSyncEvent event) {
-        
+
         if (event.getPlayer() != null) return;
         for (ServerPlayer player : event.getPlayerList().getPlayers()) {
             OriginsServerNetwork.sendRegistries(player);
             OriginsServerNetwork.sendBadges(player);
             OriginManager.reapplyAll(player);
-            
-            
+
             OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
         }
     }

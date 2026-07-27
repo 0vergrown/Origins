@@ -16,19 +16,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
-
 public final class OriginRandomizer {
 
     private static final RandomSource RNG = RandomSource.create();
 
     private OriginRandomizer() {}
 
-    
     public static @Nullable ResourceLocation roll(Player player, OriginLayer layer) {
         return roll(player, layer, null);
     }
 
-    
     public static @Nullable ResourceLocation roll(Player player, OriginLayer layer, @Nullable ResourceLocation avoid) {
         LinkedHashSet<ResourceLocation> eligible = new LinkedHashSet<>();
         for (ResourceLocation id : layer.availableOrigins(player)) {
@@ -49,7 +46,9 @@ public final class OriginRandomizer {
 
     private static ResourceLocation pick(List<ResourceLocation> list, OriginLayer.RandomConfig config) {
         if (list.size() == 1) return list.get(0);
-        if (config.style() == OriginLayer.RandomConfig.Style.WEIGHTED) {
+        boolean weighted = config.style() == OriginLayer.RandomConfig.Style.WEIGHTED
+            || (config.style() == OriginLayer.RandomConfig.Style.ROLL && !config.weights().isEmpty());
+        if (weighted) {
             int total = 0;
             for (ResourceLocation id : list) total += config.weight(id);
             if (total > 0) {
@@ -63,11 +62,6 @@ public final class OriginRandomizer {
         return list.get(RNG.nextInt(list.size()));
     }
 
-    
-    
-    
-    
-
     public enum Reason {
         FIRST_JOIN("first_join"), DEATH("death"), SLEEP("sleep"), COMMAND("command");
         private final String key;
@@ -75,22 +69,26 @@ public final class OriginRandomizer {
         public String key() { return key; }
     }
 
-    
     public static void randomise(ServerPlayer player, OriginLayer layer, Reason reason) {
         OriginLayer.RandomiserConfig cfg = layer.randomiser();
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
         ResourceLocation current = state.getOrigin(layer.id());
 
         ResourceLocation pick;
+        boolean rolled = false;
         if (cfg.resetToDefaultOnDeath() && reason == Reason.DEATH && layer.defaultOrigin() != null) {
             pick = layer.defaultOrigin();
         } else {
             pick = roll(player, layer, cfg.allowDuplicate() ? null : current);
+            rolled = true;
         }
         if (pick == null) return;
 
         OriginManager.chooseOrigin(player, layer.id(), pick, false);
         OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
+        if (rolled) {
+            OriginsServerNetwork.sendOriginRoll(player, layer, pick);
+        }
 
         if (cfg.broadcastMessages()) {
             Origin origin = OriginRegistry.get(pick);
@@ -100,7 +98,6 @@ public final class OriginRandomizer {
         }
     }
 
-    
     public static void onDeath(ServerPlayer player) {
         List<OriginLayer> layers = randomiserLayers(player, OriginLayer.RandomiserConfig::onDeath);
         if (layers.isEmpty()) return;
@@ -129,7 +126,6 @@ public final class OriginRandomizer {
         }
     }
 
-    
     public static void onSleep(ServerPlayer player) {
         List<OriginLayer> layers = randomiserLayers(player, OriginLayer.RandomiserConfig::onSleep);
         if (layers.isEmpty()) return;
@@ -146,7 +142,6 @@ public final class OriginRandomizer {
         }
     }
 
-    
     public static boolean onFirstJoin(ServerPlayer player) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
         if (state.firstJoinDone()) return false;

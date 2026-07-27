@@ -12,9 +12,8 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-
 public final class OriginsNetwork {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
 
     private OriginsNetwork() {}
 
@@ -25,6 +24,7 @@ public final class OriginsNetwork {
         registrar.playToClient(SyncPlayerOriginsS2C.TYPE, SyncPlayerOriginsS2C.STREAM_CODEC, OriginsNetwork::onSyncPlayerOrigins);
         registrar.playToClient(OpenChooseScreenS2C.TYPE, OpenChooseScreenS2C.STREAM_CODEC, OriginsNetwork::onOpenChooseScreen);
         registrar.playToClient(CloseChooseScreenS2C.TYPE, CloseChooseScreenS2C.STREAM_CODEC, OriginsNetwork::onCloseChooseScreen);
+        registrar.playToClient(dev.overgrown.origins.network.payload.OriginRollS2C.TYPE, dev.overgrown.origins.network.payload.OriginRollS2C.STREAM_CODEC, OriginsNetwork::onOriginRoll);
         registrar.playToServer(ChooseOriginC2S.TYPE, ChooseOriginC2S.STREAM_CODEC, OriginsNetwork::onChooseOrigin);
     }
 
@@ -46,6 +46,10 @@ public final class OriginsNetwork {
 
     private static void onCloseChooseScreen(CloseChooseScreenS2C payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> OriginsClientNetwork.handleCloseChooseScreen(payload));
+    }
+
+    private static void onOriginRoll(dev.overgrown.origins.network.payload.OriginRollS2C payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> OriginsClientNetwork.handleOriginRoll(payload));
     }
 
     private static void onChooseOrigin(ChooseOriginC2S payload, IPayloadContext ctx) {

@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 
-
 public final class WaitForNextLayerScreen extends Screen {
 
     private final ArrayList<OriginLayer> layerList;

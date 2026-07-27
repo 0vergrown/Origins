@@ -3,7 +3,6 @@ package dev.overgrown.origins.client;
 import java.time.LocalDate;
 import java.time.Month;
 
-
 public enum Season {
     DEFAULT("default", 0.0F),
     RAINBOW("rainbow", 0.5F),
@@ -17,18 +16,16 @@ public enum Season {
         this.modelValue = modelValue;
     }
 
-    
     public String dir() {
         return dir;
     }
 
-    
     public float modelValue() {
         return modelValue;
     }
 
     public static Season current() {
-        
+
         switch (dev.overgrown.origins.OriginsConfig.guiTheme()) {
             case "default": return DEFAULT;
             case "rainbow": return RAINBOW;

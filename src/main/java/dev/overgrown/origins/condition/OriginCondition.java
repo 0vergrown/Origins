@@ -13,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import java.util.Map;
 import java.util.Optional;
 
-
 public final class OriginCondition implements ConditionType<EntityCtx, OriginCondition.Cfg> {
     public record Cfg(ResourceLocation origin, Optional<ResourceLocation> layer) {}
 
@@ -36,7 +35,7 @@ public final class OriginCondition implements ConditionType<EntityCtx, OriginCon
 
     private static Map<ResourceLocation, ResourceLocation> originsOf(Player player, boolean clientSide) {
         if (clientSide) {
-            
+
             return OriginsClientState.get(player.getUUID());
         }
         PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);

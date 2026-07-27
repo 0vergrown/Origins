@@ -17,7 +17,6 @@ import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
 
-
 public record KeybindBadge(ResourceLocation spriteId, String text, String keyId) implements Badge {
 
     public static final MapCodec<KeybindBadge> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(

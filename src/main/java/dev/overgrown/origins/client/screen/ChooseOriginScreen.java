@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
 
 public final class ChooseOriginScreen extends OriginDisplayScreen {
 
@@ -52,8 +50,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             .comparingInt((Origin o) -> o.impact().level())
             .thenComparingInt(Origin::order));
         maxSelection = originSelection.size();
-        
-        
+
         boolean randomRollable = currentLayer.allowRandom() && player != null
             && (!originSelection.isEmpty()
                 || (currentLayer.randomAllowsUnchoosable() && !currentLayer.availableOrigins(player).isEmpty()));
@@ -64,11 +61,9 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             Origin first = getCurrentOriginInternal();
             showOrigin(first, layerList.get(currentLayerIndex), first == randomOrigin);
         }
-        
-        
+
     }
 
-    
     public ChooseOriginScreen(OriginLayer layer, boolean fromOrb) {
         this(singletonList(layer), 0, false, fromOrb);
     }
@@ -108,7 +103,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             if (originSelection.isEmpty() && randomOrigin == null) return;
             OriginLayer currentLayer = layerList.get(currentLayerIndex);
             Origin chosen = getCurrentOriginInternal();
-            
+
             ResourceLocation originId = chosen == randomOrigin
                 ? ResourceLocation.fromNamespaceAndPath("origins", "random")
                 : chosen.id();
@@ -121,7 +116,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
     protected Component getTitleText() {
         OriginLayer layer = getCurrentLayer();
         if (layer == null) return super.getTitleText();
-        
+
         if (!layer.chooseTitleKey().isEmpty()) {
             return layer.chooseTitle();
         }
@@ -151,7 +146,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             java.util.Optional.empty()
         );
         Player player = Minecraft.getInstance().player;
-        MutableComponent text = Component.empty();
+        List<Component> names = new ArrayList<>();
         if (player != null) {
             List<ResourceLocation> randoms = new ArrayList<>(
                 layerList.get(currentLayerIndex).availableOrigins(player));
@@ -168,16 +163,16 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
             for (ResourceLocation id : randoms) {
                 Origin o = OriginRegistry.get(id);
                 if (o == null) continue;
-                text.append(o.name()).append(Component.literal(" "));
+                names.add(o.name());
             }
         }
-        setRandomOriginText(text);
+        setRandomOriginText(names);
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (maxSelection == 0) {
-            
+
             Minecraft.getInstance().setScreen(null);
             return;
         }

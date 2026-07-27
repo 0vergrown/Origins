@@ -15,7 +15,6 @@ import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
 
-
 public record TooltipBadge(ResourceLocation spriteId, Component text) implements Badge {
 
     public static final MapCodec<TooltipBadge> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(

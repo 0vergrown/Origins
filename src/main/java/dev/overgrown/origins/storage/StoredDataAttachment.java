@@ -1,4 +1,4 @@
-package dev.overgrown.origins.component;
+package dev.overgrown.origins.storage;
 
 import dev.overgrown.origins.Origins;
 import net.minecraft.world.entity.player.Player;
@@ -10,28 +10,27 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public final class PlayerOriginsAttachment {
+public final class StoredDataAttachment {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
         DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Origins.MOD_ID);
 
-    public static final Supplier<AttachmentType<PlayerOriginsImpl>> TYPE =
-        ATTACHMENT_TYPES.register("origins", () -> AttachmentType.builder(PlayerOriginsImpl::new)
-            .serialize(PlayerOriginsImpl.CODEC)
+    public static final Supplier<AttachmentType<StoredData>> TYPE =
+        ATTACHMENT_TYPES.register("stored_data", () -> AttachmentType.builder(StoredData::new)
+            .serialize(StoredData.CODEC)
             .copyOnDeath()
             .build());
 
-    private PlayerOriginsAttachment() {}
+    private StoredDataAttachment() {}
 
     public static void register(IEventBus modBus) {
         ATTACHMENT_TYPES.register(modBus);
     }
 
-    public static @Nullable PlayerOriginsImpl get(Player player) {
+    public static @Nullable StoredData get(Player player) {
         return player.hasData(TYPE.get()) ? player.getData(TYPE.get()) : null;
     }
 
-    public static PlayerOriginsImpl getOrCreate(Player player) {
-
+    public static StoredData getOrCreate(Player player) {
         return player.getData(TYPE.get());
     }
 }

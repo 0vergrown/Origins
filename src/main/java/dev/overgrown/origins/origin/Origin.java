@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-
 public record Origin(
     ResourceLocation id,
     List<OriginPowerEntry> powerEntries,
@@ -33,21 +32,26 @@ public record Origin(
     boolean unchoosable,
     boolean special,
     Optional<Component> nameText,
-    Optional<Component> descriptionText
+    Optional<Component> descriptionText,
+    float nameScrollSpeed
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
         icon = icon.copy();
     }
 
-    
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, ItemStack icon, Impact impact,
+                  int order, int loadingPriority, boolean unchoosable, boolean special,
+                  Optional<Component> nameText, Optional<Component> descriptionText) {
+        this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText, 1.0f);
+    }
+
     public List<ResourceLocation> powers() {
         List<ResourceLocation> out = new ArrayList<>();
         for (OriginPowerEntry entry : powerEntries) out.addAll(entry.powers());
         return out;
     }
 
-    
     public List<ResourceLocation> powersFor(Player player) {
         List<ResourceLocation> out = new ArrayList<>();
         for (OriginPowerEntry entry : powerEntries) {
@@ -56,7 +60,6 @@ public record Origin(
         return out;
     }
 
-    
     private static final Codec<ItemStack> ICON_CODEC = Codec.either(
         ResourceLocation.CODEC.xmap(
             rl -> new ItemStack(BuiltInRegistries.ITEM.get(rl)),
@@ -67,7 +70,6 @@ public record Origin(
         stack -> Either.<ItemStack, ItemStack>left(stack)
     );
 
-    
     private static final Codec<Impact> IMPACT_CODEC = Codec.either(
         Codec.STRING.xmap(s -> Impact.byName(s, Impact.NONE), Impact::getSerializedName),
         Codec.INT.xmap(Origin::impactByLevel, Impact::level)
@@ -83,7 +85,6 @@ public record Origin(
         return Impact.NONE;
     }
 
-    
     public static MapCodec<Origin> codec(ResourceLocation id) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
             OriginPowerEntry.CODEC.listOf().optionalFieldOf("powers", List.of()).forGetter(Origin::powerEntries),
@@ -93,17 +94,16 @@ public record Origin(
             Codec.INT.optionalFieldOf("loading_priority", 0).forGetter(Origin::loadingPriority),
             Codec.BOOL.optionalFieldOf("unchoosable", false).forGetter(Origin::unchoosable),
             TextComponent.CODEC.optionalFieldOf("name").forGetter(Origin::nameText),
-            TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText)
-        ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description) ->
-            new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description)));
+            TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText),
+            Codec.FLOAT.optionalFieldOf("name_scroll_speed", 1.0f).forGetter(Origin::nameScrollSpeed)
+        ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description, nameScrollSpeed) ->
+            new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description, nameScrollSpeed)));
     }
 
-    
     public Component name() {
         return nameText.orElseGet(() -> Component.translatable("origin." + id.getNamespace() + "." + id.getPath() + ".name"));
     }
 
-    
     public Component description() {
         return descriptionText.orElseGet(() -> Component.translatable("origin." + id.getNamespace() + "." + id.getPath() + ".description"));
     }
@@ -128,6 +128,7 @@ public record Origin(
         buf.writeBoolean(special);
         ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, nameText);
         ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, descriptionText);
+        buf.writeFloat(nameScrollSpeed);
     }
 
     public static Origin read(RegistryFriendlyByteBuf buf) {
@@ -141,7 +142,8 @@ public record Origin(
         boolean special = buf.readBoolean();
         Optional<Component> nameText = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
         Optional<Component> descriptionText = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
+        float nameScrollSpeed = buf.readFloat();
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
-            nameText, descriptionText);
+            nameText, descriptionText, nameScrollSpeed);
     }
 }

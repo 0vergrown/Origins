@@ -19,8 +19,7 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 
-
-@EventBusSubscriber(modid = Origins.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Origins.MOD_ID, value = Dist.CLIENT)
 public final class OriginsClient {
 
     public static KeyMapping viewCurrentOriginKeybind;
@@ -38,13 +37,11 @@ public final class OriginsClient {
         NeoForge.EVENT_BUS.register(GameBus.class);
     }
 
-    
     @SubscribeEvent
     public static void onRegisterTooltipFactories(RegisterClientTooltipComponentFactoriesEvent event) {
         event.register(CraftingRecipeTooltipData.class, CraftingRecipeClientTooltip::new);
     }
 
-    
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> ItemProperties.register(OriginsItems.ORB_OF_ORIGIN.get(), Origins.id("season"),
@@ -55,7 +52,13 @@ public final class OriginsClient {
         private GameBus() {}
 
         @SubscribeEvent
+        public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+            OriginRollQueue.clear();
+        }
+
+        @SubscribeEvent
         public static void onClientTick(ClientTickEvent.Post event) {
+            OriginRollQueue.tick(Minecraft.getInstance());
             if (viewCurrentOriginKeybind == null) return;
             while (viewCurrentOriginKeybind.consumeClick()) {
                 Minecraft mc = Minecraft.getInstance();

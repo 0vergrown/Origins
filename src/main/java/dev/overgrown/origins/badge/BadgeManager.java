@@ -24,12 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-
 public final class BadgeManager {
 
-    
     public static final Map<ResourceLocation, Badge> STANDALONE = new LinkedHashMap<>();
-    
+
     public static final Map<ResourceLocation, List<Badge>> BY_POWER = new LinkedHashMap<>();
 
     private static final ResourceLocation TOGGLE_SPRITE = Origins.id("textures/gui/badge/toggle.png");
@@ -47,7 +45,6 @@ public final class BadgeManager {
         BY_POWER.clear();
     }
 
-    
     public static Map<ResourceLocation, List<Badge>> collectForSend(MinecraftServer server) {
         RecipeManager recipes = server.getRecipeManager();
         HolderLookup.Provider registries = server.registryAccess();
@@ -68,7 +65,6 @@ public final class BadgeManager {
             return resolve(explicit, recipes, registries);
         }
 
-        
         if (power.type() instanceof MultiplePower && power.config() instanceof MultiplePower.Cfg cfg) {
             List<Badge> merged = new LinkedList<>();
             for (ResourceLocation subId : cfg.subPowerIds()) {

@@ -19,7 +19,7 @@ screen, and the Orb of Origin. Power types, actions, and conditions are supplied
 [[dependencies.${mod_id}]]
     modId="apoli"
     type="required"
-    versionRange="[1.0.0,)"
+    versionRange="[1.7.0,)"
     ordering="AFTER"
     side="BOTH"
 

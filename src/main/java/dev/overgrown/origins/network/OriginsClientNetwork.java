@@ -17,7 +17,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-
 public final class OriginsClientNetwork {
     private OriginsClientNetwork() {}
 
@@ -34,6 +33,10 @@ public final class OriginsClientNetwork {
         OriginsClientState.setOrigins(payload.subject(), payload.picks());
     }
 
+    public static void handleOriginRoll(dev.overgrown.origins.network.payload.OriginRollS2C payload) {
+        dev.overgrown.origins.client.OriginRollQueue.enqueue(payload.layerId(), payload.originId(), payload.duration());
+    }
+
     public static void handleOpenChooseScreen(OpenChooseScreenS2C payload) {
         OriginLayer layer = OriginLayers.get(payload.layerId());
         if (layer == null) return;
@@ -47,7 +50,6 @@ public final class OriginsClientNetwork {
         }
     }
 
-    
     public static void sendChoose(ResourceLocation layerId, ResourceLocation originId, boolean fromOrb) {
         PacketDistributor.sendToServer(new ChooseOriginC2S(layerId, originId, fromOrb));
     }

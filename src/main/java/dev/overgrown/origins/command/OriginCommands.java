@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import dev.overgrown.apoli.command.ApoliPermissions;
 import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.OriginsServerNetwork;
@@ -28,26 +29,22 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.Collection;
 import java.util.List;
 
-
 public final class OriginCommands {
 
     private OriginCommands() {}
 
     private static final SuggestionProvider<CommandSourceStack> LAYERS = (ctx, b) ->
         SharedSuggestionProvider.suggestResource(OriginLayers.all().stream().map(OriginLayer::id), b);
-    
-    
+
     private static final SuggestionProvider<CommandSourceStack> ORIGINS = (ctx, b) -> {
         OriginLayer layer = layerArg(ctx);
-        
-        
+
         java.util.stream.Stream<ResourceLocation> ids = layer != null
             ? java.util.stream.Stream.concat(layer.allOrigins().stream(), java.util.stream.Stream.of(OriginRegistry.EMPTY_ID))
             : OriginRegistry.all().stream().map(Origin::id);
         return SharedSuggestionProvider.suggestResource(ids, b);
     };
 
-    
     private static OriginLayer layerArg(CommandContext<CommandSourceStack> ctx) {
         try {
             return OriginLayers.get(ResourceLocationArgument.getId(ctx, "layer"));
@@ -58,7 +55,7 @@ public final class OriginCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("origin")
-            .then(Commands.literal("set").requires(s -> s.hasPermission(2))
+            .then(Commands.literal("set").requires(ApoliPermissions.require("origins.command.origin.set", 2))
                 .then(Commands.argument("targets", EntityArgument.players())
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
@@ -73,20 +70,21 @@ public final class OriginCommands {
                 .then(Commands.argument("target", EntityArgument.player())
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(OriginCommands::getOne))))
-            .then(Commands.literal("gui").requires(s -> s.hasPermission(2))
+            .then(Commands.literal("gui").requires(ApoliPermissions.require("origins.command.origin.gui", 2))
                 .executes(ctx -> gui(ctx, List.of(ctx.getSource().getPlayerOrException()), null))
                 .then(Commands.argument("targets", EntityArgument.players())
                     .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"), null))
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"),
                             ResourceLocationArgument.getId(ctx, "layer"))))))
-            .then(Commands.literal("random").requires(s -> s.hasPermission(2))
+            .then(Commands.literal("random").requires(ApoliPermissions.require("origins.command.origin.random", 2))
                 .executes(ctx -> random(ctx, List.of(ctx.getSource().getPlayerOrException()), null))
                 .then(Commands.argument("targets", EntityArgument.players())
                     .executes(ctx -> random(ctx, EntityArgument.getPlayers(ctx, "targets"), null))
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(ctx -> random(ctx, EntityArgument.getPlayers(ctx, "targets"),
-                            ResourceLocationArgument.getId(ctx, "layer")))))));
+                            ResourceLocationArgument.getId(ctx, "layer"))))))
+            .then(StorageCommands.build()));
     }
 
     private static int set(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -103,9 +101,7 @@ public final class OriginCommands {
             ctx.getSource().sendFailure(Component.literal("Unknown origin: " + originId));
             return 0;
         }
-        
-        
-        
+
         if (!origin.special() && !layer.allOrigins().contains(originId)) {
             ctx.getSource().sendFailure(Component.literal("Origin " + originId + " is not part of layer " + layerId));
             return 0;
@@ -134,7 +130,6 @@ public final class OriginCommands {
         return count;
     }
 
-    
     private static int getAll(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
         MinecraftServer server = source.getServer();
@@ -152,7 +147,6 @@ public final class OriginCommands {
         return players.size();
     }
 
-    
     private static int getOne(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
         ResourceLocation layerId = ResourceLocationArgument.getId(ctx, "layer");
@@ -198,6 +192,7 @@ public final class OriginCommands {
                 ResourceLocation pick = OriginRandomizer.roll(player, layer);
                 if (pick != null) {
                     OriginManager.chooseOrigin(player, layer.id(), pick, false);
+                    OriginsServerNetwork.sendOriginRoll(player, layer, pick);
                     rolled++;
                 }
             }

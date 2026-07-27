@@ -8,14 +8,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public final class OriginRegistry {
     private static final Map<ResourceLocation, Origin> BY_ID = new HashMap<>();
     public static final ResourceLocation EMPTY_ID = ResourceLocation.fromNamespaceAndPath("origins", "empty");
 
     static {
-        
-        
+
         BY_ID.put(EMPTY_ID, Origin.empty(EMPTY_ID));
     }
 

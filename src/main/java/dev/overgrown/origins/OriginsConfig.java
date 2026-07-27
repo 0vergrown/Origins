@@ -6,7 +6,6 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.List;
 
-
 public final class OriginsConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
@@ -25,18 +24,15 @@ public final class OriginsConfig {
 
     private OriginsConfig() {}
 
-    
     public static String guiTheme() {
-        
-        
+
         if (!SPEC.isLoaded()) return "seasonal";
         String theme = GUI_THEME.get();
-        
+
         if (!"seasonal".equals(theme)) return theme;
         return SEASONAL_GUI.get() ? "seasonal" : "default";
     }
 
-    
     public static boolean seasonalGuiEnabled() {
         return "seasonal".equals(guiTheme());
     }

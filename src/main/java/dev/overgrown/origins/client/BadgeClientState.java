@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 import java.util.Map;
 
-
 @OnlyIn(Dist.CLIENT)
 public final class BadgeClientState {
 

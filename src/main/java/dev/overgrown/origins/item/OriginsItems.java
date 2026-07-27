@@ -12,8 +12,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
-
-@EventBusSubscriber(modid = Origins.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Origins.MOD_ID)
 public final class OriginsItems {
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, Origins.MOD_ID);
 

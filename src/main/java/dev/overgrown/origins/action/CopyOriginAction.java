@@ -9,7 +9,6 @@ import dev.overgrown.origins.origin.OriginManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
-
 public final class CopyOriginAction implements ActionType<BiEntityCtx, CopyOriginAction.Cfg> {
     public record Cfg(ResourceLocation fromLayer, ResourceLocation toLayer) {}
 
@@ -25,8 +24,7 @@ public final class CopyOriginAction implements ActionType<BiEntityCtx, CopyOrigi
     public void run(Cfg cfg, BiEntityCtx ctx) {
         if (!(ctx.actor() instanceof ServerPlayer actor)) return;
         if (!(ctx.target() instanceof ServerPlayer target)) return;
-        
-        
+
         OriginManager.transferOrigin(target, actor, cfg.fromLayer, cfg.toLayer, true);
     }
 }

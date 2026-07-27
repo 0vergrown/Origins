@@ -6,7 +6,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-
 public record ChooseOriginC2S(ResourceLocation layerId, ResourceLocation originId, boolean fromOrb)
     implements CustomPacketPayload {
 

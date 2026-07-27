@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 public record CraftingRecipeBadge(
     ResourceLocation spriteId,
     Optional<ResourceLocation> recipeId,
@@ -42,7 +41,6 @@ public record CraftingRecipeBadge(
     ).apply(i, (sprite, recipe, prefix, suffix) -> new CraftingRecipeBadge(
         sprite, Optional.of(recipe), NonNullList.create(), ItemStack.EMPTY, 3, prefix, suffix)));
 
-    
     public static CraftingRecipeBadge fromRecipe(ResourceLocation sprite, ResourceLocation recipeId,
                                                  CraftingRecipe recipe, Optional<Component> prefix,
                                                  Optional<Component> suffix, HolderLookup.Provider registries) {
@@ -57,7 +55,6 @@ public record CraftingRecipeBadge(
         return new CraftingRecipeBadge(sprite, Optional.of(recipeId), inputs, output, width, prefix, suffix);
     }
 
-    
     public CraftingRecipeBadge resolve(net.minecraft.world.item.crafting.RecipeManager recipeManager,
                                        HolderLookup.Provider registries) {
         if (!output.isEmpty() || recipeId.isEmpty()) return this;

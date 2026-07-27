@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
 public final class OriginsClientState {
     private static final Map<UUID, Map<ResourceLocation, ResourceLocation>> ORIGINS_BY_PLAYER = new HashMap<>();
 
