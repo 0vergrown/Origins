@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.142'
+    id 'net.neoforged.moddev' version '2.0.143'
     id 'idea'
 }
 
@@ -29,6 +29,7 @@ sourceSets.main.resources {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven { url = "https://api.modrinth.com/maven" }
 }
 
@@ -117,8 +118,14 @@ configurations {
 }
 
 dependencies {
-    // Apoli — pulled from Modrinth (maven.modrinth:opoli:<version>).
-    implementation "maven.modrinth:opoli:${apoli_version}"
+    // Apoli. With apoli_local=true this builds against ~/.m2 (run Apoli's publishToMavenLocal
+    // first, then Origins with --refresh-dependencies); otherwise it pulls the released
+    // Modrinth build (maven.modrinth:opoli:<version>).
+    if (project.apoli_local.toBoolean()) {
+        implementation "dev.overgrown.apoli:apoli:${apoli_maven_version}"
+    } else {
+        implementation "maven.modrinth:opoli:${apoli_version}"
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -168,5 +175,15 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+// Ship the A/O License alongside the mod, matching the Fabric builds.
+jar {
+    def projectName = project.name
+    inputs.property "projectName", projectName
+
+    from("LICENSE") {
+        rename { "${it}_$projectName" }
     }
 }

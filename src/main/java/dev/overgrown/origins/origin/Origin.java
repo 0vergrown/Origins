@@ -4,17 +4,13 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.overgrown.apoli.data.ItemStackData;
 import dev.overgrown.apoli.data.TextComponent;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +21,7 @@ import java.util.function.Function;
 public record Origin(
     ResourceLocation id,
     List<OriginPowerEntry> powerEntries,
-    ItemStack icon,
+    OriginIcon icon,
     Impact impact,
     int order,
     int loadingPriority,
@@ -37,10 +33,9 @@ public record Origin(
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
-        icon = icon.copy();
     }
 
-    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, ItemStack icon, Impact impact,
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, OriginIcon icon, Impact impact,
                   int order, int loadingPriority, boolean unchoosable, boolean special,
                   Optional<Component> nameText, Optional<Component> descriptionText) {
         this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText, 1.0f);
@@ -60,16 +55,6 @@ public record Origin(
         return out;
     }
 
-    private static final Codec<ItemStack> ICON_CODEC = Codec.either(
-        ResourceLocation.CODEC.xmap(
-            rl -> new ItemStack(BuiltInRegistries.ITEM.get(rl)),
-            stack -> BuiltInRegistries.ITEM.getKey(stack.getItem())),
-        ItemStackData.CODEC.xmap(ItemStackData::stack, ItemStackData::new)
-    ).xmap(
-        either -> either.map(Function.identity(), Function.identity()),
-        stack -> Either.<ItemStack, ItemStack>left(stack)
-    );
-
     private static final Codec<Impact> IMPACT_CODEC = Codec.either(
         Codec.STRING.xmap(s -> Impact.byName(s, Impact.NONE), Impact::getSerializedName),
         Codec.INT.xmap(Origin::impactByLevel, Impact::level)
@@ -88,7 +73,7 @@ public record Origin(
     public static MapCodec<Origin> codec(ResourceLocation id) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
             OriginPowerEntry.CODEC.listOf().optionalFieldOf("powers", List.of()).forGetter(Origin::powerEntries),
-            ICON_CODEC.optionalFieldOf("icon", new ItemStack(Items.AIR)).forGetter(Origin::icon),
+            OriginIcon.CODEC.optionalFieldOf("icon", OriginIcon.EMPTY).forGetter(Origin::icon),
             IMPACT_CODEC.optionalFieldOf("impact", Impact.NONE).forGetter(Origin::impact),
             Codec.INT.optionalFieldOf("order", Integer.MAX_VALUE).forGetter(Origin::order),
             Codec.INT.optionalFieldOf("loading_priority", 0).forGetter(Origin::loadingPriority),
@@ -113,14 +98,14 @@ public record Origin(
     }
 
     public static Origin empty(ResourceLocation id) {
-        return new Origin(id, Collections.emptyList(), new ItemStack(Items.AIR), Impact.NONE,
+        return new Origin(id, Collections.emptyList(), OriginIcon.EMPTY, Impact.NONE,
             Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty());
     }
 
     public void write(RegistryFriendlyByteBuf buf) {
         buf.writeResourceLocation(id);
         buf.writeCollection(powerEntries, (b, e) -> e.write(b));
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, icon);
+        icon.write(buf);
         buf.writeEnum(impact);
         buf.writeVarInt(order);
         buf.writeVarInt(loadingPriority);
@@ -134,7 +119,7 @@ public record Origin(
     public static Origin read(RegistryFriendlyByteBuf buf) {
         ResourceLocation id = buf.readResourceLocation();
         List<OriginPowerEntry> powerEntries = buf.readList(OriginPowerEntry::read);
-        ItemStack icon = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        OriginIcon icon = OriginIcon.read(buf);
         Impact impact = buf.readEnum(Impact.class);
         int order = buf.readVarInt();
         int loadingPriority = buf.readVarInt();

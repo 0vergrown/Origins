@@ -45,6 +45,7 @@ public final class OriginsServerEvents {
         OriginManager.reapplyAll(player);
 
         OriginRandomizer.onFirstJoin(player);
+        OriginManager.checkAutoChoosingLayers(player, true);
 
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
 
@@ -90,6 +91,7 @@ public final class OriginsServerEvents {
             OriginsServerNetwork.sendRegistries(player);
             OriginsServerNetwork.sendBadges(player);
             OriginManager.reapplyAll(player);
+            OriginManager.checkAutoChoosingLayers(player, true);
 
             OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
         }

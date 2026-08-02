@@ -14,11 +14,13 @@ public final class OriginsConfig {
                  "set gui_theme instead. false here forces the default texture.")
         .define("seasonal_gui", true);
 
+    private static final List<String> GUI_THEMES = List.of("seasonal", "default", "rainbow", "frigid");
+
     private static final ModConfigSpec.ConfigValue<String> GUI_THEME = BUILDER
         .comment("Origins GUI / Orb of Origin texture theme:",
                  "  seasonal  = auto by date (June rainbow, Dec 24-26 frigid, else default),",
                  "  default  /  rainbow  /  frigid  = always that texture.")
-        .defineInList("gui_theme", "seasonal", List.of("seasonal", "default", "rainbow", "frigid"));
+        .define("gui_theme", "seasonal", value -> value instanceof String theme && GUI_THEMES.contains(theme));
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 

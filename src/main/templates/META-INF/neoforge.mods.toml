@@ -77,6 +77,6 @@ Adds the Origins system on top of the Apoli library: origins, layers, choose-on-
 [[dependencies.${mod_id}]]
     modId="apoli"
     type="required"
-    versionRange="[1.7.0,)"
+    versionRange="[1.19.0,)"
     ordering="AFTER"
     side="BOTH"
