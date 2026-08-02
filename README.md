@@ -41,3 +41,7 @@ This repository holds one branch per Minecraft version / mod loader combination:
 - **Origin transfer**: Steal, give, or copy an origin between players entirely from a data pack or command.
 - Multiplayer-safe: Origin choices sync correctly to every client on join, including mid-session joins.
 - `/origin` commands to get, set, check, and randomize origins and layers, and to open the choose-origin GUI on demand.
+
+## License
+
+The A/O License — see [`LICENSE`](LICENSE). The canonical, always-current text lives on the Handbook: <https://0vergrown.github.io/Handbook/license>.

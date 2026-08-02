@@ -61,6 +61,7 @@ public final class Origins implements ModInitializer {
         OriginsServerNetwork.register();
         OriginsServerEvents.register();
         BadgeManager.init();
+        dev.overgrown.origins.origin.OriginPowerSources.register();
 
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(idWrap(id("origins"), new OriginLoader()));
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(idWrap(id("origin_layers"), new OriginLayerLoader()));

@@ -28,9 +28,9 @@ public final class BadgeManager {
     public static final Map<ResourceLocation, Badge> STANDALONE = new LinkedHashMap<>();
     public static final Map<ResourceLocation, List<Badge>> BY_POWER = new LinkedHashMap<>();
 
-    private static final ResourceLocation TOGGLE_SPRITE = Origins.id("textures/gui/badge/toggle.png");
-    private static final ResourceLocation ACTIVE_SPRITE = Origins.id("textures/gui/badge/active.png");
-    private static final ResourceLocation RECIPE_SPRITE = Origins.id("textures/gui/badge/recipe.png");
+    private static final ResourceLocation TOGGLE_SPRITE = Origins.id("textures/gui/badge/isaacfanta/toggle.png");
+    private static final ResourceLocation ACTIVE_SPRITE = Origins.id("textures/gui/badge/isaacfanta/active.png");
+    private static final ResourceLocation RECIPE_SPRITE = Origins.id("textures/gui/badge/isaacfanta/recipe.png");
 
     private BadgeManager() {}
 

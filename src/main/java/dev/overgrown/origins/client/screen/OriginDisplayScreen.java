@@ -151,8 +151,7 @@ public abstract class OriginDisplayScreen extends Screen {
 
     private void renderOriginHeader(GuiGraphics graphics) {
         graphics.blit(tex.namePlate(), guiLeft + 10, guiTop + 10, 0.0F, 0.0F, 150, 26, 150, 26);
-        ItemStack icon = origin.icon();
-        graphics.renderItem(icon, guiLeft + 15, guiTop + 15);
+        dev.overgrown.origins.client.OriginIconRenderer.render(graphics, origin.icon(), guiLeft + 15, guiTop + 15);
         drawScrollingName(graphics, origin.name(), guiLeft + 39, guiLeft + 124, guiTop + 19, 0xFFFFFF, origin.nameScrollSpeed());
     }
 
@@ -279,7 +278,8 @@ public abstract class OriginDisplayScreen extends Screen {
                 by = nameLineY - 1 + offY * step;
             }
             if (by >= startY - 12 && by <= endY + 12) {
-                graphics.blit(badge.spriteId(), bx, by, 0.0F, 0.0F, 9, 9, 9, 9);
+                int spriteSize = BadgeClientState.spriteSize(badge.spriteId());
+                graphics.blit(badge.spriteId(), bx, by, 9, 9, 0.0F, 0.0F, spriteSize, spriteSize, spriteSize, spriteSize);
                 if (badge.hasTooltip()
                     && mouseX >= bx && mouseX < bx + 9 && mouseY >= by && mouseY < by + 9) {
                     hoveredBadge = badge;

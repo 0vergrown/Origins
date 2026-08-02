@@ -35,6 +35,7 @@ public final class OriginManager {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
         state.setOrigin(layerId, originId);
         applyOriginPowers(player, layer, origin);
+        checkAutoChoosingLayers(player, false);
         revalidateGatedLayers(player);
 
         if (hasChosenAllLayers(player, state)) {
@@ -88,6 +89,38 @@ public final class OriginManager {
             }
         }
         revalidateGatedLayers(player);
+    }
+
+    public static boolean checkAutoChoosingLayers(ServerPlayer player, boolean includeDefaults) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
+        boolean chose = false;
+        for (OriginLayer layer : OriginLayers.enabledOrdered()) {
+            if (state.hasOrigin(layer.id())) continue;
+            ResourceLocation pick = autoPick(player, layer, includeDefaults);
+            if (pick == null) continue;
+            Origin origin = OriginRegistry.get(pick);
+            if (origin == null) continue;
+            state.setOrigin(layer.id(), pick);
+            applyOriginPowers(player, layer, origin);
+            chose = true;
+        }
+        if (chose) revalidateGatedLayers(player);
+        return chose;
+    }
+
+    private static ResourceLocation autoPick(Player player, OriginLayer layer, boolean includeDefaults) {
+        ResourceLocation only = null;
+        int choosable = 0;
+        for (ResourceLocation id : layer.availableOrigins(player)) {
+            Origin origin = OriginRegistry.get(id);
+            if (origin == null || !origin.choosable()) continue;
+            if (++choosable > 1) break;
+            only = id;
+        }
+        if (choosable == 1 && layer.autoChooseIfNoChoice()) return only;
+        if (choosable > 0 || !includeDefaults || hasChoosableOrigins(player, layer)) return null;
+        ResourceLocation defaultOrigin = layer.defaultOrigin();
+        return defaultOrigin != null && OriginRegistry.get(defaultOrigin) != null ? defaultOrigin : null;
     }
 
     private static void revalidateGatedLayers(Player player) {
