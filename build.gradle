@@ -8,6 +8,7 @@ group = project.maven_group
 
 repositories {
 	mavenCentral()
+	mavenLocal()
 	maven { url = "https://api.modrinth.com/maven" }
 }
 
@@ -18,8 +19,14 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Apoli — pulled from Modrinth (maven.modrinth:opoli:<version>).
-	modImplementation "maven.modrinth:opoli:${project.apoli_version}"
+	// Apoli. With apoli_local=true this builds against ~/.m2 (run Apoli's publishToMavenLocal
+	// first, then Origins with --refresh-dependencies); otherwise it pulls the released
+	// Modrinth build (maven.modrinth:opoli:<version>).
+	if (project.apoli_local.toBoolean()) {
+		modImplementation "dev.overgrown.apoli:apoli:${project.apoli_maven_version}"
+	} else {
+		modImplementation "maven.modrinth:opoli:${project.apoli_version}"
+	}
 }
 
 loom {

@@ -135,7 +135,7 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
         this.randomOrigin = new Origin(
             randomId,
             java.util.Collections.emptyList(),
-            new ItemStack(OriginsItems.ORB_OF_ORIGIN),
+            dev.overgrown.origins.origin.OriginIcon.ofItem(new ItemStack(OriginsItems.ORB_OF_ORIGIN)),
             Impact.NONE,
             -1,
             Integer.MAX_VALUE,

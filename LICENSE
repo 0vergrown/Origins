@@ -1,0 +1,154 @@
+                              THE A/O LICENSE
+                            Version 1, 2026-07-27
+
+                    Copyright (c) Overgrown. All rights reserved
+                     except as granted by the terms below.
+
+The canonical, always-current text of this license is published at:
+
+    https://0vergrown.github.io/Handbook/license
+
+Where that page and this file disagree, the page is authoritative.
+
+
+PREAMBLE
+
+Apoli and Origins are distributed under a reasonably open license. Have a read
+through this if you want to do anything with them beyond playing.
+
+You are free to USE, SHARE and ADAPT both mods. Those rights cannot be taken
+away from you as long as you follow the terms below.
+
+If you just want to play, or you are building a data pack or an addon, none of
+this is likely to affect you. See section 4, "Build on Apoli", and carry on.
+
+
+1. GENERAL CLAUSES
+
+   These apply on top of every other section in this license.
+
+   1.1 Extent
+       This license covers Apoli, Origins, the Handbook website, and all other
+       code, assets and binaries in their repositories, unless a file says
+       otherwise. Where a bundled file carries its own license, that one wins
+       for that file.
+
+   1.2 Waiver
+       Any restriction in this license can be set aside with personal
+       permission. Read clause 1.3 before asking.
+
+   1.3 Personal Permission
+       Personal permission is granted rarely and usually only where there's a
+       good reason for it, because granting it reads as an endorsement. If what
+       you want to do is already allowed below, you do not need to ask, and
+       asking will most likely just get you pointed back at this license.
+
+   1.4 Informal
+       This license will not hold up in court, and there is no intention of
+       taking anyone to one. The realistic worst case for breaking it is being
+       asked to put it right. Though a distribution platform such as Modrinth
+       or CurseForge may take your project down. Breaking it also makes you a
+       jerk, and you don't want to be a jerk, do you?
+
+
+2. IF YOU WANT TO DISTRIBUTE THE MODS
+
+   Making the binaries, assets or source available from somewhere other than
+   the original download pages: in a modpack, on a mirror, or bundled with a
+   server.
+
+   2.1 Modpack (ALLOWED)
+       You may put either mod in a modpack without asking. That is what they
+       are for. This holds whether the pack is public, private, or for one
+       server.
+
+   2.2 Attribution
+       Credit Overgrown as the author of the parts you are distributing. If you
+       changed anything, say that you did. A link back is optional but
+       appreciated.
+
+   2.3 Non-Monetary (NOT ALLOWED)
+       You may not charge for access to the distribution or otherwise make
+       money from it. That includes ad-gated links and URL shorteners, download
+       services that slow you down unless you pay, and putting any part of the
+       download behind a paywall. Selling in-game goods or cosmetics on a
+       server is not distribution and is between you and the Minecraft EULA.
+
+
+3. IF YOU WANT TO FEATURE THE MODS
+
+   Using either mod somewhere you are not handing out binaries, assets or
+   source: a video, a stream, a review, a public server, and so on.
+
+   3.1 Free Rein (ALLOWED)
+       Go ahead. You do not need permission, you do not need to ask, and you
+       may monetise the video or stream as usual. The Non-Monetary Clause
+       (2.3) is about distributing the files, not about your content.
+
+   3.2 Thief (NOT ALLOWED)
+       Do not claim you made either mod. Crediting Overgrown makes you cooler,
+       but it is not required.
+
+
+4. IF YOU WANT TO BUILD ON APOLI
+
+   Writing a data pack, or a Java addon that registers its own power, action
+   and condition types against the Apoli API.
+
+   4.1 Data Pack (ALLOWED)
+       Data packs and resource packs you write are entirely yours. Powers,
+       origins, layers and badges are your content, not a derivative of the
+       mod, and nothing in this license applies to them. License and sell them
+       however you like.
+
+   4.2 Addon (ALLOWED)
+       An addon that depends on Apoli and calls its API is NOT a derivative
+       work of it. Your addon is yours, under any license you choose
+       (including a closed one) as long as you do not copy Apoli's own code
+       into it. This is the whole point of the engine; the Addon docs
+       (https://0vergrown.github.io/Handbook/docs/addon) exist so you can do
+       exactly this.
+
+   4.3 Compatibility (ALLOWED)
+       You may ship compatibility code for Apoli or Origins in your own mod,
+       including mixins into them, without asking. Please prefer the public API
+       where one exists so your compat does not break every update.
+
+
+5. IF YOU WANT TO USE THE CODE OR ASSETS
+
+   Copying source, textures or models out of either mod into your own project,
+   or forking one of them. This is the one section with real conditions
+   attached.
+
+   5.1 Attribution
+       Credit Overgrown as the author of the parts you are using, and say so if
+       you altered them.
+
+   5.2 Copyleft
+       Your project must be open source — source visible, redistribution and
+       modification allowed — and must carry a clause much like this one.
+
+   5.3 Fork (ALLOWED)
+       You may fork either mod, including to keep an old version alive or to
+       take it somewhere it is not going. Give it a distinct name and mod id so
+       nobody installs yours expecting this one.
+
+   5.4 Upstream
+       Both mods are reimplementations of apace100's original Apoli and Origins
+       and inherit obligations from them. Where any file traces back to that
+       work, its original license travels with it, and this license cannot
+       remove those terms.
+
+
+NO WARRANTY
+
+The software is provided "as is", without warranty of any kind, express or
+implied. The author is not liable for any claim, damages or other liability
+arising from the software or its use.
+
+
+---
+
+Presentation and clause structure adapted, with thanks, from the Psi License
+(https://psi.vazkii.net/license.php) by Vazkii.

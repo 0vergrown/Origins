@@ -99,7 +99,7 @@ public class OriginRollScreen extends Screen {
         graphics.pose().pushPose();
         graphics.pose().translate(cx - 16, cy - 52, 0);
         graphics.pose().scale(2.0f, 2.0f, 1.0f);
-        graphics.renderFakeItem(shown.icon(), 0, 0);
+        dev.overgrown.origins.client.OriginIconRenderer.renderFake(graphics, shown.icon(), 0, 0);
         graphics.pose().popPose();
 
         graphics.pose().pushPose();
