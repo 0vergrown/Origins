@@ -6,6 +6,7 @@ import dev.overgrown.origins.origin.OriginLayer;
 import dev.overgrown.origins.origin.OriginLayers;
 import dev.overgrown.origins.origin.OriginManager;
 import dev.overgrown.origins.origin.OriginRegistry;
+import dev.overgrown.origins.origin.SwapManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -26,16 +27,24 @@ public final class ViewOriginScreen extends OriginDisplayScreen {
     private final ArrayList<Tuple<OriginLayer, Origin>> originLayers;
     private int currentLayer = 0;
     private Button chooseOriginButton;
+    private Button swapButton;
 
     public ViewOriginScreen() {
         super(Component.translatable("origins.screen.view_origin"), false);
-        Player player = Minecraft.getInstance().player;
         this.originLayers = new ArrayList<>();
+        rebuild();
+    }
+
+    private void rebuild() {
+        Player player = Minecraft.getInstance().player;
+        originLayers.clear();
         if (player != null) {
             Map<ResourceLocation, ResourceLocation> picks = OriginsClientState.get(player.getUUID());
+            Map<ResourceLocation, ResourceLocation> swaps = OriginsClientState.getSwaps(player.getUUID());
             for (OriginLayer layer : OriginLayers.enabledOrdered()) {
-                if (layer.hidden()) continue;
-                ResourceLocation chosenId = picks.getOrDefault(layer.id(), OriginRegistry.EMPTY_ID);
+                if (layer.hidden() || layer.swappable()) continue;
+                ResourceLocation mainId = picks.getOrDefault(layer.id(), OriginRegistry.EMPTY_ID);
+                ResourceLocation chosenId = swaps.getOrDefault(layer.id(), mainId);
                 Origin chosen = OriginRegistry.get(chosenId);
                 boolean choosable = OriginManager.hasChoosableOrigins(player, layer);
                 boolean isEmpty = chosen == null || chosenId.equals(OriginRegistry.EMPTY_ID);
@@ -46,12 +55,19 @@ public final class ViewOriginScreen extends OriginDisplayScreen {
             }
             originLayers.sort(Comparator.comparing(Tuple::getA));
         }
+        if (currentLayer >= originLayers.size()) currentLayer = 0;
         if (!originLayers.isEmpty()) {
             Tuple<OriginLayer, Origin> current = originLayers.get(currentLayer);
             showOrigin(current.getB(), current.getA(), false);
         } else {
             showOrigin(null, null, false);
         }
+    }
+
+    public void refresh() {
+        rebuild();
+        refreshChooseButton();
+        refreshSwapButton();
     }
 
     @Override
@@ -77,18 +93,43 @@ public final class ViewOriginScreen extends OriginDisplayScreen {
                     Tuple<OriginLayer, Origin> current = originLayers.get(currentLayer);
                     showOrigin(current.getB(), current.getA(), false);
                     refreshChooseButton();
+                    refreshSwapButton();
                 }).bounds(guiLeft - 40, this.height / 2 - 10, 20, 20).build());
                 addRenderableWidget(Button.builder(Component.literal(">"), b -> {
                     currentLayer = (currentLayer + 1) % originLayers.size();
                     Tuple<OriginLayer, Origin> current = originLayers.get(currentLayer);
                     showOrigin(current.getB(), current.getA(), false);
                     refreshChooseButton();
+                    refreshSwapButton();
                 }).bounds(guiLeft + windowWidth + 20, this.height / 2 - 10, 20, 20).build());
             }
         }
         addRenderableWidget(Button.builder(Component.translatable("origins.gui.close"), b ->
             Minecraft.getInstance().setScreen(null))
             .bounds(guiLeft + windowWidth / 2 - 50, guiTop + windowHeight + 5, 100, 20).build());
+
+        swapButton = addRenderableWidget(Button.builder(Component.literal("S"), b -> {
+            OriginLayer layer = originLayers.isEmpty() ? null : originLayers.get(currentLayer).getA();
+            if (layer != null) Minecraft.getInstance().setScreen(new SwapOriginScreen(layer.id()));
+        }).bounds(guiLeft + windowWidth / 2 + 55, guiTop + windowHeight + 5, 20, 20).build());
+        swapButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+            Component.translatable("origins.gui.swap_origin.button")));
+        refreshSwapButton();
+    }
+
+    private void refreshSwapButton() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null || swapButton == null) return;
+        boolean visible = false;
+        if (!originLayers.isEmpty()) {
+            ResourceLocation layerId = originLayers.get(currentLayer).getA().id();
+            ResourceLocation main = OriginsClientState.get(player.getUUID())
+                .getOrDefault(layerId, OriginRegistry.EMPTY_ID);
+            visible = !SwapManager.pool(player, layerId, main,
+                OriginsClientState.getPool(player.getUUID())).isEmpty();
+        }
+        swapButton.active = visible;
+        swapButton.visible = visible;
     }
 
     private void refreshChooseButton() {

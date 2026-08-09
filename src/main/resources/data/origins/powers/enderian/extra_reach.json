@@ -3,13 +3,13 @@
   "modifiers": [
     {
       "name": "Extra Reach block reach",
-      "attribute": "reach-entity-attributes:reach",
+      "attribute": "minecraft:player.block_interaction_range",
       "value": 1.5,
       "operation": "addition"
     },
     {
       "name": "Extra Reach entity reach",
-      "attribute": "reach-entity-attributes:attack_range",
+      "attribute": "minecraft:player.entity_interaction_range",
       "value": 1.5,
       "operation": "addition"
     }

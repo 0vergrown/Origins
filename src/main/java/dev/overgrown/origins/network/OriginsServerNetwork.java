@@ -29,6 +29,55 @@ public final class OriginsServerNetwork {
             boolean fromOrb = buf.readBoolean();
             server.execute(() -> handleChoose(player, layerId, originId, fromOrb));
         });
+        ServerPlayNetworking.registerGlobalReceiver(OriginsPackets.SWAP_CYCLE, (server, player, handler, buf, sender) -> {
+            boolean toMain = buf.readBoolean();
+            server.execute(() -> {
+                ResourceLocation target = dev.overgrown.origins.origin.SwapManager.resolveTarget(null);
+                if (target != null) dev.overgrown.origins.origin.SwapManager.cycle(player, target, toMain);
+            });
+        });
+        ServerPlayNetworking.registerGlobalReceiver(OriginsPackets.SWAP_SELECT, (server, player, handler, buf, sender) -> {
+            ResourceLocation layerId = buf.readResourceLocation();
+            ResourceLocation originId = buf.readResourceLocation();
+            server.execute(() -> {
+                ResourceLocation target = dev.overgrown.origins.origin.SwapManager.resolveTarget(layerId);
+                if (target == null) return;
+                boolean toMain = originId.equals(OriginsPackets.SWAP_MAIN);
+                dev.overgrown.origins.origin.SwapManager.applySwap(player, target, toMain ? null : originId);
+            });
+        });
+    }
+
+    public static void sendPlayerSwapsTo(ServerPlayer recipient, ServerPlayer subject) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(subject);
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeUUID(subject.getUUID());
+        var swaps = state.swapSnapshot();
+        buf.writeVarInt(swaps.size());
+        for (var e : swaps.entrySet()) {
+            buf.writeResourceLocation(e.getKey());
+            buf.writeResourceLocation(e.getValue());
+        }
+        var pool = state.poolSnapshot();
+        buf.writeVarInt(pool.size());
+        for (var e : pool.entrySet()) {
+            buf.writeResourceLocation(e.getKey());
+            buf.writeVarInt(e.getValue().size());
+            for (ResourceLocation id : e.getValue()) buf.writeResourceLocation(id);
+        }
+        ServerPlayNetworking.send(recipient, OriginsPackets.SYNC_PLAYER_SWAPS, buf);
+    }
+
+    public static void broadcastPlayerSwaps(MinecraftServer server, ServerPlayer subject) {
+        for (ServerPlayer recipient : server.getPlayerList().getPlayers()) {
+            sendPlayerSwapsTo(recipient, subject);
+        }
+    }
+
+    public static void openSwapScreen(ServerPlayer player, ResourceLocation targetLayerId) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeResourceLocation(targetLayerId);
+        ServerPlayNetworking.send(player, OriginsPackets.OPEN_SWAP_SCREEN, buf);
     }
 
     public static void sendRegistries(ServerPlayer player) {

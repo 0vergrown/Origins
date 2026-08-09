@@ -4,21 +4,13 @@
     "type": "origins:and",
     "conditions": [
       {
-        "type": "origins:or",
-        "conditions": [
-          {
-            "type": "origins:ingredient",
-            "ingredient": {
-              "tag": "origins:meat"
-            }
-          },
-          {
-            "type": "origins:meat"
-          }
-        ]
+        "type": "origins:food"
       },
       {
-        "type": "origins:food"
+        "type": "origins:ingredient",
+        "ingredient": {
+          "tag": "origins:meat"
+        }
       },
       {
         "type": "origins:ingredient",

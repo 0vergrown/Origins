@@ -62,6 +62,40 @@ public final class OriginsClientNetwork {
             client.execute(() -> OriginsClientState.setOrigins(subject, picks));
         });
 
+        ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.SYNC_PLAYER_SWAPS, (client, handler, buf, sender) -> {
+            UUID subject = buf.readUUID();
+            int n = buf.readVarInt();
+            Map<ResourceLocation, ResourceLocation> swaps = new HashMap<>();
+            for (int i = 0; i < n; i++) {
+                swaps.put(buf.readResourceLocation(), buf.readResourceLocation());
+            }
+            int m = buf.readVarInt();
+            Map<ResourceLocation, java.util.List<ResourceLocation>> pool = new HashMap<>();
+            for (int i = 0; i < m; i++) {
+                ResourceLocation layer = buf.readResourceLocation();
+                int size = buf.readVarInt();
+                java.util.List<ResourceLocation> ids = new java.util.ArrayList<>(size);
+                for (int j = 0; j < size; j++) ids.add(buf.readResourceLocation());
+                pool.put(layer, ids);
+            }
+            client.execute(() -> {
+                OriginsClientState.setSwaps(subject, swaps);
+                OriginsClientState.setPool(subject, pool);
+                if (client.player == null || !client.player.getUUID().equals(subject)) return;
+                if (client.screen instanceof dev.overgrown.origins.client.screen.ViewOriginScreen view) {
+                    view.refresh();
+                } else if (client.screen instanceof dev.overgrown.origins.client.screen.SwapOriginScreen swap) {
+                    swap.refresh();
+                }
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.OPEN_SWAP_SCREEN, (client, handler, buf, sender) -> {
+            ResourceLocation layerId = buf.readResourceLocation();
+            client.execute(() -> client.setScreen(
+                new dev.overgrown.origins.client.screen.SwapOriginScreen(layerId)));
+        });
+
         ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.OPEN_CHOOSE_SCREEN, (client, handler, buf, sender) -> {
             ResourceLocation layerId = buf.readResourceLocation();
             boolean fromOrb = buf.readBoolean();

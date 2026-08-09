@@ -1,26 +1,23 @@
 {
   "type": "origins:multiple",
   "webbing": {
-    "type": "origins:action_on_hit",
-    "bientity_action": {
-      "type": "apoli:target_action",
-      "action": {
-        "type": "origins:block_action_at",
-        "block_action": {
-          "type": "origins:if_else",
-          "condition": {
-            "type": "origins:replacable"
-          },
-          "if_action": {
-            "type": "origins:set_block",
-            "block": "minecraft:cobweb"
-          }
+    "type": "apoli:action_on_hit",
+    "target_action": {
+      "type": "origins:block_action_at",
+      "block_action": {
+        "type": "origins:if_else",
+        "condition": {
+          "type": "origins:replacable"
+        },
+        "if_action": {
+          "type": "apoli:ghost_block",
+          "block": "minecraft:cobweb",
+          "duration": 60
         }
       }
     },
     "cooldown": 120,
     "hud_render": {
-      "should_render":true,
       "sprite_location": "origins:textures/gui/sprites/hud_render/apace/resource_bar.png",
       "bar_index": 5
     }
@@ -28,8 +25,8 @@
   "punch_through": {
     "type": "origins:prevent_block_selection",
     "block_condition": {
-      "type": "origins:in_tag",
-      "tag": "origins:cobwebs"
+      "type": "apoli:block",
+      "block": "minecraft:cobweb"
     },
     "condition": {
       "type": "origins:sneaking",
@@ -37,15 +34,15 @@
     }
   },
   "sense": {
-    "type": "origins:entity_glow",
+    "type": "apoli:entity_glow",
     "entity_condition": {
       "type": "origins:and",
       "conditions": [
         {
           "type": "origins:in_block_anywhere",
           "block_condition": {
-            "type": "origins:in_tag",
-            "tag": "origins:cobwebs"
+            "type": "apoli:block",
+            "block": "minecraft:cobweb"
           }
         },
         {
@@ -54,7 +51,12 @@
           "inverted": true
         }
       ]
-    }
+    },
+    "use_teams": false,
+    "red": 1.00,
+    "green": 1.00,
+    "blue": 1.00,
+    "self_glow_target": false
   },
   "web_crafting": {
     "type": "origins:recipe",
@@ -70,8 +72,16 @@
         }
       ],
       "result": {
-        "item": "minecraft:cobweb"
+        "id": "minecraft:cobweb"
       }
     }
+  },
+  "web_walking": {
+    "type": "origins:modify_block_stuck_speed",
+    "block_condition": {
+      "type": "apoli:block",
+      "block": "minecraft:cobweb"
+    },
+    "multiplier": 1.0
   }
 }

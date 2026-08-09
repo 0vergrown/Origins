@@ -130,13 +130,22 @@ public abstract class OriginDisplayScreen extends Screen {
         }
     }
 
-    private void renderOriginWindow(GuiGraphics graphics, int mouseX, int mouseY) {
-        RenderSystem.enableBlend();
+    protected void blitWindowBackground(GuiGraphics graphics) {
+        beginBlit();
         graphics.blit(tex.background(), guiLeft, guiTop, 0.0F, 0.0F, windowWidth, windowHeight, windowWidth, windowHeight);
+    }
+
+    protected void blitWindowBorder(GuiGraphics graphics) {
+        beginBlit();
+        graphics.blit(tex.border(), guiLeft, guiTop, 0.0F, 0.0F, windowWidth, windowHeight, windowWidth, windowHeight);
+    }
+
+    private void renderOriginWindow(GuiGraphics graphics, int mouseX, int mouseY) {
+        blitWindowBackground(graphics);
         if (origin != null) {
             renderOriginContent(graphics, mouseX, mouseY);
         }
-        graphics.blit(tex.border(), guiLeft, guiTop, 0.0F, 0.0F, windowWidth, windowHeight, windowWidth, windowHeight);
+        blitWindowBorder(graphics);
         if (origin != null) {
             graphics.pose().pushPose();
             graphics.pose().translate(0, 0, 5);
@@ -149,9 +158,16 @@ public abstract class OriginDisplayScreen extends Screen {
         RenderSystem.disableBlend();
     }
 
+    static void beginBlit() {
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
     private void renderOriginHeader(GuiGraphics graphics) {
+        beginBlit();
         graphics.blit(tex.namePlate(), guiLeft + 10, guiTop + 10, 0.0F, 0.0F, 150, 26, 150, 26);
-        dev.overgrown.origins.client.OriginIconRenderer.render(graphics, origin.icon(), guiLeft + 15, guiTop + 15);
+        dev.overgrown.apoli.client.IconRenderer.render(graphics, origin.icon(), guiLeft + 15, guiTop + 15);
         drawScrollingName(graphics, origin.name(), guiLeft + 39, guiLeft + 124, guiTop + 19, 0xFFFFFF, origin.nameScrollSpeed());
     }
 
@@ -179,6 +195,7 @@ public abstract class OriginDisplayScreen extends Screen {
         Impact impact = origin.impact();
         int level = impact.level();
         ResourceLocation sprite = tex.impact()[Math.max(0, Math.min(level, tex.impact().length - 1))];
+        beginBlit();
         graphics.blit(sprite, guiLeft + 128, guiTop + 19, 0.0F, 0.0F, 28, 8, 28, 8);
         if (mouseX >= guiLeft + 128 && mouseX <= guiLeft + 158
             && mouseY >= guiTop + 19 && mouseY <= guiTop + 27) {
@@ -279,6 +296,7 @@ public abstract class OriginDisplayScreen extends Screen {
             }
             if (by >= startY - 12 && by <= endY + 12) {
                 int spriteSize = BadgeClientState.spriteSize(badge.spriteId());
+                beginBlit();
                 graphics.blit(badge.spriteId(), bx, by, 9, 9, 0.0F, 0.0F, spriteSize, spriteSize, spriteSize, spriteSize);
                 if (badge.hasTooltip()
                     && mouseX >= bx && mouseX < bx + 9 && mouseY >= by && mouseY < by + 9) {
@@ -291,7 +309,7 @@ public abstract class OriginDisplayScreen extends Screen {
         return offY;
     }
 
-    private void renderScrollbar(GuiGraphics graphics, int mouseX, int mouseY) {
+    protected void renderScrollbar(GuiGraphics graphics, int mouseX, int mouseY) {
         if (!canScroll()) return;
         int handleY = 36;
         int maxHandleY = 141;
@@ -300,12 +318,22 @@ public abstract class OriginDisplayScreen extends Screen {
         boolean active = scrolling
             || (mouseX >= guiLeft + 156 && mouseX < guiLeft + 156 + 6
                 && mouseY >= guiTop + handleY && mouseY < guiTop + handleY + 27);
+        beginBlit();
         graphics.blit(tex.slot(), guiLeft + 155, guiTop + 35, 0.0F, 0.0F, 8, 134, 8, 134);
         graphics.blit(active ? tex.pressed() : tex.handle(), guiLeft + 156, guiTop + handleY, 0.0F, 0.0F, 6, 27, 6, 27);
     }
 
-    private boolean canScroll() {
-        return origin != null && currentMaxScroll > 0;
+    protected boolean hasScrollableContent() {
+        return origin != null;
+    }
+
+    protected void setMaxScroll(int max) {
+        this.currentMaxScroll = Math.max(0, max);
+        if (this.scrollPos > this.currentMaxScroll) this.scrollPos = this.currentMaxScroll;
+    }
+
+    protected boolean canScroll() {
+        return hasScrollableContent() && currentMaxScroll > 0;
     }
 
     @Override

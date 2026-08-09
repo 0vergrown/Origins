@@ -10,6 +10,11 @@ repositories {
 	mavenCentral()
 	mavenLocal()
 	maven { url = "https://api.modrinth.com/maven" }
+	// Mod Menu (the config-screen entrypoint).
+	maven {
+		name = "TerraformersMC"
+		url = "https://maven.terraformersmc.com/releases"
+	}
 }
 
 dependencies {
@@ -26,6 +31,14 @@ dependencies {
 		modImplementation "dev.overgrown.apoli:apoli:${project.apoli_maven_version}"
 	} else {
 		modImplementation "maven.modrinth:opoli:${project.apoli_version}"
+	}
+
+	// Mod Menu (compile-only, optional at runtime) — supplies Origins' in-game settings screen.
+	// The "modmenu" entrypoint is only resolved when Mod Menu is installed, and Menulogue forwards
+	// it to Catalogue. Catalogue on its own goes through custom.catalogue.configFactory instead,
+	// which is reflective and needs no dependency at all.
+	modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}") {
+		exclude group: "net.fabricmc.fabric-api"
 	}
 }
 

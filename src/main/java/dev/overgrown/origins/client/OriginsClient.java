@@ -19,6 +19,7 @@ import org.lwjgl.glfw.GLFW;
 public final class OriginsClient implements ClientModInitializer {
 
     public static KeyMapping viewCurrentOriginKeybind;
+    public static KeyMapping swapOriginKeybind;
 
     @Override
     public void onInitializeClient() {
@@ -37,11 +38,28 @@ public final class OriginsClient implements ClientModInitializer {
             "category." + Origins.MOD_ID);
         KeyBindingHelper.registerKeyBinding(viewCurrentOriginKeybind);
 
+        swapOriginKeybind = new KeyMapping(
+            "key.origins.swap",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
+            "category." + Origins.MOD_ID);
+        KeyBindingHelper.registerKeyBinding(swapOriginKeybind);
+
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             while (viewCurrentOriginKeybind.consumeClick()) {
                 if (!(Minecraft.getInstance().screen instanceof ViewOriginScreen)) {
                     Minecraft.getInstance().setScreen(new ViewOriginScreen());
                 }
+            }
+            while (swapOriginKeybind.consumeClick()) {
+                if (Minecraft.getInstance().screen != null) continue;
+                if (!net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+                        .canSend(dev.overgrown.origins.network.OriginsPackets.SWAP_CYCLE)) continue;
+                net.minecraft.network.FriendlyByteBuf buf =
+                    net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
+                buf.writeBoolean(net.minecraft.client.gui.screens.Screen.hasShiftDown());
+                net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+                    .send(dev.overgrown.origins.network.OriginsPackets.SWAP_CYCLE, buf);
             }
         });
     }

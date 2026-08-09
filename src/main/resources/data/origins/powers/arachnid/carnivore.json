@@ -10,10 +10,10 @@
         "type": "origins:ingredient",
         "ingredient": [
           {
-            "tag": "origins:ignore_diet"
+            "tag": "origins:meat"
           },
           {
-            "tag": "origins:meat"
+            "tag": "origins:ignore_diet"
           }
         ],
         "inverted": true

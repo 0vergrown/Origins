@@ -42,7 +42,7 @@ public final class OrbOfOriginItem extends Item {
             state.clearOrigin(entry.getKey());
         }
 
-        OriginManager.checkAutoChoosingLayers(player, false);
+        OriginManager.reconcileLayers(player);
 
         OriginLayer first = OriginManager.firstUnchosenLayer(player, state);
         if (first != null) {
