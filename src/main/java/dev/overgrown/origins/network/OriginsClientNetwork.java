@@ -36,6 +36,25 @@ public final class OriginsClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(SyncPlayerOriginsS2C.TYPE, (payload, context) ->
             context.client().execute(() -> OriginsClientState.setOrigins(payload.subject(), payload.picks())));
 
+        ClientPlayNetworking.registerGlobalReceiver(
+            dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C.TYPE, (payload, context) ->
+                context.client().execute(() -> {
+                    OriginsClientState.setSwaps(payload.subject(), payload.swaps());
+                    OriginsClientState.setPool(payload.subject(), payload.pool());
+                    Minecraft client = Minecraft.getInstance();
+                    if (client.player == null || !client.player.getUUID().equals(payload.subject())) return;
+                    if (client.screen instanceof dev.overgrown.origins.client.screen.ViewOriginScreen view) {
+                        view.refresh();
+                    } else if (client.screen instanceof dev.overgrown.origins.client.screen.SwapOriginScreen swap) {
+                        swap.refresh();
+                    }
+                }));
+
+        ClientPlayNetworking.registerGlobalReceiver(
+            dev.overgrown.origins.network.payload.OpenSwapScreenS2C.TYPE, (payload, context) ->
+                context.client().execute(() -> Minecraft.getInstance().setScreen(
+                    new dev.overgrown.origins.client.screen.SwapOriginScreen(payload.layerId()))));
+
         ClientPlayNetworking.registerGlobalReceiver(OpenChooseScreenS2C.TYPE, (payload, context) ->
             context.client().execute(() -> {
                 OriginLayer layer = OriginLayers.get(payload.layerId());

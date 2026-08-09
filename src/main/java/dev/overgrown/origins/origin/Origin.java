@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.overgrown.apoli.data.IconData;
 import dev.overgrown.apoli.data.TextComponent;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -21,7 +22,7 @@ import java.util.function.Function;
 public record Origin(
     ResourceLocation id,
     List<OriginPowerEntry> powerEntries,
-    OriginIcon icon,
+    IconData icon,
     Impact impact,
     int order,
     int loadingPriority,
@@ -35,7 +36,7 @@ public record Origin(
         powerEntries = List.copyOf(powerEntries);
     }
 
-    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, OriginIcon icon, Impact impact,
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
                   int order, int loadingPriority, boolean unchoosable, boolean special,
                   Optional<Component> nameText, Optional<Component> descriptionText) {
         this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText, 1.0f);
@@ -73,7 +74,7 @@ public record Origin(
     public static MapCodec<Origin> codec(ResourceLocation id) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
             OriginPowerEntry.CODEC.listOf().optionalFieldOf("powers", List.of()).forGetter(Origin::powerEntries),
-            OriginIcon.CODEC.optionalFieldOf("icon", OriginIcon.EMPTY).forGetter(Origin::icon),
+            IconData.CODEC.optionalFieldOf("icon", IconData.EMPTY).forGetter(Origin::icon),
             IMPACT_CODEC.optionalFieldOf("impact", Impact.NONE).forGetter(Origin::impact),
             Codec.INT.optionalFieldOf("order", Integer.MAX_VALUE).forGetter(Origin::order),
             Codec.INT.optionalFieldOf("loading_priority", 0).forGetter(Origin::loadingPriority),
@@ -98,7 +99,7 @@ public record Origin(
     }
 
     public static Origin empty(ResourceLocation id) {
-        return new Origin(id, Collections.emptyList(), OriginIcon.EMPTY, Impact.NONE,
+        return new Origin(id, Collections.emptyList(), IconData.EMPTY, Impact.NONE,
             Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty());
     }
 
@@ -119,7 +120,7 @@ public record Origin(
     public static Origin read(RegistryFriendlyByteBuf buf) {
         ResourceLocation id = buf.readResourceLocation();
         List<OriginPowerEntry> powerEntries = buf.readList(OriginPowerEntry::read);
-        OriginIcon icon = OriginIcon.read(buf);
+        IconData icon = IconData.read(buf);
         Impact impact = buf.readEnum(Impact.class);
         int order = buf.readVarInt();
         int loadingPriority = buf.readVarInt();

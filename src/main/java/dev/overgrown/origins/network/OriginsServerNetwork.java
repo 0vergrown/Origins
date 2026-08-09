@@ -6,13 +6,18 @@ import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.payload.ChooseOriginC2S;
 import dev.overgrown.origins.network.payload.CloseChooseScreenS2C;
 import dev.overgrown.origins.network.payload.OpenChooseScreenS2C;
+import dev.overgrown.origins.network.payload.OpenSwapScreenS2C;
+import dev.overgrown.origins.network.payload.SwapCycleC2S;
+import dev.overgrown.origins.network.payload.SwapSelectC2S;
 import dev.overgrown.origins.network.payload.SyncPlayerOriginsS2C;
+import dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C;
 import dev.overgrown.origins.network.payload.SyncRegistriesS2C;
 import dev.overgrown.origins.origin.Origin;
 import dev.overgrown.origins.origin.OriginLayer;
 import dev.overgrown.origins.origin.OriginLayers;
 import dev.overgrown.origins.origin.OriginManager;
 import dev.overgrown.origins.origin.OriginRegistry;
+import dev.overgrown.origins.origin.SwapManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -31,6 +36,38 @@ public final class OriginsServerNetwork {
             ServerPlayer player = context.player();
             player.server.execute(() -> handleChoose(player, payload.layerId(), payload.originId(), payload.fromOrb()));
         });
+        ServerPlayNetworking.registerGlobalReceiver(SwapCycleC2S.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            player.server.execute(() -> {
+                ResourceLocation target = SwapManager.resolveTarget(null);
+                if (target != null) SwapManager.cycle(player, target, payload.toMain());
+            });
+        });
+        ServerPlayNetworking.registerGlobalReceiver(SwapSelectC2S.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            player.server.execute(() -> {
+                ResourceLocation target = SwapManager.resolveTarget(payload.layerId());
+                if (target == null) return;
+                boolean toMain = payload.originId().equals(SwapSelectC2S.MAIN);
+                SwapManager.applySwap(player, target, toMain ? null : payload.originId());
+            });
+        });
+    }
+
+    public static void sendPlayerSwapsTo(ServerPlayer recipient, ServerPlayer subject) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(subject);
+        ServerPlayNetworking.send(recipient,
+            new SyncPlayerSwapsS2C(subject.getUUID(), state.swapSnapshot(), state.poolSnapshot()));
+    }
+
+    public static void broadcastPlayerSwaps(MinecraftServer server, ServerPlayer subject) {
+        for (ServerPlayer recipient : server.getPlayerList().getPlayers()) {
+            sendPlayerSwapsTo(recipient, subject);
+        }
+    }
+
+    public static void openSwapScreen(ServerPlayer player, ResourceLocation targetLayerId) {
+        ServerPlayNetworking.send(player, new OpenSwapScreenS2C(targetLayerId));
     }
 
     public static void sendRegistries(ServerPlayer player) {

@@ -8,6 +8,7 @@
 		"Overgrown"
 	],
 	"license": "The A/O License",
+	"icon": "assets/origins/textures/item/orb_of_origin/default/orb_of_origin.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -15,13 +16,24 @@
 		],
 		"client": [
 			"dev.overgrown.origins.client.OriginsClient"
+		],
+		"modmenu": [
+			"dev.overgrown.origins.compat.modmenu.OriginsModMenu"
 		]
+	},
+	"custom": {
+		"catalogue": {
+			"configFactory": "dev.overgrown.origins.compat.catalogue.CatalogueConfigFactory",
+			"icon": {
+				"item": "origins:orb_of_origin"
+			}
+		}
 	},
 	"depends": {
 		"fabricloader": ">=0.16.0",
 		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*",
-		"apoli": ">=1.19.0"
+		"apoli": ">=1.31.0"
 	}
 }

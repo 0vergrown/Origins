@@ -4,13 +4,20 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.overgrown.origins.origin.OriginRegistry;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public final class PlayerOriginsImpl {
     private final Map<ResourceLocation, ResourceLocation> originsByLayer;
+    private final Set<ResourceLocation> pinnedLayers;
+    private final Map<ResourceLocation, ResourceLocation> activeSwaps;
+    private final Map<ResourceLocation, Set<ResourceLocation>> grantedPool;
     private boolean selectingOrigin;
     private int livesUntilRandomise = -1;
     private int lives = -1;
@@ -19,12 +26,22 @@ public final class PlayerOriginsImpl {
 
     public PlayerOriginsImpl() {
         this.originsByLayer = new HashMap<>();
+        this.pinnedLayers = new HashSet<>();
+        this.activeSwaps = new HashMap<>();
+        this.grantedPool = new HashMap<>();
         this.selectingOrigin = false;
     }
 
-    public PlayerOriginsImpl(Map<ResourceLocation, ResourceLocation> originsByLayer, boolean selectingOrigin,
+    public PlayerOriginsImpl(Map<ResourceLocation, ResourceLocation> originsByLayer, List<ResourceLocation> pinnedLayers,
+                             Map<ResourceLocation, ResourceLocation> activeSwaps,
+                             Map<ResourceLocation, List<ResourceLocation>> grantedPool,
+                             boolean selectingOrigin,
                              int livesUntilRandomise, int lives, int sleepsUntilRandomise, boolean firstJoinDone) {
         this.originsByLayer = new HashMap<>(originsByLayer);
+        this.pinnedLayers = new HashSet<>(pinnedLayers);
+        this.activeSwaps = new HashMap<>(activeSwaps);
+        this.grantedPool = new HashMap<>();
+        grantedPool.forEach((k, v) -> this.grantedPool.put(k, new LinkedHashSet<>(v)));
         this.selectingOrigin = selectingOrigin;
         this.livesUntilRandomise = livesUntilRandomise;
         this.lives = lives;
@@ -47,6 +64,66 @@ public final class PlayerOriginsImpl {
 
     public void clearOrigin(ResourceLocation layerId) {
         originsByLayer.remove(layerId);
+        pinnedLayers.remove(layerId);
+    }
+
+    public boolean isPinned(ResourceLocation layerId) {
+        return pinnedLayers.contains(layerId);
+    }
+
+    public void setPinned(ResourceLocation layerId, boolean pinned) {
+        if (pinned) {
+            pinnedLayers.add(layerId);
+        } else {
+            pinnedLayers.remove(layerId);
+        }
+    }
+
+    public List<ResourceLocation> pinnedSnapshot() {
+        return List.copyOf(pinnedLayers);
+    }
+
+    public @Nullable ResourceLocation getActiveSwap(ResourceLocation targetLayerId) {
+        return activeSwaps.get(targetLayerId);
+    }
+
+    public void setActiveSwap(ResourceLocation targetLayerId, @Nullable ResourceLocation originId) {
+        if (originId == null) {
+            activeSwaps.remove(targetLayerId);
+        } else {
+            activeSwaps.put(targetLayerId, originId);
+        }
+    }
+
+    public Map<ResourceLocation, ResourceLocation> swapSnapshot() {
+        return Map.copyOf(activeSwaps);
+    }
+
+    public boolean grantToPool(ResourceLocation swapLayerId, ResourceLocation originId) {
+        return grantedPool.computeIfAbsent(swapLayerId, k -> new LinkedHashSet<>()).add(originId);
+    }
+
+    public boolean revokeFromPool(ResourceLocation swapLayerId, ResourceLocation originId) {
+        Set<ResourceLocation> set = grantedPool.get(swapLayerId);
+        if (set == null) return false;
+        boolean removed = set.remove(originId);
+        if (set.isEmpty()) grantedPool.remove(swapLayerId);
+        return removed;
+    }
+
+    public void clearPool(ResourceLocation swapLayerId) {
+        grantedPool.remove(swapLayerId);
+    }
+
+    public Set<ResourceLocation> poolOf(ResourceLocation swapLayerId) {
+        Set<ResourceLocation> set = grantedPool.get(swapLayerId);
+        return set == null ? Set.of() : Set.copyOf(set);
+    }
+
+    public Map<ResourceLocation, List<ResourceLocation>> poolSnapshot() {
+        Map<ResourceLocation, List<ResourceLocation>> out = new HashMap<>(grantedPool.size());
+        grantedPool.forEach((k, v) -> out.put(k, List.copyOf(v)));
+        return out;
     }
 
     public Set<Map.Entry<ResourceLocation, ResourceLocation>> entries() {
@@ -101,6 +178,14 @@ public final class PlayerOriginsImpl {
         Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC)
             .fieldOf("origins")
             .forGetter(PlayerOriginsImpl::snapshot),
+        ResourceLocation.CODEC.listOf().optionalFieldOf("pinned_layers", List.of())
+            .forGetter(PlayerOriginsImpl::pinnedSnapshot),
+        Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC)
+            .optionalFieldOf("active_swaps", Map.of())
+            .forGetter(PlayerOriginsImpl::swapSnapshot),
+        Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC.listOf())
+            .optionalFieldOf("swap_pool", Map.of())
+            .forGetter(PlayerOriginsImpl::poolSnapshot),
         Codec.BOOL.optionalFieldOf("selecting_origin", false)
             .forGetter(PlayerOriginsImpl::isSelectingOrigin),
         Codec.INT.optionalFieldOf("lives_until_randomise", -1)

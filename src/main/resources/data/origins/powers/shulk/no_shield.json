@@ -1,9 +1,9 @@
 {
-  "type": "origins:prevent_item_use",
+  "type": "apoli:prevent_item_use",
   "item_condition": {
-    "type": "origins:ingredient",
+    "type": "apoli:ingredient",
     "ingredient": {
-      "tag": "origins:shields"
+      "tag": "c:tools/shield"
     }
   }
 }

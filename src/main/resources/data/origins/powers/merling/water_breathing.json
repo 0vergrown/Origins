@@ -1,3 +1,4 @@
 {
-  "type": "origins:simple"
+  "type": "origins:water_breathing",
+  "suffocate_outside_water": true
 }

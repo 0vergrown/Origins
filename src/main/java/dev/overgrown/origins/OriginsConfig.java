@@ -8,11 +8,14 @@ import net.minecraft.util.GsonHelper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 public final class OriginsConfig {
     private static final String FILE = "origins.json";
+
+    public static final List<String> GUI_THEMES = List.of("seasonal", "default", "rainbow", "frigid");
 
     private record Data(String guiTheme, Optional<Boolean> seasonalGui) {
         static final Codec<Data> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -31,13 +34,25 @@ public final class OriginsConfig {
         return guiTheme;
     }
 
+    public static void setGuiTheme(String value) {
+        if (!loaded) load();
+        String theme = normalize(value);
+        if (theme.equals(guiTheme)) return;
+        guiTheme = theme;
+        write(path());
+    }
+
     public static boolean seasonalGuiEnabled() {
         return "seasonal".equals(guiTheme());
     }
 
+    private static Path path() {
+        return FabricLoader.getInstance().getConfigDir().resolve(FILE);
+    }
+
     private static synchronized void load() {
         if (loaded) return;
-        Path path = FabricLoader.getInstance().getConfigDir().resolve(FILE);
+        Path path = path();
         try {
             if (Files.exists(path)) {
                 Data data = Data.CODEC.parse(JsonOps.INSTANCE, GsonHelper.parse(Files.readString(path)))
@@ -57,16 +72,10 @@ public final class OriginsConfig {
 
     private static String normalize(String raw) {
         String v = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
-        switch (v) {
-            case "seasonal":
-            case "default":
-            case "rainbow":
-            case "frigid":
-                return v;
-            default:
-                Origins.LOGGER.warn("[Origins] Unknown gui_theme '{}' — using 'seasonal'. Valid: seasonal, default, rainbow, frigid.", raw);
-                return "seasonal";
-        }
+        if (GUI_THEMES.contains(v)) return v;
+        Origins.LOGGER.warn("[Origins] Unknown gui_theme '{}' — using 'seasonal'. Valid: {}.",
+            raw, String.join(", ", GUI_THEMES));
+        return "seasonal";
     }
 
     private static void write(Path path) {

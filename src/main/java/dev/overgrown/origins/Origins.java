@@ -55,6 +55,11 @@ public final class Origins implements ModInitializer {
         ActionTypes.ENTITY.register(id("store_origin"), new StoreOriginAction());
         ActionTypes.ENTITY.register(id("apply_stored_origin"), new ApplyStoredOriginAction());
         ActionTypes.ENTITY.register(id("store_value"), new StoreValueAction());
+        ConditionTypes.ENTITY.register(id("swapped"), new dev.overgrown.origins.condition.SwappedCondition());
+        ActionTypes.ENTITY.register(id("force_swap"), new dev.overgrown.origins.action.ForceSwapAction());
+        ActionTypes.ENTITY.register(id("open_swap_menu"), new dev.overgrown.origins.action.OpenSwapMenuAction());
+        dev.overgrown.apoli.power.PowerTypeRegistry.register(
+            id("action_on_swap"), new dev.overgrown.origins.power.ActionOnSwapPower());
         PlayerOriginsAttachment.init();
         StoredDataAttachment.init();
 
