@@ -37,6 +37,10 @@ public final class Origins {
 
         OriginsConfig.register(container);
 
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
+            dev.overgrown.origins.client.config.OriginsConfigScreens.register(container);
+        }
+
         ConditionTypes.ENTITY.register(id("origin"), new OriginCondition());
         ConditionTypes.ENTITY.register(id("stored_origin"), new StoredOriginCondition());
         ConditionTypes.ENTITY.register(id("stored_value"), new StoredValueCondition());
@@ -49,6 +53,11 @@ public final class Origins {
         ActionTypes.ENTITY.register(id("store_origin"), new StoreOriginAction());
         ActionTypes.ENTITY.register(id("apply_stored_origin"), new ApplyStoredOriginAction());
         ActionTypes.ENTITY.register(id("store_value"), new StoreValueAction());
+        ConditionTypes.ENTITY.register(id("swapped"), new dev.overgrown.origins.condition.SwappedCondition());
+        ActionTypes.ENTITY.register(id("force_swap"), new dev.overgrown.origins.action.ForceSwapAction());
+        ActionTypes.ENTITY.register(id("open_swap_menu"), new dev.overgrown.origins.action.OpenSwapMenuAction());
+        dev.overgrown.apoli.power.PowerTypeRegistry.register(
+            id("action_on_swap"), new dev.overgrown.origins.power.ActionOnSwapPower());
 
         PlayerOriginsAttachment.register(modBus);
         StoredDataAttachment.register(modBus);

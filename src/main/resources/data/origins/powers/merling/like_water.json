@@ -1,3 +1,21 @@
 {
-  "type": "origins:simple"
+  "type": "origins:modify_falling",
+  "velocity": 0.0,
+  "take_fall_damage": false,
+  "condition": {
+    "type": "origins:and",
+    "conditions": [
+      {
+        "type": "origins:fluid_height",
+        "fluid": "minecraft:water",
+        "comparison": "==",
+        "compare_to": 0,
+        "inverted": true
+      },
+      {
+        "type": "origins:sneaking",
+        "inverted": true
+      }
+    ]
+  }
 }

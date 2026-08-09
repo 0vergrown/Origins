@@ -40,6 +40,39 @@ public final class OriginsServerNetwork {
         PacketDistributor.sendToPlayer(recipient, new SyncPlayerOriginsS2C(subject.getUUID(), state.snapshot()));
     }
 
+    public static void sendPlayerSwapsTo(ServerPlayer recipient, ServerPlayer subject) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(subject);
+        PacketDistributor.sendToPlayer(recipient,
+            new dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C(
+                subject.getUUID(), state.swapSnapshot(), state.poolSnapshot()));
+    }
+
+    public static void broadcastPlayerSwaps(MinecraftServer server, ServerPlayer subject) {
+        for (ServerPlayer recipient : server.getPlayerList().getPlayers()) {
+            sendPlayerSwapsTo(recipient, subject);
+        }
+    }
+
+    public static void openSwapScreen(ServerPlayer player, net.minecraft.resources.ResourceLocation targetLayerId) {
+        PacketDistributor.sendToPlayer(player,
+            new dev.overgrown.origins.network.payload.OpenSwapScreenS2C(targetLayerId));
+    }
+
+    public static void handleSwapCycle(ServerPlayer player, boolean toMain) {
+        net.minecraft.resources.ResourceLocation target =
+            dev.overgrown.origins.origin.SwapManager.resolveTarget(null);
+        if (target != null) dev.overgrown.origins.origin.SwapManager.cycle(player, target, toMain);
+    }
+
+    public static void handleSwapSelect(ServerPlayer player, net.minecraft.resources.ResourceLocation layerId,
+                                        net.minecraft.resources.ResourceLocation originId) {
+        net.minecraft.resources.ResourceLocation target =
+            dev.overgrown.origins.origin.SwapManager.resolveTarget(layerId);
+        if (target == null) return;
+        boolean toMain = originId.equals(dev.overgrown.origins.network.payload.SwapSelectC2S.MAIN);
+        dev.overgrown.origins.origin.SwapManager.applySwap(player, target, toMain ? null : originId);
+    }
+
     public static void broadcastPlayerOrigins(MinecraftServer server, ServerPlayer subject) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(subject);
         PacketDistributor.sendToAllPlayers(new SyncPlayerOriginsS2C(subject.getUUID(), state.snapshot()));

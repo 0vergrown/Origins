@@ -5,5 +5,9 @@
     "comparison": "<",
     "compare_to": 86
   },
-  "message": "origins.avian_sleep_fail"
+  "message": {
+    "translatable": "origins.avian_sleep_fail"
+  },
+  "set_spawn_point": true,
+  "priority": 0
 }

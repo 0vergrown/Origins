@@ -25,7 +25,37 @@ public final class OriginsNetwork {
         registrar.playToClient(OpenChooseScreenS2C.TYPE, OpenChooseScreenS2C.STREAM_CODEC, OriginsNetwork::onOpenChooseScreen);
         registrar.playToClient(CloseChooseScreenS2C.TYPE, CloseChooseScreenS2C.STREAM_CODEC, OriginsNetwork::onCloseChooseScreen);
         registrar.playToClient(dev.overgrown.origins.network.payload.OriginRollS2C.TYPE, dev.overgrown.origins.network.payload.OriginRollS2C.STREAM_CODEC, OriginsNetwork::onOriginRoll);
+        registrar.playToClient(dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C.TYPE,
+            dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C.STREAM_CODEC, OriginsNetwork::onSyncPlayerSwaps);
+        registrar.playToClient(dev.overgrown.origins.network.payload.OpenSwapScreenS2C.TYPE,
+            dev.overgrown.origins.network.payload.OpenSwapScreenS2C.STREAM_CODEC, OriginsNetwork::onOpenSwapScreen);
         registrar.playToServer(ChooseOriginC2S.TYPE, ChooseOriginC2S.STREAM_CODEC, OriginsNetwork::onChooseOrigin);
+        registrar.playToServer(dev.overgrown.origins.network.payload.SwapCycleC2S.TYPE,
+            dev.overgrown.origins.network.payload.SwapCycleC2S.STREAM_CODEC, OriginsNetwork::onSwapCycle);
+        registrar.playToServer(dev.overgrown.origins.network.payload.SwapSelectC2S.TYPE,
+            dev.overgrown.origins.network.payload.SwapSelectC2S.STREAM_CODEC, OriginsNetwork::onSwapSelect);
+    }
+
+    private static void onSyncPlayerSwaps(dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> OriginsClientNetwork.handleSyncPlayerSwaps(payload));
+    }
+
+    private static void onOpenSwapScreen(dev.overgrown.origins.network.payload.OpenSwapScreenS2C payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> OriginsClientNetwork.handleOpenSwapScreen(payload));
+    }
+
+    private static void onSwapCycle(dev.overgrown.origins.network.payload.SwapCycleC2S payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) OriginsServerNetwork.handleSwapCycle(sp, payload.toMain());
+        });
+    }
+
+    private static void onSwapSelect(dev.overgrown.origins.network.payload.SwapSelectC2S payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) {
+                OriginsServerNetwork.handleSwapSelect(sp, payload.layerId(), payload.originId());
+            }
+        });
     }
 
     private static void onSyncRegistries(SyncRegistriesS2C payload, IPayloadContext ctx) {

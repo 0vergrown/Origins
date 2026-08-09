@@ -36,7 +36,9 @@ displayName="${mod_name}" #mandatory
 #displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
 
 # A file name (in the root of the mod JAR) containing a logo for display
-#logoFile="examplemod.png" #optional
+logoFile="assets/origins/textures/item/orb_of_origin/default/orb_of_origin.png"
+# Catalogue renders the Orb of Origin item itself rather than the flat texture.
+catalogueItemIcon="origins:orb_of_origin"
 
 # A text field displayed in the mod UI
 #credits="" #optional
@@ -77,6 +79,6 @@ Adds the Origins system on top of the Apoli library: origins, layers, choose-on-
 [[dependencies.${mod_id}]]
     modId="apoli"
     type="required"
-    versionRange="[1.19.0,)"
+    versionRange="[1.31.0,)"
     ordering="AFTER"
     side="BOTH"

@@ -2,13 +2,16 @@
   "type": "origins:multiple",
   "toggle": {
     "type": "origins:toggle",
+    "active_by_default": false,
     "key": {
       "key": "key.origins.primary_active",
       "continuous": false
-    }
+    },
+    "retain_state": true
   },
   "climbing": {
     "type": "origins:climbing",
+    "allow_holding": true,
     "hold_condition": {
       "type": "origins:sneaking"
     },
@@ -32,12 +35,19 @@
               "offset_x": -0.01,
               "offset_z": -0.01,
               "offset_y": 0
+            },
+            {
+              "type": "origins:in_block_anywhere",
+              "block_condition": {
+                "type": "apoli:block",
+                "block": "minecraft:cobweb"
+              }
             }
           ]
         },
         {
           "type": "origins:power_active",
-          "power": "*:*_toggle"
+          "power": "origins:arachnid/climbing_toggle"
         }
       ]
     }

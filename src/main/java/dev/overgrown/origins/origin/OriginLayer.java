@@ -34,8 +34,10 @@ public record OriginLayer(
     @Nullable ResourceLocation defaultOrigin,
     boolean autoChooseIfNoChoice,
     boolean hidden,
+    boolean revalidate,
     RandomConfig random,
-    RandomiserConfig randomiser
+    RandomiserConfig randomiser,
+    SwapConfig swap
 ) implements Comparable<OriginLayer> {
 
     public OriginLayer {
@@ -115,6 +117,38 @@ public record OriginLayer(
         ).apply(instance, GuiTitle::new));
     }
 
+    public record SwapConfig(boolean enabled, Optional<ResourceLocation> targetLayer,
+                             boolean shiftReturnsToMain, boolean wrapToMain) {
+        public static final SwapConfig DISABLED = new SwapConfig(false, Optional.empty(), true, true);
+        public static final SwapConfig ENABLED = new SwapConfig(true, Optional.empty(), true, true);
+
+        private static final Codec<SwapConfig> OBJECT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.BOOL.optionalFieldOf("enabled", true).forGetter(SwapConfig::enabled),
+            ResourceLocation.CODEC.optionalFieldOf("target_layer").forGetter(SwapConfig::targetLayer),
+            Codec.BOOL.optionalFieldOf("shift_returns_to_main", true).forGetter(SwapConfig::shiftReturnsToMain),
+            Codec.BOOL.optionalFieldOf("wrap_to_main", true).forGetter(SwapConfig::wrapToMain)
+        ).apply(instance, SwapConfig::new));
+
+        static final Codec<SwapConfig> CODEC = Codec.either(Codec.BOOL, OBJECT_CODEC).xmap(
+            either -> either.map(flag -> flag ? ENABLED : DISABLED, Function.identity()),
+            config -> config.isPlain()
+                ? com.mojang.datafixers.util.Either.left(config.enabled())
+                : com.mojang.datafixers.util.Either.right(config));
+
+        private boolean isPlain() {
+            return targetLayer.isEmpty() && shiftReturnsToMain && wrapToMain;
+        }
+    }
+
+    private record LegacyRandom(boolean allow, boolean allowUnchoosable, List<ResourceLocation> exclude) {
+        static final LegacyRandom NONE = new LegacyRandom(false, false, List.of());
+        static final MapCodec<LegacyRandom> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.BOOL.optionalFieldOf("allow_random", false).forGetter(LegacyRandom::allow),
+            Codec.BOOL.optionalFieldOf("allow_random_unchoosable", false).forGetter(LegacyRandom::allowUnchoosable),
+            ResourceLocation.CODEC.listOf().optionalFieldOf("exclude_random", List.of()).forGetter(LegacyRandom::exclude)
+        ).apply(instance, LegacyRandom::new));
+    }
+
     private record RandomBlock(boolean allow, boolean allowUnchoosable, Optional<List<ResourceLocation>> exclude, RandomConfig config) {
         static final Codec<RandomBlock> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("allow", true).forGetter(RandomBlock::allow),
@@ -137,6 +171,10 @@ public record OriginLayer(
     public Component viewTitle() {
         String key = viewTitleKey.isEmpty() ? "layer." + id.getNamespace() + "." + id.getPath() + ".view_origin.name" : viewTitleKey;
         return Component.translatable(key);
+    }
+
+    public boolean swappable() {
+        return swap.enabled();
     }
 
     public List<ResourceLocation> availableOrigins(Player player) {
@@ -171,15 +209,16 @@ public record OriginLayer(
             RandomBlock.CODEC.optionalFieldOf("random")
                 .forGetter(l -> Optional.of(new RandomBlock(l.allowRandom(), l.randomAllowsUnchoosable(),
                     Optional.of(l.excludedFromRandom()), l.random()))),
-            Codec.BOOL.optionalFieldOf("allow_random", false).forGetter(l -> false),
-            Codec.BOOL.optionalFieldOf("allow_random_unchoosable", false).forGetter(l -> false),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("exclude_random", List.of()).forGetter(l -> List.of()),
+            LegacyRandom.MAP_CODEC.forGetter(l -> LegacyRandom.NONE),
             ResourceLocation.CODEC.optionalFieldOf("default_origin").forGetter(l -> Optional.ofNullable(l.defaultOrigin())),
             Codec.BOOL.optionalFieldOf("auto_choose", false).forGetter(OriginLayer::autoChooseIfNoChoice),
             Codec.BOOL.optionalFieldOf("hidden", false).forGetter(OriginLayer::hidden),
-            RandomiserConfig.CODEC.optionalFieldOf("randomiser", RandomiserConfig.DEFAULT).forGetter(OriginLayer::randomiser)
+            Codec.BOOL.optionalFieldOf("revalidate").forGetter(l -> Optional.of(l.revalidate())),
+            RandomiserConfig.CODEC.optionalFieldOf("randomiser", RandomiserConfig.DEFAULT).forGetter(OriginLayer::randomiser),
+            SwapConfig.CODEC.optionalFieldOf("swappable", SwapConfig.DISABLED).forGetter(OriginLayer::swap)
         ).apply(instance, (origins, order, enabled, name, gui, missingName, missingDesc, randomBlock,
-                           legacyAllow, legacyUnchoosable, legacyExclude, defaultOrigin, autoChoose, hidden, randomiser) -> {
+                           legacy, defaultOrigin, autoChoose, hidden,
+                           revalidate, randomiser, swap) -> {
             boolean allowRandom;
             boolean allowUnchoosable;
             List<ResourceLocation> exclude;
@@ -188,17 +227,17 @@ public record OriginLayer(
                 RandomBlock rb = randomBlock.get();
                 allowRandom = rb.allow();
                 allowUnchoosable = rb.allowUnchoosable();
-                exclude = rb.exclude().orElse(legacyExclude);
+                exclude = rb.exclude().orElse(legacy.exclude());
                 randomConfig = rb.config();
             } else {
-                allowRandom = legacyAllow;
-                allowUnchoosable = legacyUnchoosable;
-                exclude = legacyExclude;
+                allowRandom = legacy.allow();
+                allowUnchoosable = legacy.allowUnchoosable();
+                exclude = legacy.exclude();
                 randomConfig = RandomConfig.DEFAULT;
             }
             return new OriginLayer(id, order, enabled, origins, name, gui.choose(), gui.view(), missingName, missingDesc,
                 allowRandom, allowUnchoosable, exclude, defaultOrigin.orElse(null), autoChoose, hidden,
-                randomConfig, randomiser);
+                revalidate.orElse(autoChoose), randomConfig, randomiser, swap);
         }));
     }
 
@@ -224,6 +263,7 @@ public record OriginLayer(
         buf.writeOptional(Optional.ofNullable(defaultOrigin), FriendlyByteBuf::writeResourceLocation);
         buf.writeBoolean(autoChooseIfNoChoice);
         buf.writeBoolean(hidden);
+        buf.writeBoolean(revalidate);
         buf.writeEnum(random.style());
         buf.writeVarInt(random.rollDuration());
         buf.writeMap(random.weights(), FriendlyByteBuf::writeResourceLocation, FriendlyByteBuf::writeVarInt);
@@ -238,6 +278,10 @@ public record OriginLayer(
         buf.writeBoolean(randomiser.showScreenOnDeath());
         buf.writeBoolean(randomiser.allowDuplicate());
         buf.writeBoolean(randomiser.broadcastMessages());
+        buf.writeBoolean(swap.enabled());
+        buf.writeOptional(swap.targetLayer(), FriendlyByteBuf::writeResourceLocation);
+        buf.writeBoolean(swap.shiftReturnsToMain());
+        buf.writeBoolean(swap.wrapToMain());
     }
 
     public static OriginLayer read(FriendlyByteBuf buf) {
@@ -256,6 +300,7 @@ public record OriginLayer(
         ResourceLocation defaultOrigin = buf.readOptional(FriendlyByteBuf::readResourceLocation).orElse(null);
         boolean autoChoose = buf.readBoolean();
         boolean hidden = buf.readBoolean();
+        boolean revalidate = buf.readBoolean();
         RandomConfig.Style style = buf.readEnum(RandomConfig.Style.class);
         int rollDuration = buf.readVarInt();
         Map<ResourceLocation, Integer> weights = buf.readMap(FriendlyByteBuf::readResourceLocation, FriendlyByteBuf::readVarInt);
@@ -265,10 +310,13 @@ public record OriginLayer(
             buf.readVarInt(), buf.readVarInt(),
             buf.readBoolean(), buf.readVarInt(),
             buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
+        SwapConfig swapConfig = new SwapConfig(buf.readBoolean(),
+            buf.readOptional(FriendlyByteBuf::readResourceLocation),
+            buf.readBoolean(), buf.readBoolean());
 
         return new OriginLayer(id, order, enabled, conditioned, nameKey, chooseTitleKey, viewTitleKey,
             missingNameKey, missingDescriptionKey, allowRandom, randomAllowsUnchoosable,
-            excludedFromRandom, defaultOrigin, autoChoose, hidden,
-            randomConfig, randomiserConfig);
+            excludedFromRandom, defaultOrigin, autoChoose, hidden, revalidate,
+            randomConfig, randomiserConfig, swapConfig);
     }
 }

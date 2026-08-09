@@ -23,6 +23,7 @@ import org.lwjgl.glfw.GLFW;
 public final class OriginsClient {
 
     public static KeyMapping viewCurrentOriginKeybind;
+    public static KeyMapping swapOriginKeybind;
 
     private OriginsClient() {}
 
@@ -34,6 +35,12 @@ public final class OriginsClient {
             GLFW.GLFW_KEY_O,
             "category." + Origins.MOD_ID);
         event.register(viewCurrentOriginKeybind);
+        swapOriginKeybind = new KeyMapping(
+            "key.origins.swap",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
+            "category." + Origins.MOD_ID);
+        event.register(swapOriginKeybind);
         NeoForge.EVENT_BUS.register(GameBus.class);
     }
 
@@ -65,6 +72,13 @@ public final class OriginsClient {
                 if (!(mc.screen instanceof ViewOriginScreen)) {
                     mc.setScreen(new ViewOriginScreen());
                 }
+            }
+            if (swapOriginKeybind == null) return;
+            while (swapOriginKeybind.consumeClick()) {
+                if (Minecraft.getInstance().screen != null) continue;
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                    new dev.overgrown.origins.network.payload.SwapCycleC2S(
+                        net.minecraft.client.gui.screens.Screen.hasShiftDown()));
             }
         }
     }

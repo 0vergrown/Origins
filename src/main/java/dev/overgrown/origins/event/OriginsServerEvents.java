@@ -50,10 +50,13 @@ public final class OriginsServerEvents {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
 
         OriginsServerNetwork.sendPlayerOriginsTo(player, player);
+        OriginsServerNetwork.sendPlayerSwapsTo(player, player);
         for (ServerPlayer other : server.getPlayerList().getPlayers()) {
             if (other == player) continue;
             OriginsServerNetwork.sendPlayerOriginsTo(player, other);
             OriginsServerNetwork.sendPlayerOriginsTo(other, player);
+            OriginsServerNetwork.sendPlayerSwapsTo(player, other);
+            OriginsServerNetwork.sendPlayerSwapsTo(other, player);
         }
         OriginLayer pending = OriginManager.firstUnchosenLayer(player, state);
         if (pending != null) {

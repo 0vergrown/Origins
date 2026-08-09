@@ -106,13 +106,35 @@ public final class OriginCommands {
             ctx.getSource().sendFailure(Component.literal("Origin " + originId + " is not part of layer " + layerId));
             return 0;
         }
+        boolean clearing = OriginRegistry.EMPTY_ID.equals(originId);
+        int applied = 0;
         for (ServerPlayer player : targets) {
+            if (clearing) {
+                OriginManager.removeOrigin(player, layerId);
+                OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
+                applied++;
+                continue;
+            }
             OriginManager.chooseOrigin(player, layerId, originId, false);
             OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
+            PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+            ResourceLocation now = state == null ? OriginRegistry.EMPTY_ID : state.getOrigin(layerId);
+            if (originId.equals(now)) {
+                applied++;
+            } else {
+                ctx.getSource().sendFailure(Component.literal(player.getGameProfile().getName()
+                    + " is on " + now + " for " + layerId + " — that layer's conditions decide it."));
+            }
         }
-        ctx.getSource().sendSuccess(() -> Component.literal("Set ").append(origin.name())
-            .append(" for " + targets.size() + " player(s) on " + layerId), true);
-        return targets.size();
+        int changed = applied;
+        if (clearing) {
+            ctx.getSource().sendSuccess(() -> Component.literal("Cleared " + layerId
+                + " for " + changed + " player(s); its conditions decide it again"), true);
+        } else {
+            ctx.getSource().sendSuccess(() -> Component.literal("Set ").append(origin.name())
+                .append(" for " + changed + " player(s) on " + layerId), true);
+        }
+        return changed;
     }
 
     private static int has(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

@@ -33,6 +33,23 @@ public final class OriginsClientNetwork {
         OriginsClientState.setOrigins(payload.subject(), payload.picks());
     }
 
+    public static void handleSyncPlayerSwaps(dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C payload) {
+        OriginsClientState.setSwaps(payload.subject(), payload.swaps());
+        OriginsClientState.setPool(payload.subject(), payload.pool());
+        net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
+        if (client.player == null || !client.player.getUUID().equals(payload.subject())) return;
+        if (client.screen instanceof dev.overgrown.origins.client.screen.ViewOriginScreen view) {
+            view.refresh();
+        } else if (client.screen instanceof dev.overgrown.origins.client.screen.SwapOriginScreen swap) {
+            swap.refresh();
+        }
+    }
+
+    public static void handleOpenSwapScreen(dev.overgrown.origins.network.payload.OpenSwapScreenS2C payload) {
+        net.minecraft.client.Minecraft.getInstance().setScreen(
+            new dev.overgrown.origins.client.screen.SwapOriginScreen(payload.layerId()));
+    }
+
     public static void handleOriginRoll(dev.overgrown.origins.network.payload.OriginRollS2C payload) {
         dev.overgrown.origins.client.OriginRollQueue.enqueue(payload.layerId(), payload.originId(), payload.duration());
     }

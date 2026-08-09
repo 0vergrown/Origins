@@ -172,5 +172,18 @@
     "screen.origins.roll": "Origin Roll",
     "screen.origins.roll.rolling": "Rolling...",
     "screen.origins.roll.obtained": "Obtained!",
-    "screen.origins.roll.continue": "Click to continue"
+    "screen.origins.roll.continue": "Click to continue",
+    "key.origins.swap": "Swap Origin",
+    "origins.screen.swap_origin": "Swap Origin",
+    "origins.gui.swap_origin.title": "Swap your %s",
+    "origins.gui.swap_origin.title.generic": "Swap Origin",
+    "origins.gui.swap_origin.empty": "You have nothing to swap to.",
+    "origins.gui.swap_origin.button": "Swap to another origin",
+    "power.origins.enderian/water_vulnerability.name": "Hydrophobia",
+    "power.origins.enderian/water_vulnerability.description": "You receive damage over time while in contact with water.",
+    "power.origins.arachnid/fragile.name": "Fragile",
+    "power.origins.arachnid/fragile.description": "You have 3 less hearts of health than humans.",
+    "origins.avian_sleep_fail": "You need to sleep at a higher altitude, where the air is fresh.",
+    "container.shulker_inventory_power": "Shulker Inventory",
+    "origins.gui.badge.passive": "Passive power — always active, no input needed."
 }
