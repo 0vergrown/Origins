@@ -23,7 +23,7 @@ public record OriginPowerEntry(@Nullable EntityCondition condition, List<Resourc
     public static final Codec<OriginPowerEntry> CODEC = Codec.either(
         ResourceLocation.CODEC,
         RecordCodecBuilder.<OriginPowerEntry>create(instance -> instance.group(
-            EntityCondition.CODEC.optionalFieldOf("condition").forGetter(e -> Optional.ofNullable(e.condition())),
+            dev.overgrown.apoli.codec.LoggedOptionalField.strict("condition", EntityCondition.CODEC).forGetter(e -> Optional.ofNullable(e.condition())),
             ResourceLocation.CODEC.listOf().optionalFieldOf("powers", List.of()).forGetter(OriginPowerEntry::powers)
         ).apply(instance, (condition, powers) -> new OriginPowerEntry(condition.orElse(null), powers)))
     ).xmap(

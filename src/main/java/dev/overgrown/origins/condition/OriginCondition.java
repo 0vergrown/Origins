@@ -10,6 +10,7 @@ import dev.overgrown.origins.client.OriginsClientState;
 import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.origin.OriginPattern;
+import dev.overgrown.origins.origin.OriginView;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -18,7 +19,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class OriginCondition implements ConditionType<EntityCtx, OriginCondition.Cfg> {
-    public record Cfg(List<OriginPattern> origins, Optional<ResourceLocation> layer) {
+    public record Cfg(List<OriginPattern> origins, Optional<ResourceLocation> layer,
+                      dev.overgrown.origins.origin.OriginSelection selection) {
         public Cfg {
             origins = List.copyOf(origins);
         }
@@ -43,26 +45,53 @@ public final class OriginCondition implements ConditionType<EntityCtx, OriginCon
     public MapCodec<Cfg> codec() {
         return RecordCodecBuilder.mapCodec(i -> i.group(
             ORIGINS_CODEC.fieldOf("origin").forGetter(Cfg::origins),
-            ResourceLocation.CODEC.optionalFieldOf("layer").forGetter(Cfg::layer)
+            ResourceLocation.CODEC.optionalFieldOf("layer").forGetter(Cfg::layer),
+            dev.overgrown.origins.origin.OriginSelection.CODEC
+                .optionalFieldOf("selection", dev.overgrown.origins.origin.OriginSelection.MAIN)
+                .forGetter(Cfg::selection)
         ).apply(i, Cfg::new));
     }
 
     @Override
     public boolean test(Cfg cfg, EntityCtx ctx) {
         if (!(ctx.entity() instanceof Player player)) return false;
-        Map<ResourceLocation, ResourceLocation> origins = originsOf(player, ctx.level().isClientSide());
-        if (cfg.layer.isPresent()) return cfg.matches(origins.get(cfg.layer.get()));
-        for (ResourceLocation held : origins.values()) {
-            if (cfg.matches(held)) return true;
+        dev.overgrown.origins.origin.OriginSelection mode = cfg.selection;
+        boolean wantsMain = mode == dev.overgrown.origins.origin.OriginSelection.MAIN
+            || mode == dev.overgrown.origins.origin.OriginSelection.ALL;
+        boolean wantsActive = mode == dev.overgrown.origins.origin.OriginSelection.ACTIVE
+            || mode == dev.overgrown.origins.origin.OriginSelection.ALL;
+        boolean wantsPool = mode == dev.overgrown.origins.origin.OriginSelection.POOL
+            || mode == dev.overgrown.origins.origin.OriginSelection.ALL;
+
+        if (cfg.layer.isPresent()) {
+            ResourceLocation layer = cfg.layer.get();
+            if (wantsMain && cfg.matches(OriginView.chosen(player).get(layer))) return true;
+            if (wantsActive && cfg.matches(OriginView.activeOn(player, layer))) return true;
+            if (wantsPool) {
+                for (ResourceLocation id : OriginView.pool(player)) {
+                    if (cfg.matches(id)) return true;
+                }
+            }
+            return false;
+        }
+        if (wantsMain) {
+            for (ResourceLocation held : OriginView.chosen(player).values()) {
+                if (cfg.matches(held)) return true;
+            }
+        }
+        if (wantsActive) {
+            for (ResourceLocation held : OriginView.swaps(player).values()) {
+                if (cfg.matches(held)) return true;
+            }
+            for (ResourceLocation held : OriginView.chosen(player).values()) {
+                if (cfg.matches(held)) return true;
+            }
+        }
+        if (wantsPool) {
+            for (ResourceLocation id : OriginView.pool(player)) {
+                if (cfg.matches(id)) return true;
+            }
         }
         return false;
-    }
-
-    private static Map<ResourceLocation, ResourceLocation> originsOf(Player player, boolean clientSide) {
-        if (clientSide) {
-            return OriginsClientState.get(player.getUUID());
-        }
-        PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
-        return state == null ? Map.of() : state.snapshot();
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.overgrown.apoli.loader.IdWildcards;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -39,7 +40,7 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
                 if (merged == null && entries.get(id).isJsonObject()) {
                     merged = entries.get(id).getAsJsonObject();
                 }
-                if (merged != null) layers.add(OriginLayer.fromJson(id, merged));
+                if (merged != null) layers.add(OriginLayer.fromJson(id, (JsonObject) IdWildcards.apply(merged, id)));
             } catch (Exception e) {
                 Origins.LOGGER.error("Failed to load origin layer {}: {}", id, e.getMessage());
             }
