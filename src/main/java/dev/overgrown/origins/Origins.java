@@ -53,6 +53,9 @@ public final class Origins {
         ActionTypes.ENTITY.register(id("store_origin"), new StoreOriginAction());
         ActionTypes.ENTITY.register(id("apply_stored_origin"), new ApplyStoredOriginAction());
         ActionTypes.ENTITY.register(id("store_value"), new StoreValueAction());
+        dev.overgrown.origins.origin.OriginExpressions.register();
+        ActionTypes.ENTITY.register(id("grant_origin"), new dev.overgrown.origins.action.GrantOriginAction());
+        ActionTypes.ENTITY.register(id("revoke_origin"), new dev.overgrown.origins.action.RevokeOriginAction());
         ConditionTypes.ENTITY.register(id("swapped"), new dev.overgrown.origins.condition.SwappedCondition());
         ActionTypes.ENTITY.register(id("force_swap"), new dev.overgrown.origins.action.ForceSwapAction());
         ActionTypes.ENTITY.register(id("open_swap_menu"), new dev.overgrown.origins.action.OpenSwapMenuAction());

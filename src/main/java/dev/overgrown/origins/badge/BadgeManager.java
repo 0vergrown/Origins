@@ -103,8 +103,9 @@ public final class BadgeManager {
 
     private static CraftingRecipeBadge recipeAutoBadge(RecipePower.Config cfg, HolderLookup.Provider registries) {
         if (cfg.recipeId() == null) return null;
-        RegistryOps<com.google.gson.JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registries);
-        Recipe<?> recipe = Recipe.CODEC.parse(ops, cfg.recipe())
+        RegistryOps<net.minecraft.nbt.Tag> ops =
+            RegistryOps.create(net.minecraft.nbt.NbtOps.INSTANCE, registries);
+        Recipe<?> recipe = Recipe.CODEC.parse(ops, cfg.recipe().convert(net.minecraft.nbt.NbtOps.INSTANCE).getValue())
             .resultOrPartial(err -> Origins.LOGGER.warn("Bad recipe for auto badge {}: {}", cfg.recipeId(), err))
             .orElse(null);
         if (!(recipe instanceof CraftingRecipe crafting)) return null;

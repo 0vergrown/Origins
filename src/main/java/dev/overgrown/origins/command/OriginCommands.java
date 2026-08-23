@@ -14,6 +14,7 @@ import dev.overgrown.origins.origin.OriginLayers;
 import dev.overgrown.origins.origin.OriginManager;
 import dev.overgrown.origins.origin.OriginRandomizer;
 import dev.overgrown.origins.origin.OriginRegistry;
+import dev.overgrown.origins.origin.SwapManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -35,10 +36,8 @@ public final class OriginCommands {
 
     private static final SuggestionProvider<CommandSourceStack> LAYERS = (ctx, b) ->
         SharedSuggestionProvider.suggestResource(OriginLayers.all().stream().map(OriginLayer::id), b);
-
     private static final SuggestionProvider<CommandSourceStack> ORIGINS = (ctx, b) -> {
         OriginLayer layer = layerArg(ctx);
-
         java.util.stream.Stream<ResourceLocation> ids = layer != null
             ? java.util.stream.Stream.concat(layer.allOrigins().stream(), java.util.stream.Stream.of(OriginRegistry.EMPTY_ID))
             : OriginRegistry.all().stream().map(Origin::id);
@@ -84,7 +83,50 @@ public final class OriginCommands {
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(ctx -> random(ctx, EntityArgument.getPlayers(ctx, "targets"),
                             ResourceLocationArgument.getId(ctx, "layer"))))))
+            .then(Commands.literal("revoke").requires(ApoliPermissions.require("origins.command.origin.set", 2))
+                .then(Commands.argument("targets", EntityArgument.players())
+                    .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
+                        .executes(ctx -> revoke(ctx, null))
+                        .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
+                            .executes(ctx -> revoke(ctx, ResourceLocationArgument.getId(ctx, "origin")))))))
             .then(StorageCommands.build()));
+    }
+
+    private static int revoke(CommandContext<CommandSourceStack> ctx, ResourceLocation originId)
+        throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
+        ResourceLocation layerId = ResourceLocationArgument.getId(ctx, "layer");
+        OriginLayer layer = OriginLayers.get(layerId);
+        if (layer == null) {
+            ctx.getSource().sendFailure(Component.literal("Unknown origin layer: " + layerId));
+            return 0;
+        }
+        int affected = 0;
+        for (ServerPlayer player : targets) {
+            boolean changed;
+            if (originId == null) {
+                OriginManager.removeOrigin(player, layerId);
+                changed = true;
+                for (ResourceLocation granted : List.copyOf(SwapManager.grantedPoolOf(player, layerId))) {
+                    SwapManager.revokeFromAnyPool(player, layerId, granted);
+                }
+            } else {
+                changed = SwapManager.revokeFromAnyPool(player, layerId, originId);
+                PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+                if (!changed && state != null && originId.equals(state.getOrigin(layerId))) {
+                    OriginManager.removeOrigin(player, layerId);
+                    changed = true;
+                }
+            }
+            if (!changed) continue;
+            OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
+            affected++;
+        }
+        int changed = affected;
+        ctx.getSource().sendSuccess(() -> Component.literal("Revoked "
+            + (originId == null ? "everything on " + layerId : originId + " from " + layerId)
+            + " for " + changed + " player(s)"), true);
+        return changed;
     }
 
     private static int set(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -101,8 +143,7 @@ public final class OriginCommands {
             ctx.getSource().sendFailure(Component.literal("Unknown origin: " + originId));
             return 0;
         }
-
-        if (!origin.special() && !layer.allOrigins().contains(originId)) {
+        if (!origin.special() && !layer.swappable() && !layer.allOrigins().contains(originId)) {
             ctx.getSource().sendFailure(Component.literal("Origin " + originId + " is not part of layer " + layerId));
             return 0;
         }
@@ -118,6 +159,15 @@ public final class OriginCommands {
             OriginManager.chooseOrigin(player, layerId, originId, false);
             OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
             PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+            if (layer.swappable()) {
+                if (state != null && state.poolOf(layerId).contains(originId)) {
+                    applied++;
+                } else {
+                    ctx.getSource().sendFailure(Component.literal(originId
+                        + " could not be added to the swap pool of " + layerId));
+                }
+                continue;
+            }
             ResourceLocation now = state == null ? OriginRegistry.EMPTY_ID : state.getOrigin(layerId);
             if (originId.equals(now)) {
                 applied++;
@@ -211,6 +261,7 @@ public final class OriginCommands {
                 ? (OriginLayers.get(layerId) == null ? List.of() : List.of(OriginLayers.get(layerId)))
                 : OriginLayers.enabledFor(player);
             for (OriginLayer layer : layers) {
+                if (layer.swappable()) continue;
                 ResourceLocation pick = OriginRandomizer.roll(player, layer);
                 if (pick != null) {
                     OriginManager.chooseOrigin(player, layer.id(), pick, false);

@@ -7,6 +7,7 @@ import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.OriginsServerNetwork;
 import dev.overgrown.origins.origin.OriginLayer;
 import dev.overgrown.origins.origin.OriginManager;
+import dev.overgrown.origins.origin.SwapManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -35,6 +36,7 @@ public final class OrbOfOriginItem extends Item {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
 
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
+        SwapManager.revokeAllSwaps(player);
         for (Map.Entry<ResourceLocation, ResourceLocation> entry : state.snapshot().entrySet()) {
             if (container != null) {
                 container.removeAllFromSource(layerSource(entry.getKey()));

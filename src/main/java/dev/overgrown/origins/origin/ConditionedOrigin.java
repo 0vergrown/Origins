@@ -23,7 +23,7 @@ public record ConditionedOrigin(@Nullable EntityCondition condition, List<Resour
     public static final Codec<ConditionedOrigin> CODEC = Codec.either(
         ResourceLocation.CODEC,
         RecordCodecBuilder.<ConditionedOrigin>create(instance -> instance.group(
-            EntityCondition.CODEC.optionalFieldOf("condition").forGetter(co -> Optional.ofNullable(co.condition())),
+            dev.overgrown.apoli.codec.LoggedOptionalField.strict("condition", EntityCondition.CODEC).forGetter(co -> Optional.ofNullable(co.condition())),
             ResourceLocation.CODEC.listOf().optionalFieldOf("origins", List.of()).forGetter(ConditionedOrigin::origins)
         ).apply(instance, (condition, origins) -> new ConditionedOrigin(condition.orElse(null), origins)))
     ).xmap(
