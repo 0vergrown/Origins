@@ -158,6 +158,7 @@ public final class OriginRandomizer {
                                                       Predicate<OriginLayer.RandomiserConfig> filter) {
         List<OriginLayer> out = new ArrayList<>();
         for (OriginLayer layer : OriginLayers.enabledFor(player)) {
+            if (layer.swappable()) continue;
             if (filter.test(layer.randomiser())) out.add(layer);
         }
         return out;

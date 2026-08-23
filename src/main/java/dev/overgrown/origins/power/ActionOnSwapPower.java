@@ -25,7 +25,7 @@ public final class ActionOnSwapPower extends PowerType<ActionOnSwapPower.Config>
     @Override
     public MapCodec<Config> configCodec() {
         return RecordCodecBuilder.mapCodec(i -> i.group(
-            EntityAction.CODEC.optionalFieldOf("entity_action").forGetter(Config::entityAction),
+            dev.overgrown.apoli.codec.LoggedOptionalField.of("entity_action", EntityAction.CODEC).forGetter(Config::entityAction),
             ResourceLocation.CODEC.optionalFieldOf("layer").forGetter(Config::layer),
             ResourceLocation.CODEC.optionalFieldOf("from_origin").forGetter(Config::fromOrigin),
             ResourceLocation.CODEC.optionalFieldOf("to_origin").forGetter(Config::toOrigin)

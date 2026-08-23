@@ -123,6 +123,37 @@ public final class SwapManager {
         return true;
     }
 
+    public static boolean revokeFromAnyPool(ServerPlayer player, ResourceLocation layerId, ResourceLocation originId) {
+        OriginLayer layer = OriginLayers.get(layerId);
+        if (layer != null && layer.swappable()) return revokeFromPool(player, layerId, originId);
+        for (OriginLayer swapLayer : swapLayersFor(layerId)) {
+            if (revokeFromPool(player, swapLayer.id(), originId)) return true;
+        }
+        return false;
+    }
+
+    public static List<ResourceLocation> grantedPoolOf(Player player, ResourceLocation layerId) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+        if (state == null) return List.of();
+        OriginLayer layer = OriginLayers.get(layerId);
+        if (layer != null && layer.swappable()) return List.copyOf(state.poolOf(layerId));
+        List<ResourceLocation> out = new ArrayList<>();
+        for (OriginLayer swapLayer : swapLayersFor(layerId)) {
+            for (ResourceLocation id : state.poolOf(swapLayer.id())) {
+                if (!out.contains(id)) out.add(id);
+            }
+        }
+        return out;
+    }
+
+    public static @Nullable ResourceLocation grantTargetFor(ResourceLocation layerId) {
+        OriginLayer layer = OriginLayers.get(layerId);
+        if (layer == null) return null;
+        if (layer.swappable()) return layerId;
+        List<OriginLayer> swapLayers = swapLayersFor(layerId);
+        return swapLayers.isEmpty() ? null : swapLayers.get(0).id();
+    }
+
     public static void clearPool(ServerPlayer player, ResourceLocation swapLayerId) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
         if (state == null || state.poolOf(swapLayerId).isEmpty()) return;
@@ -170,27 +201,13 @@ public final class SwapManager {
         ResourceLocation resolvedIncoming = incomingId == null ? mainId : incomingId;
         if (resolvedIncoming == null || resolvedIncoming.equals(outgoingId)) return false;
         if (incomingId != null && !pool(player, targetLayerId).contains(incomingId)) return false;
-
-        Origin incoming = OriginRegistry.get(resolvedIncoming);
-        if (incoming == null) return false;
+        if (OriginRegistry.get(resolvedIncoming) == null) return false;
 
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         if (container == null) return false;
-        ResourceLocation source = sourceFor(targetLayerId);
-
-        List<ResourceLocation> incomingPowers = incoming.powers();
-        Set<ResourceLocation> keep = new HashSet<>(incomingPowers);
-
-        if (incomingId != null) {
-            for (ResourceLocation power : incomingPowers) {
-                if (!container.sourcesOf(power).contains(source)) container.addPower(power, source);
-            }
-        }
-        container.unsuppressAll(incomingPowers, source);
-        revokeStaleSwapGrants(container, source, incomingId == null ? Set.of() : keep);
-        hideMainBehindSwap(container, source, incomingId == null ? null : OriginRegistry.get(mainId), keep);
 
         state.setActiveSwap(targetLayerId, incomingId);
+        reconcile(state, container, targetLayerId);
         ActionOnSwapPower.fire(player, targetLayerId, outgoingId, resolvedIncoming);
         broadcast(player);
         return true;
@@ -226,66 +243,73 @@ public final class SwapManager {
 
     public static void revokeSwapGrants(ServerPlayer player, ResourceLocation targetLayerId) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
+        boolean wasSwapped = state.getActiveSwap(targetLayerId) != null;
+        if (!wasSwapped && swapLayersFor(targetLayerId).isEmpty()) return;
         state.setActiveSwap(targetLayerId, null);
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
-        if (container != null) {
-            ResourceLocation source = sourceFor(targetLayerId);
-            container.unsuppressAllFromSource(source);
-            container.removeAllFromSource(source);
-        }
-        broadcast(player);
+        boolean changed = container != null && reconcile(state, container, targetLayerId);
+        if (wasSwapped || changed) broadcast(player);
     }
 
-    private static void revokeStaleSwapGrants(PowerContainer container, ResourceLocation source,
-                                              Set<ResourceLocation> keep) {
+    public static void revokeAllSwaps(ServerPlayer player) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+        if (state == null) return;
+        for (ResourceLocation targetLayerId : List.copyOf(state.swapSnapshot().keySet())) {
+            revokeSwapGrants(player, targetLayerId);
+        }
+    }
+
+    private static boolean reconcile(PlayerOriginsImpl state, PowerContainer container,
+                                     ResourceLocation targetLayerId) {
+        ResourceLocation source = sourceFor(targetLayerId);
+        ResourceLocation activeId = state.getActiveSwap(targetLayerId);
+        Origin active = activeId == null ? null : OriginRegistry.get(activeId);
+        boolean changed = false;
+        if (activeId != null && active == null) {
+            state.setActiveSwap(targetLayerId, null);
+            changed = true;
+        }
+
+        Set<ResourceLocation> granted = active == null ? Set.of() : new HashSet<>(active.powers());
         for (ResourceLocation power : container.allPowers()) {
-            if (keep.contains(power)) continue;
-            if (!container.sourcesOf(power).contains(source)) continue;
-            container.unsuppressPower(power, source);
-            container.removePower(power, source);
+            if (granted.contains(power)) continue;
+            if (container.sourcesOf(power).contains(source) && container.removePower(power, source)) changed = true;
         }
+        for (ResourceLocation power : granted) {
+            if (!container.sourcesOf(power).contains(source) && container.addPower(power, source)) changed = true;
+        }
+
+        Set<ResourceLocation> hidden = Set.of();
+        if (active != null) {
+            Origin main = OriginRegistry.get(state.getOrigin(targetLayerId));
+            if (main != null) {
+                Set<ResourceLocation> hide = new HashSet<>();
+                for (ResourceLocation power : main.powers()) {
+                    if (!granted.contains(power)) hide.add(power);
+                }
+                hidden = hide;
+            }
+        }
+        for (ResourceLocation power : container.directlySuppressedPowers()) {
+            if (hidden.contains(power)) continue;
+            if (container.suppressionSourcesOf(power).contains(source)
+                && container.unsuppressPower(power, source)) changed = true;
+        }
+        if (!hidden.isEmpty() && container.suppressAll(hidden, source)) changed = true;
+        return changed;
     }
 
-    private static void hideMainBehindSwap(PowerContainer container, ResourceLocation source,
-                                           @Nullable Origin main, Set<ResourceLocation> keep) {
-        if (main == null) return;
-        List<ResourceLocation> hide = new ArrayList<>(main.powers().size());
-        for (ResourceLocation power : main.powers()) {
-            if (!keep.contains(power)) hide.add(power);
-        }
-        container.suppressAll(hide, source);
-    }
-
-    public static void reapplySuppression(ServerPlayer player) {
+    public static void reconcileAll(ServerPlayer player) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
         if (state == null) return;
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         if (container == null) return;
 
+        Set<ResourceLocation> targets = new LinkedHashSet<>(state.swapSnapshot().keySet());
         for (OriginLayer layer : OriginLayers.enabledOrdered()) {
-            if (layer.swappable() || swapLayersFor(layer.id()).isEmpty()) continue;
-
-            ResourceLocation targetLayerId = layer.id();
-            ResourceLocation source = sourceFor(targetLayerId);
-            ResourceLocation activeId = state.getActiveSwap(targetLayerId);
-            Origin active = activeId == null ? null : OriginRegistry.get(activeId);
-
-            if (active == null) {
-                if (activeId != null) state.setActiveSwap(targetLayerId, null);
-                container.unsuppressAllFromSource(source);
-                container.removeAllFromSource(source);
-                continue;
-            }
-
-            List<ResourceLocation> activePowers = active.powers();
-            for (ResourceLocation power : activePowers) {
-                if (!container.sourcesOf(power).contains(source)) container.addPower(power, source);
-            }
-            container.unsuppressAll(activePowers, source);
-            Set<ResourceLocation> keep = new HashSet<>(activePowers);
-            revokeStaleSwapGrants(container, source, keep);
-            hideMainBehindSwap(container, source, OriginRegistry.get(state.getOrigin(targetLayerId)), keep);
+            if (!layer.swappable() && !swapLayersFor(layer.id()).isEmpty()) targets.add(layer.id());
         }
+        for (ResourceLocation targetLayerId : targets) reconcile(state, container, targetLayerId);
     }
 
     public static void revalidate(ServerPlayer player) {
@@ -294,9 +318,22 @@ public final class SwapManager {
         for (ResourceLocation targetLayerId : List.copyOf(state.swapSnapshot().keySet())) {
             ResourceLocation active = state.getActiveSwap(targetLayerId);
             if (active == null) continue;
-            if (OriginLayers.get(targetLayerId) == null || !pool(player, targetLayerId).contains(active)) {
+            OriginLayer target = OriginLayers.get(targetLayerId);
+            if (target == null || !target.enabled() || target.swappable()
+                || !holdsSwapLayer(player, targetLayerId)
+                || !pool(player, targetLayerId).contains(active)) {
                 revokeSwapGrants(player, targetLayerId);
             }
         }
+    }
+
+    public static boolean holdsSwapLayer(Player player, ResourceLocation targetLayerId) {
+        Map<ResourceLocation, ? extends Collection<ResourceLocation>> granted = granted(player);
+        for (OriginLayer swapLayer : swapLayersFor(targetLayerId)) {
+            if (!swapLayer.availableOrigins(player).isEmpty()) return true;
+            Collection<ResourceLocation> explicit = granted.get(swapLayer.id());
+            if (explicit != null && !explicit.isEmpty()) return true;
+        }
+        return false;
     }
 }

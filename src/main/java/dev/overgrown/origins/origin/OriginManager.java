@@ -19,6 +19,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,8 +43,12 @@ public final class OriginManager {
             Origins.LOGGER.warn("chooseOrigin: unknown layer={} or origin={}", layerId, originId);
             return;
         }
+        if (layer.swappable()) {
+            SwapManager.grantToPool(player, layerId, originId);
+            return;
+        }
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
-        if (!originId.equals(state.getOrigin(layerId))) SwapManager.revokeSwapGrants(player, layerId);
+        SwapManager.revokeSwapGrants(player, layerId);
         state.setOrigin(layerId, originId);
         state.setPinned(layerId, true);
         applyOriginPowers(player, layer, origin);
@@ -62,8 +69,8 @@ public final class OriginManager {
             SwapManager.clearPool(player, layerId);
             return;
         }
-        if (!state.hasOrigin(layerId)) return;
         SwapManager.revokeSwapGrants(player, layerId);
+        if (!state.hasOrigin(layerId)) return;
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         if (container != null) container.removeAllFromSource(sourceFor(layerId));
         state.clearOrigin(layerId);
@@ -72,21 +79,44 @@ public final class OriginManager {
 
     public static boolean transferOrigin(ServerPlayer donor, ServerPlayer recipient,
                                          ResourceLocation fromLayer, ResourceLocation toLayer, boolean copy) {
-        PlayerOriginsImpl donorState = PlayerOriginsAttachment.get(donor);
-        if (donorState == null) return false;
-        ResourceLocation originId = donorState.getOrigin(fromLayer);
-        if (originId == null) return false;
-        OriginLayer destination = OriginLayers.get(toLayer);
-        if (destination == null || OriginRegistry.get(originId) == null) return false;
+        return transferOrigin(donor, recipient, fromLayer, toLayer, copy, null, null, false);
+    }
 
-        if (destination.swappable()) {
-            if (!SwapManager.grantToPool(recipient, toLayer, originId)) return false;
+    public static boolean transferOrigin(ServerPlayer donor, ServerPlayer recipient,
+                                         ResourceLocation fromLayer, ResourceLocation toLayer, boolean copy,
+                                         @Nullable OriginSelection selection,
+                                         @Nullable ResourceLocation explicitOrigin, boolean random) {
+        OriginLayer destination = OriginLayers.get(toLayer);
+        if (destination == null) return false;
+
+        List<ResourceLocation> candidates = explicitOrigin != null
+            ? List.of(explicitOrigin)
+            : selectableOrigins(donor, fromLayer, selection);
+        if (candidates.isEmpty()) return false;
+
+        List<ResourceLocation> moving;
+        if (explicitOrigin == null && effectiveSelection(fromLayer, selection) == OriginSelection.ALL) {
+            moving = candidates;
+        } else if (random && candidates.size() > 1) {
+            moving = List.of(candidates.get(donor.getRandom().nextInt(candidates.size())));
         } else {
-            chooseOrigin(recipient, toLayer, originId, false);
+            moving = List.of(candidates.get(0));
         }
 
-        boolean donorChanged = !copy && !(donor == recipient && fromLayer.equals(toLayer));
-        if (donorChanged) removeOrigin(donor, fromLayer);
+        boolean any = false;
+        boolean donorChanged = false;
+        for (ResourceLocation originId : moving) {
+            if (OriginRegistry.get(originId) == null || originId.equals(OriginRegistry.EMPTY_ID)) continue;
+            if (destination.swappable()) {
+                if (!SwapManager.grantToPool(recipient, toLayer, originId)) continue;
+            } else {
+                chooseOrigin(recipient, toLayer, originId, false);
+            }
+            any = true;
+            if (copy || (donor == recipient && fromLayer.equals(toLayer))) continue;
+            if (takeFromDonor(donor, fromLayer, originId)) donorChanged = true;
+        }
+        if (!any) return false;
 
         MinecraftServer server = recipient.getServer();
         if (server != null) {
@@ -96,13 +126,62 @@ public final class OriginManager {
         return true;
     }
 
+    private static OriginSelection effectiveSelection(ResourceLocation fromLayer, @Nullable OriginSelection selection) {
+        if (selection != null) return selection;
+        OriginLayer layer = OriginLayers.get(fromLayer);
+        return layer != null && layer.swappable() ? OriginSelection.POOL : OriginSelection.MAIN;
+    }
+
+    public static List<ResourceLocation> selectableOrigins(ServerPlayer donor, ResourceLocation fromLayer,
+                                                           @Nullable OriginSelection selection) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.get(donor);
+        if (state == null) return List.of();
+        OriginSelection mode = effectiveSelection(fromLayer, selection);
+        List<ResourceLocation> out = new ArrayList<>();
+        if (mode == OriginSelection.MAIN || mode == OriginSelection.ALL) {
+            addLive(out, state.getOrigin(fromLayer));
+        }
+        if (mode == OriginSelection.ACTIVE) {
+            OriginLayer layer = OriginLayers.get(fromLayer);
+            ResourceLocation targetLayer = layer != null && layer.swappable()
+                ? SwapManager.resolveTarget(fromLayer)
+                : fromLayer;
+            if (targetLayer != null) addLive(out, SwapManager.activeOrigin(donor, targetLayer));
+        }
+        if (mode == OriginSelection.POOL || mode == OriginSelection.ALL) {
+            for (ResourceLocation id : SwapManager.grantedPoolOf(donor, fromLayer)) addLive(out, id);
+        }
+        return out;
+    }
+
+    private static void addLive(List<ResourceLocation> out, @Nullable ResourceLocation originId) {
+        if (originId == null || originId.equals(OriginRegistry.EMPTY_ID)) return;
+        if (OriginRegistry.get(originId) == null || out.contains(originId)) return;
+        out.add(originId);
+    }
+
+    private static boolean takeFromDonor(ServerPlayer donor, ResourceLocation fromLayer, ResourceLocation originId) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.get(donor);
+        if (state == null) return false;
+        if (originId.equals(state.getOrigin(fromLayer))) {
+            removeOrigin(donor, fromLayer);
+            return true;
+        }
+        return SwapManager.revokeFromAnyPool(donor, fromLayer, originId);
+    }
+
     public static void reapplyAll(ServerPlayer player) {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         for (var entry : state.snapshot().entrySet()) {
             OriginLayer layer = OriginLayers.get(entry.getKey());
+            if (layer == null) continue;
+            if (layer.swappable()) {
+                demoteSwappableLayerRecord(player, state, container, layer, entry.getValue());
+                continue;
+            }
             Origin origin = OriginRegistry.get(entry.getValue());
-            if (layer == null || origin == null) continue;
+            if (origin == null) continue;
             applyOriginPowers(player, layer, origin);
             if (container != null) {
                 for (ResourceLocation powerId : origin.powers()) {
@@ -110,8 +189,19 @@ public final class OriginManager {
                 }
             }
         }
-        SwapManager.reapplySuppression(player);
+        SwapManager.reconcileAll(player);
         reconcileLayers(player);
+    }
+
+    private static void demoteSwappableLayerRecord(ServerPlayer player, PlayerOriginsImpl state,
+                                                   PowerContainer container, OriginLayer layer,
+                                                   ResourceLocation originId) {
+        if (container != null) container.removeAllFromSource(sourceFor(layer.id()));
+        state.clearOrigin(layer.id());
+        SwapManager.grantToPool(player, layer.id(), originId);
+        Origins.LOGGER.info("[Origins] {} had {} recorded as a chosen origin on swappable layer {}; "
+            + "its powers were revoked and the origin moved into that layer's swap pool.",
+            player.getName().getString(), originId, layer.id());
     }
 
     public static boolean checkAutoChoosingLayers(ServerPlayer player, boolean includeDefaults) {
@@ -125,6 +215,7 @@ public final class OriginManager {
             if (pick == null) continue;
             Origin origin = OriginRegistry.get(pick);
             if (origin == null) continue;
+            SwapManager.revokeSwapGrants(player, layer.id());
             state.setOrigin(layer.id(), pick);
             applyOriginPowers(player, layer, origin);
             chose = true;
@@ -204,7 +295,7 @@ public final class OriginManager {
         for (ResourceLocation layerId : List.copyOf(state.snapshot().keySet())) {
             if (!state.hasOrigin(layerId)) continue;
             OriginLayer layer = OriginLayers.get(layerId);
-            if (layer == null || !layer.revalidate()) continue;
+            if (layer == null || layer.swappable() || !layer.revalidate()) continue;
             ResourceLocation held = state.getOrigin(layerId);
             if (held == null) continue;
             if (state.isPinned(layerId)) {

@@ -103,7 +103,7 @@ public final class BadgeManager {
         if (cfg.recipeId() == null) return null;
         Recipe<?> recipe;
         try {
-            recipe = RecipeManager.fromJson(cfg.recipeId(), cfg.recipe());
+            recipe = RecipeManager.fromJson(cfg.recipeId(), cfg.recipeAsJson());
         } catch (Exception e) {
             Origins.LOGGER.warn("Bad recipe for auto badge {}: {}", cfg.recipeId(), e.toString());
             return null;

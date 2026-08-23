@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import dev.overgrown.apoli.loader.IdWildcards;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -31,7 +32,7 @@ public final class OriginLoader extends SimpleJsonResourceReloadListener {
             ResourceLocation id = entry.getKey();
             try {
                 if (!entry.getValue().isJsonObject()) continue;
-                JsonObject json = entry.getValue().getAsJsonObject();
+                JsonObject json = (JsonObject) IdWildcards.apply(entry.getValue(), id);
                 Origin.codec(id).codec().parse(JsonOps.INSTANCE, json)
                     .resultOrPartial(err -> Origins.LOGGER.error("Failed to load origin {}: {}", id, err))
                     .ifPresent(origin -> grouped.computeIfAbsent(id, k -> new ArrayList<>()).add(origin));
