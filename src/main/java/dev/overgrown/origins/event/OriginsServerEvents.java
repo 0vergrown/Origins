@@ -26,6 +26,7 @@ public final class OriginsServerEvents {
             ServerPlayer player = handler.player;
             OriginsServerNetwork.sendRegistries(player);
             OriginsServerNetwork.sendBadges(player);
+            OriginsServerNetwork.sendOriginCaps(player);
             OriginManager.reapplyAll(player);
             OriginRandomizer.onFirstJoin(player);
             OriginManager.checkAutoChoosingLayers(player, true);
@@ -71,8 +72,14 @@ public final class OriginsServerEvents {
             }
         });
 
+        ServerLifecycleEvents.SERVER_STARTED.register(OriginsServerNetwork::broadcastOriginCaps);
+
+        ServerLifecycleEvents.SERVER_STOPPED.register(server ->
+            dev.overgrown.origins.origin.OriginCaps.clear());
+
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> {
             if (!success) return;
+            OriginsServerNetwork.broadcastOriginCaps(server);
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 OriginsServerNetwork.sendRegistries(player);
                 OriginsServerNetwork.sendBadges(player);

@@ -29,6 +29,7 @@
     "origins.gui.view_origin.empty": "You can not have any Origins.",
     "origins.gui.view_origin.not_installed": "The server does not have Origins installed.",
     "origins.gui.no_options": "No origins available for you on this layer.",
+    "origins.gui.origin_taken": "%s is already taken. Only %s player(s) may have it.",
     "origins.gui.impact.impact": "Impact",
     "origins.gui.impact.none": "None",
     "origins.gui.impact.low": "Low",

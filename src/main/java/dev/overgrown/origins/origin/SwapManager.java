@@ -164,7 +164,9 @@ public final class SwapManager {
 
     private static void broadcast(ServerPlayer player) {
         MinecraftServer server = player.getServer();
-        if (server != null) dev.overgrown.origins.network.OriginsServerNetwork.broadcastPlayerSwaps(server, player);
+        if (server == null) return;
+        dev.overgrown.origins.network.OriginsServerNetwork.broadcastPlayerSwaps(server, player);
+        OriginManager.refreshClaims(player);
     }
 
     private static String sortKey(ResourceLocation originId) {

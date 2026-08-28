@@ -44,7 +44,8 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
         if (player != null) {
             for (ResourceLocation id : currentLayer.availableOrigins(player)) {
                 Origin origin = OriginRegistry.get(id);
-                if (origin != null && origin.choosable()) {
+                if (origin != null && origin.choosable()
+                    && dev.overgrown.origins.origin.OriginManager.availableTo(player, currentLayer.id(), id)) {
                     originSelection.add(origin);
                 }
             }
@@ -150,9 +151,11 @@ public final class ChooseOriginScreen extends OriginDisplayScreen {
         if (player != null) {
             List<ResourceLocation> randoms = new ArrayList<>(
                 layerList.get(currentLayerIndex).availableOrigins(player));
+            ResourceLocation layerId = layerList.get(currentLayerIndex).id();
             randoms.removeIf(id -> {
                 Origin o = OriginRegistry.get(id);
-                return o == null || !o.choosable();
+                if (o == null || !o.choosable()) return true;
+                return !dev.overgrown.origins.origin.OriginManager.availableTo(player, layerId, id);
             });
             randoms.sort((ia, ib) -> {
                 Origin a = OriginRegistry.get(ia);

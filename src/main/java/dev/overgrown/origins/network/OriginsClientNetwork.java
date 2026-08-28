@@ -52,6 +52,21 @@ public final class OriginsClientNetwork {
             client.execute(() -> dev.overgrown.origins.client.BadgeClientState.replaceAll(badges));
         });
 
+        ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.SYNC_ORIGIN_CAPS, (client, handler, buf, sender) -> {
+            int layerCount = buf.readVarInt();
+            Map<ResourceLocation, Map<ResourceLocation, Integer>> taken = new HashMap<>(layerCount);
+            for (int i = 0; i < layerCount; i++) {
+                ResourceLocation layerId = buf.readResourceLocation();
+                int originCount = buf.readVarInt();
+                Map<ResourceLocation, Integer> byOrigin = new HashMap<>(originCount);
+                for (int j = 0; j < originCount; j++) {
+                    byOrigin.put(buf.readResourceLocation(), buf.readVarInt());
+                }
+                taken.put(layerId, byOrigin);
+            }
+            client.execute(() -> dev.overgrown.origins.origin.OriginCaps.replaceAll(taken));
+        });
+
         ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.SYNC_PLAYER_ORIGINS, (client, handler, buf, sender) -> {
             UUID subject = buf.readUUID();
             int n = buf.readVarInt();
@@ -116,7 +131,10 @@ public final class OriginsClientNetwork {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
             client -> dev.overgrown.origins.client.OriginRollQueue.tick(client));
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
-            (handler, client) -> dev.overgrown.origins.client.OriginRollQueue.clear());
+            (handler, client) -> {
+                dev.overgrown.origins.client.OriginRollQueue.clear();
+                dev.overgrown.origins.origin.OriginCaps.clear();
+            });
 
         ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.CLOSE_CHOOSE_SCREEN, (client, handler, buf, sender) -> {
             client.execute(() -> {

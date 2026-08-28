@@ -80,6 +80,29 @@ public final class OriginsServerNetwork {
         ServerPlayNetworking.send(player, OriginsPackets.OPEN_SWAP_SCREEN, buf);
     }
 
+    public static void sendOriginCaps(ServerPlayer player) {
+        if (!ServerPlayNetworking.canSend(player, OriginsPackets.SYNC_ORIGIN_CAPS)) return;
+        Map<ResourceLocation, Map<ResourceLocation, Integer>> taken =
+            dev.overgrown.origins.origin.OriginCaps.snapshot();
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeVarInt(taken.size());
+        for (Map.Entry<ResourceLocation, Map<ResourceLocation, Integer>> layer : taken.entrySet()) {
+            buf.writeResourceLocation(layer.getKey());
+            buf.writeVarInt(layer.getValue().size());
+            for (Map.Entry<ResourceLocation, Integer> origin : layer.getValue().entrySet()) {
+                buf.writeResourceLocation(origin.getKey());
+                buf.writeVarInt(origin.getValue());
+            }
+        }
+        ServerPlayNetworking.send(player, OriginsPackets.SYNC_ORIGIN_CAPS, buf);
+    }
+
+    public static void broadcastOriginCaps(MinecraftServer server) {
+        dev.overgrown.origins.origin.OriginCaps.replaceAll(
+            dev.overgrown.origins.origin.OriginClaims.get(server).counts());
+        for (ServerPlayer recipient : server.getPlayerList().getPlayers()) sendOriginCaps(recipient);
+    }
+
     public static void sendRegistries(ServerPlayer player) {
         FriendlyByteBuf buf = PacketByteBufs.create();
         Collection<Origin> origins = OriginRegistry.all();
@@ -168,6 +191,16 @@ public final class OriginsServerNetwork {
             Origins.LOGGER.warn("{} tried to choose unchoosable origin {}",
                 player.getName().getString(), originId);
             advanceOrClose(player, fromOrb);
+            return;
+        }
+        if (!originId.equals(OriginRegistry.EMPTY_ID) && !OriginManager.availableTo(player, layerId, originId)) {
+            int limit = dev.overgrown.origins.origin.OriginCaps.limitOf(layerId, originId);
+            Origins.LOGGER.info("[Origins] {} tried to take {} on layer {}, which is capped at {} player(s) and full",
+                player.getName().getString(), originId, layerId, limit);
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
+                "origins.gui.origin_taken", origin.name(), limit).withStyle(net.minecraft.ChatFormatting.RED));
+            sendOriginCaps(player);
+            openChooseScreen(player, layer, fromOrb);
             return;
         }
         OriginManager.chooseOrigin(player, layerId, originId, fromOrb);

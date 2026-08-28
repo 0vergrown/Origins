@@ -25,6 +25,14 @@ public final class OriginsClient implements ClientModInitializer {
     public void onInitializeClient() {
         OriginsClientNetwork.register();
 
+        dev.overgrown.origins.origin.OriginManager.setClientHolding((player, layerId, originId) -> {
+            java.util.UUID uuid = player.getUUID();
+            if (originId.equals(OriginsClientState.get(uuid).get(layerId))) return true;
+            java.util.List<net.minecraft.resources.ResourceLocation> pool =
+                OriginsClientState.getPool(uuid).get(layerId);
+            return pool != null && pool.contains(originId);
+        });
+
         TooltipComponentCallback.EVENT.register(data ->
             data instanceof CraftingRecipeTooltipData recipeData ? new CraftingRecipeClientTooltip(recipeData) : null);
 

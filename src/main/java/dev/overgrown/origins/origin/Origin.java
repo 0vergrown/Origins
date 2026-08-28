@@ -28,10 +28,18 @@ public record Origin(
     boolean special,
     Optional<Component> nameText,
     Optional<Component> descriptionText,
-    float nameScrollSpeed
+    float nameScrollSpeed,
+    int maxPlayers
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
+    }
+
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
+                  int order, int loadingPriority, boolean unchoosable, boolean special,
+                  Optional<Component> nameText, Optional<Component> descriptionText, float nameScrollSpeed) {
+        this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText,
+            nameScrollSpeed, OriginCaps.INHERIT);
     }
 
     public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
@@ -79,9 +87,12 @@ public record Origin(
             Codec.BOOL.optionalFieldOf("unchoosable", false).forGetter(Origin::unchoosable),
             TextComponent.CODEC.optionalFieldOf("name").forGetter(Origin::nameText),
             TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText),
-            Codec.FLOAT.optionalFieldOf("name_scroll_speed", 1.0f).forGetter(Origin::nameScrollSpeed)
-        ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description, nameScrollSpeed) ->
-            new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description, nameScrollSpeed)));
+            Codec.FLOAT.optionalFieldOf("name_scroll_speed", 1.0f).forGetter(Origin::nameScrollSpeed),
+            Codec.INT.optionalFieldOf("max_players", OriginCaps.INHERIT).forGetter(Origin::maxPlayers)
+        ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description,
+                           nameScrollSpeed, maxPlayers) ->
+            new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description,
+                nameScrollSpeed, maxPlayers)));
     }
 
     public Component name() {
@@ -98,7 +109,7 @@ public record Origin(
 
     public static Origin empty(ResourceLocation id) {
         return new Origin(id, Collections.emptyList(), IconData.EMPTY, Impact.NONE,
-            Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty());
+            Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty(), 1.0f, OriginCaps.UNLIMITED);
     }
 
     public void write(FriendlyByteBuf buf) {
@@ -113,6 +124,7 @@ public record Origin(
         buf.writeOptional(nameText, FriendlyByteBuf::writeComponent);
         buf.writeOptional(descriptionText, FriendlyByteBuf::writeComponent);
         buf.writeFloat(nameScrollSpeed);
+        buf.writeVarInt(maxPlayers);
     }
 
     public static Origin read(FriendlyByteBuf buf) {
@@ -127,7 +139,8 @@ public record Origin(
         Optional<Component> nameText = buf.readOptional(FriendlyByteBuf::readComponent);
         Optional<Component> descriptionText = buf.readOptional(FriendlyByteBuf::readComponent);
         float nameScrollSpeed = buf.readFloat();
+        int maxPlayers = buf.readVarInt();
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
-            nameText, descriptionText, nameScrollSpeed);
+            nameText, descriptionText, nameScrollSpeed, maxPlayers);
     }
 }
