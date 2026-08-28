@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class OriginsNetwork {
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "3";
 
     private OriginsNetwork() {}
 
@@ -22,6 +22,8 @@ public final class OriginsNetwork {
         registrar.playToClient(SyncRegistriesS2C.TYPE, SyncRegistriesS2C.STREAM_CODEC, OriginsNetwork::onSyncRegistries);
         registrar.playToClient(SyncBadgesS2C.TYPE, SyncBadgesS2C.STREAM_CODEC, OriginsNetwork::onSyncBadges);
         registrar.playToClient(SyncPlayerOriginsS2C.TYPE, SyncPlayerOriginsS2C.STREAM_CODEC, OriginsNetwork::onSyncPlayerOrigins);
+        registrar.playToClient(dev.overgrown.origins.network.payload.SyncOriginCapsS2C.TYPE,
+            dev.overgrown.origins.network.payload.SyncOriginCapsS2C.STREAM_CODEC, OriginsNetwork::onSyncOriginCaps);
         registrar.playToClient(OpenChooseScreenS2C.TYPE, OpenChooseScreenS2C.STREAM_CODEC, OriginsNetwork::onOpenChooseScreen);
         registrar.playToClient(CloseChooseScreenS2C.TYPE, CloseChooseScreenS2C.STREAM_CODEC, OriginsNetwork::onCloseChooseScreen);
         registrar.playToClient(dev.overgrown.origins.network.payload.OriginRollS2C.TYPE, dev.overgrown.origins.network.payload.OriginRollS2C.STREAM_CODEC, OriginsNetwork::onOriginRoll);
@@ -68,6 +70,11 @@ public final class OriginsNetwork {
 
     private static void onSyncPlayerOrigins(SyncPlayerOriginsS2C payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> OriginsClientNetwork.handleSyncPlayerOrigins(payload));
+    }
+
+    private static void onSyncOriginCaps(dev.overgrown.origins.network.payload.SyncOriginCapsS2C payload,
+                                         IPayloadContext ctx) {
+        ctx.enqueueWork(() -> dev.overgrown.origins.origin.OriginCaps.replaceAll(payload.taken()));
     }
 
     private static void onOpenChooseScreen(OpenChooseScreenS2C payload, IPayloadContext ctx) {

@@ -42,6 +42,7 @@ public final class OriginsServerEvents {
 
         OriginsServerNetwork.sendRegistries(player);
         OriginsServerNetwork.sendBadges(player);
+        OriginsServerNetwork.sendOriginCaps(player);
         OriginManager.reapplyAll(player);
 
         OriginRandomizer.onFirstJoin(player);
@@ -87,9 +88,20 @@ public final class OriginsServerEvents {
     }
 
     @SubscribeEvent
+    public static void onServerStarted(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
+        OriginsServerNetwork.broadcastOriginCaps(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
+        dev.overgrown.origins.origin.OriginCaps.clear();
+    }
+
+    @SubscribeEvent
     public static void onDatapackSync(OnDatapackSyncEvent event) {
 
         if (event.getPlayer() != null) return;
+        OriginsServerNetwork.broadcastOriginCaps(event.getPlayerList().getServer());
         for (ServerPlayer player : event.getPlayerList().getPlayers()) {
             OriginsServerNetwork.sendRegistries(player);
             OriginsServerNetwork.sendBadges(player);

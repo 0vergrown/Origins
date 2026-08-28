@@ -22,8 +22,10 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class OriginManager {
@@ -276,6 +278,7 @@ public final class OriginManager {
         for (ResourceLocation id : layer.availableOrigins(player)) {
             Origin origin = OriginRegistry.get(id);
             if (origin == null) continue;
+            if (!availableTo(player, layer.id(), id)) continue;
             if (++available == 1) onlyAvailable = id;
             if (origin.choosable() && ++choosable == 1) onlyChoosable = id;
         }
@@ -304,7 +307,7 @@ public final class OriginManager {
             }
             List<ResourceLocation> available = layer.availableOrigins(player);
             if (available.contains(held)) continue;
-            ResourceLocation replacement = derivedReplacement(layer, available);
+            ResourceLocation replacement = derivedReplacement(player, layer, available);
             if (replacement == null || replacement.equals(held)) {
                 Origins.LOGGER.debug("[Origins] Layer {} offers {} no replacement for {}; keeping it.",
                     layerId, player.getName().getString(), held);
@@ -320,11 +323,12 @@ public final class OriginManager {
         return changed;
     }
 
-    private static ResourceLocation derivedReplacement(OriginLayer layer, List<ResourceLocation> available) {
+    private static ResourceLocation derivedReplacement(Player player, OriginLayer layer, List<ResourceLocation> available) {
         ResourceLocation only = null;
         int count = 0;
         for (ResourceLocation id : available) {
             if (OriginRegistry.get(id) == null) continue;
+            if (!availableTo(player, layer.id(), id)) continue;
             if (++count > 1) break;
             only = id;
         }
@@ -340,10 +344,12 @@ public final class OriginManager {
             if (!redriven && !chose) {
                 SwapManager.revalidate(player);
                 SkillTrees.refresh(player);
+                refreshClaims(player);
                 return;
             }
         }
         SkillTrees.refresh(player);
+        refreshClaims(player);
         Origins.LOGGER.warn("[Origins] Layer conditions for {} did not settle after {} passes; "
             + "check for origin layers whose conditions depend on each other in a cycle.",
             player.getName().getString(), MAX_RECONCILE_PASSES);
@@ -364,6 +370,45 @@ public final class OriginManager {
         for (ResourceLocation power : origin.powers()) {
             if (!current.contains(power)) container.addPower(power, source);
         }
+    }
+
+    public static void refreshClaims(ServerPlayer player) {
+        MinecraftServer server = player.getServer();
+        if (server == null) return;
+        PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+        Map<ResourceLocation, Set<ResourceLocation>> held = new HashMap<>();
+        if (state != null) {
+            state.snapshot().forEach((layerId, originId) -> {
+                if (originId == null || originId.equals(OriginRegistry.EMPTY_ID)) return;
+                held.computeIfAbsent(layerId, key -> new HashSet<>()).add(originId);
+            });
+            state.poolSnapshot().forEach((layerId, origins) -> {
+                if (origins.isEmpty()) return;
+                held.computeIfAbsent(layerId, key -> new HashSet<>()).addAll(origins);
+            });
+        }
+        if (!OriginClaims.get(server).refresh(player.getUUID(), held)) return;
+        OriginsServerNetwork.broadcastOriginCaps(server);
+    }
+
+    @FunctionalInterface
+    public interface OriginHolding {
+        boolean holds(Player player, ResourceLocation layerId, ResourceLocation originId);
+    }
+
+    private static OriginHolding clientHolding = (player, layerId, originId) -> false;
+
+    public static void setClientHolding(OriginHolding lookup) {
+        clientHolding = lookup;
+    }
+
+    public static boolean availableTo(Player player, ResourceLocation layerId, ResourceLocation originId) {
+        if (!OriginCaps.isFull(layerId, originId)) return true;
+        if (player.level().isClientSide()) return clientHolding.holds(player, layerId, originId);
+        PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+        if (state == null) return false;
+        if (originId.equals(state.getOrigin(layerId))) return true;
+        return SwapManager.grantedPoolOf(player, layerId).contains(originId);
     }
 
     public static boolean hasChosenAllLayers(Player player, PlayerOriginsImpl state) {
@@ -388,6 +433,7 @@ public final class OriginManager {
         for (ResourceLocation id : layer.availableOrigins(player)) {
             Origin origin = OriginRegistry.get(id);
             if (origin == null) continue;
+            if (!availableTo(player, layer.id(), id)) continue;
             if (origin.choosable() || randomRollsUnchoosable) return true;
         }
         return false;

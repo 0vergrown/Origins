@@ -9,6 +9,8 @@ import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.OriginsServerNetwork;
 import dev.overgrown.origins.origin.Origin;
+import dev.overgrown.origins.origin.OriginCaps;
+import dev.overgrown.origins.origin.OriginClaims;
 import dev.overgrown.origins.origin.OriginLayer;
 import dev.overgrown.origins.origin.OriginLayers;
 import dev.overgrown.origins.origin.OriginManager;
@@ -89,7 +91,96 @@ public final class OriginCommands {
                         .executes(ctx -> revoke(ctx, null))
                         .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
                             .executes(ctx -> revoke(ctx, ResourceLocationArgument.getId(ctx, "origin")))))))
+            .then(Commands.literal("cap")
+                .requires(ApoliPermissions.require("origins.command.origin.cap", 2))
+                .executes(ctx -> capList(ctx, null))
+                .then(Commands.literal("list")
+                    .executes(ctx -> capList(ctx, null))
+                    .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
+                        .executes(ctx -> capList(ctx, ResourceLocationArgument.getId(ctx, "layer")))))
+                .then(Commands.literal("clear")
+                    .executes(ctx -> capClear(ctx, null, null))
+                    .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
+                        .executes(ctx -> capClear(ctx, ResourceLocationArgument.getId(ctx, "layer"), null))
+                        .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
+                            .executes(ctx -> capClear(ctx, ResourceLocationArgument.getId(ctx, "layer"),
+                                ResourceLocationArgument.getId(ctx, "origin")))))))
             .then(StorageCommands.build()));
+    }
+
+    private static int capList(CommandContext<CommandSourceStack> ctx, ResourceLocation onlyLayer) {
+        MinecraftServer server = ctx.getSource().getServer();
+        OriginClaims claims = OriginClaims.get(server);
+        MutableComponent out = Component.literal("Origin caps:").withStyle(ChatFormatting.BOLD);
+        int listed = 0;
+        for (OriginLayer layer : OriginLayers.all()) {
+            if (onlyLayer != null && !onlyLayer.equals(layer.id())) continue;
+            for (ResourceLocation originId : layer.allOrigins()) {
+                int limit = OriginCaps.limitOf(layer.id(), originId);
+                if (limit <= OriginCaps.UNLIMITED) continue;
+                java.util.Set<java.util.UUID> holders = claims.holders(layer.id(), originId);
+                listed++;
+                out.append(Component.literal("\n - " + layer.id() + " / " + originId + ": ")
+                        .withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(holders.size() + "/" + limit)
+                        .withStyle(holders.size() >= limit ? ChatFormatting.RED : ChatFormatting.GREEN))
+                    .append(Component.literal(holders.isEmpty() ? "" : " " + names(server, holders))
+                        .withStyle(ChatFormatting.GRAY));
+            }
+        }
+        if (listed == 0) {
+            ctx.getSource().sendSuccess(() -> Component.literal(onlyLayer == null
+                ? "No origin declares a player cap."
+                : "No origin on layer " + onlyLayer + " declares a player cap."), false);
+            return 0;
+        }
+        int total = listed;
+        ctx.getSource().sendSuccess(() -> out, false);
+        return total;
+    }
+
+    private static String names(MinecraftServer server, java.util.Set<java.util.UUID> holders) {
+        StringBuilder builder = new StringBuilder("[");
+        for (java.util.UUID uuid : holders) {
+            if (builder.length() > 1) builder.append(", ");
+            ServerPlayer online = server.getPlayerList().getPlayer(uuid);
+            if (online != null) {
+                builder.append(online.getGameProfile().getName());
+                continue;
+            }
+            builder.append(server.getProfileCache() == null
+                ? uuid.toString()
+                : server.getProfileCache().get(uuid).map(com.mojang.authlib.GameProfile::getName).orElse(uuid.toString()));
+        }
+        return builder.append(']').toString();
+    }
+
+    private static int capClear(CommandContext<CommandSourceStack> ctx, ResourceLocation layerId,
+                                ResourceLocation originId) {
+        MinecraftServer server = ctx.getSource().getServer();
+        OriginClaims claims = OriginClaims.get(server);
+        boolean cleared;
+        String what;
+        if (layerId == null) {
+            cleared = claims.clearAll();
+            what = "every layer";
+        } else if (originId == null) {
+            cleared = claims.clearLayer(layerId);
+            what = layerId.toString();
+        } else {
+            cleared = claims.clearOrigin(layerId, originId);
+            what = layerId + " / " + originId;
+        }
+        if (!cleared) {
+            ctx.getSource().sendFailure(Component.literal("No origin claims recorded for " + what + "."));
+            return 0;
+        }
+        for (ServerPlayer online : server.getPlayerList().getPlayers()) OriginManager.refreshClaims(online);
+        OriginsServerNetwork.broadcastOriginCaps(server);
+        String target = what;
+        ctx.getSource().sendSuccess(() -> Component.literal("Cleared origin claims for " + target
+            + ". Players who are online kept theirs; offline holders released their slot."), true);
+        return 1;
     }
 
     private static int revoke(CommandContext<CommandSourceStack> ctx, ResourceLocation originId)

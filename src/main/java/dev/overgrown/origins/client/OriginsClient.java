@@ -53,6 +53,13 @@ public final class OriginsClient {
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> ItemProperties.register(OriginsItems.ORB_OF_ORIGIN.get(), Origins.id("season"),
             (stack, level, entity, seed) -> Season.current().modelValue()));
+        dev.overgrown.origins.origin.OriginManager.setClientHolding((player, layerId, originId) -> {
+            java.util.UUID uuid = player.getUUID();
+            if (originId.equals(OriginsClientState.get(uuid).get(layerId))) return true;
+            java.util.List<net.minecraft.resources.ResourceLocation> pool =
+                OriginsClientState.getPool(uuid).get(layerId);
+            return pool != null && pool.contains(originId);
+        });
     }
 
     public static final class GameBus {
@@ -61,6 +68,7 @@ public final class OriginsClient {
         @SubscribeEvent
         public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
             OriginRollQueue.clear();
+            dev.overgrown.origins.origin.OriginCaps.clear();
         }
 
         @SubscribeEvent
