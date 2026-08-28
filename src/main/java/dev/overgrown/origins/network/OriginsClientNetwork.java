@@ -37,6 +37,11 @@ public final class OriginsClientNetwork {
             context.client().execute(() -> OriginsClientState.setOrigins(payload.subject(), payload.picks())));
 
         ClientPlayNetworking.registerGlobalReceiver(
+            dev.overgrown.origins.network.payload.SyncOriginCapsS2C.TYPE, (payload, context) ->
+                context.client().execute(() ->
+                    dev.overgrown.origins.origin.OriginCaps.replaceAll(payload.taken())));
+
+        ClientPlayNetworking.registerGlobalReceiver(
             dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C.TYPE, (payload, context) ->
                 context.client().execute(() -> {
                     OriginsClientState.setSwaps(payload.subject(), payload.swaps());
@@ -69,7 +74,10 @@ public final class OriginsClientNetwork {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
             client -> dev.overgrown.origins.client.OriginRollQueue.tick(client));
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
-            (handler, client) -> dev.overgrown.origins.client.OriginRollQueue.clear());
+            (handler, client) -> {
+                dev.overgrown.origins.client.OriginRollQueue.clear();
+                dev.overgrown.origins.origin.OriginCaps.clear();
+            });
 
         ClientPlayNetworking.registerGlobalReceiver(CloseChooseScreenS2C.TYPE, (payload, context) ->
             context.client().execute(() -> {

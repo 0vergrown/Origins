@@ -70,6 +70,19 @@ public final class OriginsServerNetwork {
         ServerPlayNetworking.send(player, new OpenSwapScreenS2C(targetLayerId));
     }
 
+    public static void sendOriginCaps(ServerPlayer player) {
+        if (!ServerPlayNetworking.canSend(player, dev.overgrown.origins.network.payload.SyncOriginCapsS2C.TYPE)) return;
+        ServerPlayNetworking.send(player,
+            new dev.overgrown.origins.network.payload.SyncOriginCapsS2C(
+                dev.overgrown.origins.origin.OriginCaps.snapshot()));
+    }
+
+    public static void broadcastOriginCaps(MinecraftServer server) {
+        dev.overgrown.origins.origin.OriginCaps.replaceAll(
+            dev.overgrown.origins.origin.OriginClaims.get(server).counts());
+        for (ServerPlayer recipient : server.getPlayerList().getPlayers()) sendOriginCaps(recipient);
+    }
+
     public static void sendRegistries(ServerPlayer player) {
         ServerPlayNetworking.send(player, new SyncRegistriesS2C(
             new ArrayList<>(OriginRegistry.all()), new ArrayList<>(OriginLayers.all())));
@@ -134,6 +147,16 @@ public final class OriginsServerNetwork {
             Origins.LOGGER.warn("{} tried to choose unchoosable origin {}",
                 player.getName().getString(), originId);
             advanceOrClose(player, fromOrb);
+            return;
+        }
+        if (!originId.equals(OriginRegistry.EMPTY_ID) && !OriginManager.availableTo(player, layerId, originId)) {
+            int limit = dev.overgrown.origins.origin.OriginCaps.limitOf(layerId, originId);
+            Origins.LOGGER.info("[Origins] {} tried to take {} on layer {}, which is capped at {} player(s) and full",
+                player.getName().getString(), originId, layerId, limit);
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
+                "origins.gui.origin_taken", origin.name(), limit).withStyle(net.minecraft.ChatFormatting.RED));
+            sendOriginCaps(player);
+            openChooseScreen(player, layer, fromOrb);
             return;
         }
         OriginManager.chooseOrigin(player, layerId, originId, fromOrb);

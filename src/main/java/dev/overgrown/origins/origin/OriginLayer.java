@@ -37,7 +37,8 @@ public record OriginLayer(
     boolean revalidate,
     RandomConfig random,
     RandomiserConfig randomiser,
-    SwapConfig swap
+    SwapConfig swap,
+    int maxPlayersPerOrigin
 ) implements Comparable<OriginLayer> {
 
     public OriginLayer {
@@ -215,10 +216,12 @@ public record OriginLayer(
             Codec.BOOL.optionalFieldOf("hidden", false).forGetter(OriginLayer::hidden),
             Codec.BOOL.optionalFieldOf("revalidate").forGetter(l -> Optional.of(l.revalidate())),
             RandomiserConfig.CODEC.optionalFieldOf("randomiser", RandomiserConfig.DEFAULT).forGetter(OriginLayer::randomiser),
-            SwapConfig.CODEC.optionalFieldOf("swappable", SwapConfig.DISABLED).forGetter(OriginLayer::swap)
+            SwapConfig.CODEC.optionalFieldOf("swappable", SwapConfig.DISABLED).forGetter(OriginLayer::swap),
+            Codec.INT.optionalFieldOf("max_players_per_origin", OriginCaps.UNLIMITED)
+                .forGetter(OriginLayer::maxPlayersPerOrigin)
         ).apply(instance, (origins, order, enabled, name, gui, missingName, missingDesc, randomBlock,
                            legacy, defaultOrigin, autoChoose, hidden,
-                           revalidate, randomiser, swap) -> {
+                           revalidate, randomiser, swap, maxPlayersPerOrigin) -> {
             boolean allowRandom;
             boolean allowUnchoosable;
             List<ResourceLocation> exclude;
@@ -237,7 +240,7 @@ public record OriginLayer(
             }
             return new OriginLayer(id, order, enabled, origins, name, gui.choose(), gui.view(), missingName, missingDesc,
                 allowRandom, allowUnchoosable, exclude, defaultOrigin.orElse(null), autoChoose, hidden,
-                revalidate.orElse(autoChoose), randomConfig, randomiser, swap);
+                revalidate.orElse(autoChoose), randomConfig, randomiser, swap, maxPlayersPerOrigin);
         }));
     }
 
@@ -282,6 +285,7 @@ public record OriginLayer(
         buf.writeOptional(swap.targetLayer(), FriendlyByteBuf::writeResourceLocation);
         buf.writeBoolean(swap.shiftReturnsToMain());
         buf.writeBoolean(swap.wrapToMain());
+        buf.writeVarInt(maxPlayersPerOrigin);
     }
 
     public static OriginLayer read(FriendlyByteBuf buf) {
@@ -314,9 +318,11 @@ public record OriginLayer(
             buf.readOptional(FriendlyByteBuf::readResourceLocation),
             buf.readBoolean(), buf.readBoolean());
 
+        int maxPlayersPerOrigin = buf.readVarInt();
+
         return new OriginLayer(id, order, enabled, conditioned, nameKey, chooseTitleKey, viewTitleKey,
             missingNameKey, missingDescriptionKey, allowRandom, randomAllowsUnchoosable,
             excludedFromRandom, defaultOrigin, autoChoose, hidden, revalidate,
-            randomConfig, randomiserConfig, swapConfig);
+            randomConfig, randomiserConfig, swapConfig, maxPlayersPerOrigin);
     }
 }

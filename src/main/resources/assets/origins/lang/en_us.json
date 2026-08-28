@@ -35,6 +35,7 @@
     "origins.gui.swap_origin.empty": "You have nothing to swap to.",
     "origins.gui.swap_origin.button": "Swap to another origin",
     "origins.gui.no_options": "No origins available for you on this layer.",
+    "origins.gui.origin_taken": "%s is already taken. Only %s player(s) may have it.",
     "origins.gui.impact.impact": "Impact",
     "origins.gui.impact.none": "None",
     "origins.gui.impact.low": "Low",

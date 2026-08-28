@@ -33,6 +33,7 @@ public final class OriginRandomizer {
             Origin origin = OriginRegistry.get(id);
             if (origin == null) continue;
             if (!origin.choosable() && !layer.randomAllowsUnchoosable()) continue;
+            if (!OriginManager.availableTo(player, layer.id(), id)) continue;
             eligible.add(id);
         }
         if (eligible.isEmpty()) return null;
