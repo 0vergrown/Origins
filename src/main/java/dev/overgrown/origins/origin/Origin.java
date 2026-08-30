@@ -31,17 +31,19 @@ public record Origin(
     Optional<Component> nameText,
     Optional<Component> descriptionText,
     float nameScrollSpeed,
-    int maxPlayers
+    int maxPlayers,
+    List<OriginUpgrade> upgrades
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
+        upgrades = List.copyOf(upgrades);
     }
 
     public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
                   int order, int loadingPriority, boolean unchoosable, boolean special,
                   Optional<Component> nameText, Optional<Component> descriptionText, float nameScrollSpeed) {
         this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText,
-            nameScrollSpeed, OriginCaps.INHERIT);
+            nameScrollSpeed, OriginCaps.INHERIT, List.of());
     }
 
     public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
@@ -90,11 +92,12 @@ public record Origin(
             TextComponent.CODEC.optionalFieldOf("name").forGetter(Origin::nameText),
             TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText),
             Codec.FLOAT.optionalFieldOf("name_scroll_speed", 1.0f).forGetter(Origin::nameScrollSpeed),
-            Codec.INT.optionalFieldOf("max_players", OriginCaps.INHERIT).forGetter(Origin::maxPlayers)
+            Codec.INT.optionalFieldOf("max_players", OriginCaps.INHERIT).forGetter(Origin::maxPlayers),
+            OriginUpgrade.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(Origin::upgrades)
         ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description,
-                           nameScrollSpeed, maxPlayers) ->
+                           nameScrollSpeed, maxPlayers, upgrades) ->
             new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description,
-                nameScrollSpeed, maxPlayers)));
+                nameScrollSpeed, maxPlayers, upgrades)));
     }
 
     public Component name() {
@@ -111,7 +114,8 @@ public record Origin(
 
     public static Origin empty(ResourceLocation id) {
         return new Origin(id, Collections.emptyList(), IconData.EMPTY, Impact.NONE,
-            Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty(), 1.0f, OriginCaps.UNLIMITED);
+            Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty(), 1.0f, OriginCaps.UNLIMITED,
+            List.of());
     }
 
     public void write(RegistryFriendlyByteBuf buf) {
@@ -127,6 +131,8 @@ public record Origin(
         ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, descriptionText);
         buf.writeFloat(nameScrollSpeed);
         buf.writeVarInt(maxPlayers);
+        buf.writeVarInt(upgrades.size());
+        for (OriginUpgrade upgrade : upgrades) upgrade.write(buf);
     }
 
     public static Origin read(RegistryFriendlyByteBuf buf) {
@@ -142,7 +148,13 @@ public record Origin(
         Optional<Component> descriptionText = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
         float nameScrollSpeed = buf.readFloat();
         int maxPlayers = buf.readVarInt();
+        int upgradeCount = buf.readVarInt();
+        List<OriginUpgrade> upgrades = new ArrayList<>(upgradeCount);
+        for (int i = 0; i < upgradeCount; i++) {
+            OriginUpgrade upgrade = OriginUpgrade.read(buf);
+            if (upgrade != null) upgrades.add(upgrade);
+        }
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
-            nameText, descriptionText, nameScrollSpeed, maxPlayers);
+            nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades);
     }
 }

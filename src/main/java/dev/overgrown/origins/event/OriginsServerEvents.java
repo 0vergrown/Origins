@@ -75,6 +75,9 @@ public final class OriginsServerEvents {
             }
         });
 
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(
+            dev.overgrown.origins.origin.OriginUpgrades::tick);
+
         ServerLifecycleEvents.SERVER_STARTED.register(OriginsServerNetwork::broadcastOriginCaps);
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server ->

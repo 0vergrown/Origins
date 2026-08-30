@@ -10,6 +10,7 @@ import java.util.Map;
 
 public final class OriginRegistry {
     private static final Map<ResourceLocation, Origin> BY_ID = new HashMap<>();
+    private static boolean anyUpgrades;
     public static final ResourceLocation EMPTY_ID = ResourceLocation.fromNamespaceAndPath("origins", "empty");
 
     static {
@@ -20,6 +21,11 @@ public final class OriginRegistry {
 
     public static void register(Origin origin) {
         BY_ID.put(origin.id(), origin);
+        if (!origin.upgrades().isEmpty()) anyUpgrades = true;
+    }
+
+    public static boolean anyUpgrades() {
+        return anyUpgrades;
     }
 
     public static @Nullable Origin get(ResourceLocation id) {
@@ -46,6 +52,10 @@ public final class OriginRegistry {
     public static void replaceAll(Collection<Origin> origins) {
         BY_ID.clear();
         BY_ID.put(EMPTY_ID, Origin.empty(EMPTY_ID));
-        for (Origin origin : origins) BY_ID.put(origin.id(), origin);
+        anyUpgrades = false;
+        for (Origin origin : origins) {
+            BY_ID.put(origin.id(), origin);
+            if (!origin.upgrades().isEmpty()) anyUpgrades = true;
+        }
     }
 }
