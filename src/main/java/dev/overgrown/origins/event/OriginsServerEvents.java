@@ -23,6 +23,11 @@ public final class OriginsServerEvents {
     private OriginsServerEvents() {}
 
     @SubscribeEvent
+    public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        dev.overgrown.origins.origin.OriginUpgrades.tick(event.getServer());
+    }
+
+    @SubscribeEvent
     public static void onRegisterCommands(net.neoforged.neoforge.event.RegisterCommandsEvent event) {
         dev.overgrown.origins.command.OriginCommands.register(event.getDispatcher());
     }
