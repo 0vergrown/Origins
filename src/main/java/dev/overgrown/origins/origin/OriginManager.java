@@ -3,6 +3,7 @@ package dev.overgrown.origins.origin;
 import dev.overgrown.apoli.PowerContainerAttachment;
 import dev.overgrown.apoli.power.ApoliPowers;
 import dev.overgrown.apoli.power.PowerContainer;
+import dev.overgrown.apoli.power.PowerContainerImpl;
 import dev.overgrown.apoli.condition.EntityCondition;
 import dev.overgrown.apoli.condition.builtin.meta.AllOfMeta;
 import dev.overgrown.apoli.condition.builtin.meta.AnyOfMeta;
@@ -115,6 +116,7 @@ public final class OriginManager {
                 chooseOrigin(recipient, toLayer, originId, false);
             }
             any = true;
+            if (donor != recipient) copyResources(donor, recipient, originId);
             if (copy || (donor == recipient && fromLayer.equals(toLayer))) continue;
             if (takeFromDonor(donor, fromLayer, originId)) donorChanged = true;
         }
@@ -160,6 +162,55 @@ public final class OriginManager {
         if (originId == null || originId.equals(OriginRegistry.EMPTY_ID)) return;
         if (OriginRegistry.get(originId) == null || out.contains(originId)) return;
         out.add(originId);
+    }
+
+    public static boolean upgradeOrigin(ServerPlayer player, ResourceLocation layerId, ResourceLocation originId) {
+        OriginLayer layer = OriginLayers.get(layerId);
+        Origin origin = OriginRegistry.get(originId);
+        if (layer == null || origin == null || layer.swappable()) return false;
+        PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
+        if (originId.equals(state.getOrigin(layerId))) return false;
+        state.setOrigin(layerId, originId);
+        state.setPinned(layerId, true);
+        applyOriginPowers(player, layer, origin);
+        reconcileLayers(player);
+        MinecraftServer server = player.getServer();
+        if (server != null) OriginsServerNetwork.broadcastPlayerOrigins(server, player);
+        return true;
+    }
+
+    public static boolean upgradePooledOrigin(ServerPlayer player, ResourceLocation swapLayerId,
+                                              ResourceLocation fromOriginId, ResourceLocation toOriginId) {
+        if (OriginRegistry.get(toOriginId) == null) return false;
+        PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
+        if (state == null || state.poolOf(swapLayerId).contains(toOriginId)) return false;
+        if (!SwapManager.grantToPool(player, swapLayerId, toOriginId)) return false;
+        SwapManager.revokeFromPool(player, swapLayerId, fromOriginId);
+        MinecraftServer server = player.getServer();
+        if (server != null) OriginsServerNetwork.broadcastPlayerOrigins(server, player);
+        return true;
+    }
+
+    private static void copyResources(ServerPlayer donor, ServerPlayer recipient, ResourceLocation originId) {
+        Origin origin = OriginRegistry.get(originId);
+        if (origin == null) return;
+        if (!(PowerContainerAttachment.get(donor) instanceof PowerContainerImpl source)) return;
+        if (!(PowerContainerAttachment.getOrCreate(recipient) instanceof PowerContainerImpl target)) return;
+        for (ResourceLocation powerId : origin.powers()) {
+            copyPowerResources(source, target, powerId);
+            Set<ResourceLocation> nested = dev.overgrown.apoli.power.PowerSources.powersOf(powerId);
+            if (nested == null) continue;
+            for (ResourceLocation sub : nested) copyPowerResources(source, target, sub);
+        }
+    }
+
+    private static void copyPowerResources(PowerContainerImpl source, PowerContainerImpl target,
+                                           ResourceLocation powerId) {
+        if (!source.hasPower(powerId) || !target.hasPower(powerId)) return;
+        java.util.OptionalInt single = source.getAuxInt(powerId);
+        if (single.isPresent()) target.setAuxInt(powerId, single.getAsInt());
+        int[] table = source.getAuxInts(powerId);
+        if (table != null) target.setAuxInts(powerId, table.clone());
     }
 
     private static boolean takeFromDonor(ServerPlayer donor, ResourceLocation fromLayer, ResourceLocation originId) {
