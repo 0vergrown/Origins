@@ -1,14 +1,82 @@
 {
   "type": "origins:fire_projectile",
+  "texture_location": "minecraft:textures/item/ender_pearl.png",
   "cooldown": 30,
   "hud_render": {
     "sprite_location": "apoli:textures/gui/resource_bar.png",
     "bar_index": 6
   },
-  "entity_type": "minecraft:ender_pearl",
-  "sound": "minecraft:entity.ender_pearl.throw",
   "speed": 1.5,
   "divergence": 1,
+  "sound": "minecraft:entity.ender_pearl.throw",
+  "bientity_action_on_miss": {
+    "type": "apoli:teleport_to",
+    "success_action": {
+      "type": "apoli:actor_action",
+      "action": {
+        "type": "apoli:and",
+        "actions": [
+          {
+            "type": "apoli:set_fall_distance",
+            "fall_distance": 0
+          },
+          {
+            "type": "apoli:spawn_particles",
+            "particle": "minecraft:portal",
+            "count": 32,
+            "speed": 0.5,
+            "offset_y": 1.0,
+            "spread": {
+              "x": 0.4,
+              "y": 0.6,
+              "z": 0.4
+            }
+          },
+          {
+            "type": "apoli:play_sound",
+            "sound": "minecraft:entity.enderman.teleport",
+            "category": "players",
+            "volume": 1.0,
+            "pitch": 1.0
+          }
+        ]
+      }
+    }
+  },
+  "owner_target_bientity_action_on_hit": {
+    "type": "apoli:teleport_to",
+    "success_action": {
+      "type": "apoli:actor_action",
+      "action": {
+        "type": "apoli:and",
+        "actions": [
+          {
+            "type": "apoli:set_fall_distance",
+            "fall_distance": 0
+          },
+          {
+            "type": "apoli:spawn_particles",
+            "particle": "minecraft:portal",
+            "count": 32,
+            "speed": 0.5,
+            "offset_y": 1.0,
+            "spread": {
+              "x": 0.4,
+              "y": 0.6,
+              "z": 0.4
+            }
+          },
+          {
+            "type": "apoli:play_sound",
+            "sound": "minecraft:entity.enderman.teleport",
+            "category": "players",
+            "volume": 1.0,
+            "pitch": 1.0
+          }
+        ]
+      }
+    }
+  },
   "key": {
     "key": "key.origins.primary_active",
     "continuous": false
