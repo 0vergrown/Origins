@@ -1,14 +1,10 @@
 package dev.overgrown.origins.item;
 
-import dev.overgrown.apoli.PowerContainerAttachment;
-import dev.overgrown.apoli.power.PowerContainer;
 import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.OriginsServerNetwork;
 import dev.overgrown.origins.origin.OriginLayer;
 import dev.overgrown.origins.origin.OriginManager;
-import dev.overgrown.origins.origin.SwapManager;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -17,8 +13,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
-
-import java.util.Map;
 
 public final class OrbOfOriginItem extends Item {
 
@@ -33,20 +27,10 @@ public final class OrbOfOriginItem extends Item {
             return InteractionResultHolder.consume(stack);
         }
 
+        OriginManager.clearAllLayers(player);
+
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
-
-        PowerContainer container = PowerContainerAttachment.getOrCreate(player);
-        SwapManager.revokeAllSwaps(player);
-        for (Map.Entry<ResourceLocation, ResourceLocation> entry : state.snapshot().entrySet()) {
-            if (container != null) {
-                container.removeAllFromSource(layerSource(entry.getKey()));
-            }
-            state.clearOrigin(entry.getKey());
-        }
-
-        OriginManager.reconcileLayers(player);
-
-        OriginLayer first = OriginManager.firstUnchosenLayer(player, state);
+        OriginLayer first = OriginManager.promptLayer(player, state);
         if (first != null) {
             state.setSelectingOrigin(true);
             OriginsServerNetwork.openChooseScreen(player, first, true);
@@ -57,9 +41,5 @@ public final class OrbOfOriginItem extends Item {
             stack.shrink(1);
         }
         return InteractionResultHolder.success(stack);
-    }
-
-    private static ResourceLocation layerSource(ResourceLocation layerId) {
-        return ResourceLocation.fromNamespaceAndPath(layerId.getNamespace(), "layer/" + layerId.getPath());
     }
 }
