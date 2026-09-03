@@ -72,12 +72,16 @@ public final class OriginCommands {
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(OriginCommands::getOne))))
             .then(Commands.literal("gui").requires(ApoliPermissions.require("origins.command.origin.gui", 2))
-                .executes(ctx -> gui(ctx, List.of(ctx.getSource().getPlayerOrException()), null))
+                .executes(ctx -> gui(ctx, List.of(ctx.getSource().getPlayerOrException()), null, true))
+                .then(Commands.literal("unchosen")
+                    .executes(ctx -> gui(ctx, List.of(ctx.getSource().getPlayerOrException()), null, false))
+                    .then(Commands.argument("targets", EntityArgument.players())
+                        .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"), null, false))))
                 .then(Commands.argument("targets", EntityArgument.players())
-                    .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"), null))
+                    .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"), null, true))
                     .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
                         .executes(ctx -> gui(ctx, EntityArgument.getPlayers(ctx, "targets"),
-                            ResourceLocationArgument.getId(ctx, "layer"))))))
+                            ResourceLocationArgument.getId(ctx, "layer"), false)))))
             .then(Commands.literal("random").requires(ApoliPermissions.require("origins.command.origin.random", 2))
                 .executes(ctx -> random(ctx, List.of(ctx.getSource().getPlayerOrException()), null))
                 .then(Commands.argument("targets", EntityArgument.players())
@@ -323,21 +327,33 @@ public final class OriginCommands {
     }
 
     private static int gui(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> targets,
-                           ResourceLocation layerId) {
+                           ResourceLocation layerId, boolean reset) {
+        if (layerId != null && OriginLayers.get(layerId) == null) {
+            ctx.getSource().sendFailure(Component.literal("Unknown origin layer: " + layerId));
+            return 0;
+        }
         int opened = 0;
         for (ServerPlayer player : targets) {
+            if (reset) OriginManager.clearAllLayers(player);
+            PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
             OriginLayer layer = layerId != null
                 ? OriginLayers.get(layerId)
-                : OriginManager.firstUnchosenLayer(player, PlayerOriginsAttachment.getOrCreate(player));
-            if (layer == null && layerId == null) {
-                List<OriginLayer> enabled = OriginLayers.enabledFor(player);
-                if (enabled.isEmpty()) continue;
-                layer = enabled.get(0);
+                : (reset ? OriginManager.promptLayer(player, state)
+                         : OriginManager.firstUnchosenLayer(player, state));
+            if (layer == null) {
+                if (reset) OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
+                continue;
             }
-            if (layer == null) continue;
-            PlayerOriginsAttachment.getOrCreate(player).setSelectingOrigin(true);
-            OriginsServerNetwork.openChooseScreen(player, layer, false);
+            state.setSelectingOrigin(true);
+            OriginsServerNetwork.openChooseScreen(player, layer, reset);
+            if (reset) OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
             opened++;
+        }
+        if (opened == 0) {
+            ctx.getSource().sendFailure(Component.literal(reset
+                ? "No origin layer with choosable origins is enabled for those players."
+                : "Those players have already chosen an origin on every layer."));
+            return 0;
         }
         int finalOpened = opened;
         ctx.getSource().sendSuccess(() -> Component.literal("Opened the origin screen for " + finalOpened + " player(s)"), true);
