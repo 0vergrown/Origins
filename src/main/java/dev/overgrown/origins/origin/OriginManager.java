@@ -470,6 +470,26 @@ public final class OriginManager {
         return true;
     }
 
+    public static void clearAllLayers(ServerPlayer player) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
+        PowerContainer container = PowerContainerAttachment.getOrCreate(player);
+        SwapManager.revokeAllSwaps(player);
+        for (ResourceLocation layerId : state.snapshot().keySet()) {
+            if (container != null) container.removeAllFromSource(sourceFor(layerId));
+            state.clearOrigin(layerId);
+        }
+        reconcileLayers(player);
+    }
+
+    public static OriginLayer promptLayer(Player player, PlayerOriginsImpl state) {
+        OriginLayer unchosen = firstUnchosenLayer(player, state);
+        if (unchosen != null) return unchosen;
+        for (OriginLayer layer : OriginLayers.enabledFor(player)) {
+            if (hasChoosableOrigins(player, layer)) return layer;
+        }
+        return null;
+    }
+
     public static OriginLayer firstUnchosenLayer(Player player, PlayerOriginsImpl state) {
         for (OriginLayer layer : OriginLayers.enabledFor(player)) {
             if (!hasChoosableOrigins(player, layer)) continue;
