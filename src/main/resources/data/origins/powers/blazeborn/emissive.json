@@ -1,0 +1,6 @@
+{
+  "type": "apoli:emissive",
+  "luminance": 10,
+  "water_sensitive": true,
+  "hidden": true
+}

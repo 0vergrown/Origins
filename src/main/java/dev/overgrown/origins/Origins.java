@@ -46,6 +46,7 @@ public final class Origins implements ModInitializer {
         NamespaceAlias.addAlias(MOD_ID, "apoli");
 
         ConditionTypes.ENTITY.register(id("origin"), new OriginCondition());
+        ConditionTypes.ENTITY.register(id("origin_tag"), new dev.overgrown.origins.condition.OriginTagCondition());
         ConditionTypes.ENTITY.register(id("stored_origin"), new StoredOriginCondition());
         ConditionTypes.ENTITY.register(id("stored_value"), new StoredValueCondition());
         ActionTypes.BI_ENTITY.register(id("copy_origin"), new CopyOriginAction());
@@ -66,6 +67,7 @@ public final class Origins implements ModInitializer {
         StoredDataAttachment.init();
 
         OriginsItems.register();
+        dev.overgrown.origins.enchantment.OriginsEnchantments.register();
         OriginsServerNetwork.register();
         OriginsServerEvents.register();
         BadgeManager.init();
