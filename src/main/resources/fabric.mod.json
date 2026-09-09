@@ -1,39 +1,39 @@
 {
-	"schemaVersion": 1,
-	"id": "origins",
-	"version": "${version}",
-	"name": "Origins",
-	"description": "Adds the Origins system on top of the Apoli library: origins, layers, choose-on-first-join screen, and the Orb of Origin.",
-	"authors": [
-		"Overgrown"
-	],
-	"license": "The A/O License",
-	"icon": "assets/origins/textures/item/orb_of_origin/default/orb_of_origin.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"dev.overgrown.origins.Origins"
-		],
-		"client": [
-			"dev.overgrown.origins.client.OriginsClient"
-		],
-		"modmenu": [
-			"dev.overgrown.origins.compat.modmenu.OriginsModMenu"
-		]
-	},
-	"custom": {
-		"catalogue": {
-			"configFactory": "dev.overgrown.origins.compat.catalogue.CatalogueConfigFactory",
-			"icon": {
-				"item": "origins:orb_of_origin"
-			}
-		}
-	},
-	"depends": {
-		"fabricloader": ">=0.16.0",
-		"minecraft": "~1.21.1",
-		"java": ">=21",
-		"fabric-api": "*",
-		"apoli": ">=1.60.0"
-	}
+  "schemaVersion": 1,
+  "id": "origins",
+  "version": "${version}",
+  "name": "Origins",
+  "description": "Adds the Origins system on top of the Apoli library: origins, layers, choose-on-first-join screen, and the Orb of Origin.",
+  "authors": [
+    "Overgrown"
+  ],
+  "license": "The A/O License",
+  "icon": "assets/origins/textures/item/orb_of_origin/default/orb_of_origin.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.overgrown.origins.Origins"
+    ],
+    "client": [
+      "dev.overgrown.origins.client.OriginsClient"
+    ],
+    "modmenu": [
+      "dev.overgrown.origins.compat.modmenu.OriginsModMenu"
+    ]
+  },
+  "custom": {
+    "catalogue": {
+      "configFactory": "dev.overgrown.origins.compat.catalogue.CatalogueConfigFactory",
+      "icon": {
+        "item": "origins:orb_of_origin"
+      }
+    }
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "apoli": ">=1.73.0"
+  }
 }
