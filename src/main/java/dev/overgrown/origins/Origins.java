@@ -42,6 +42,7 @@ public final class Origins {
         }
 
         ConditionTypes.ENTITY.register(id("origin"), new OriginCondition());
+        ConditionTypes.ENTITY.register(id("origin_tag"), new dev.overgrown.origins.condition.OriginTagCondition());
         ConditionTypes.ENTITY.register(id("stored_origin"), new StoredOriginCondition());
         ConditionTypes.ENTITY.register(id("stored_value"), new StoredValueCondition());
 

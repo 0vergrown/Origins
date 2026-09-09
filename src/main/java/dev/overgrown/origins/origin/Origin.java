@@ -32,11 +32,28 @@ public record Origin(
     Optional<Component> descriptionText,
     float nameScrollSpeed,
     int maxPlayers,
-    List<OriginUpgrade> upgrades
+    List<OriginUpgrade> upgrades,
+    List<String> tags
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
         upgrades = List.copyOf(upgrades);
+        tags = List.copyOf(tags);
+    }
+
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
+                  int order, int loadingPriority, boolean unchoosable, boolean special,
+                  Optional<Component> nameText, Optional<Component> descriptionText,
+                  float nameScrollSpeed, int maxPlayers, List<OriginUpgrade> upgrades) {
+        this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText,
+            nameScrollSpeed, maxPlayers, upgrades, List.of());
+    }
+
+    public boolean hasTag(String tag) {
+        for (int i = 0; i < tags.size(); i++) {
+            if (tags.get(i).equals(tag)) return true;
+        }
+        return false;
     }
 
     public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
@@ -74,6 +91,10 @@ public record Origin(
         impact -> Either.<Impact, Impact>left(impact)
     );
 
+    private static final Codec<List<String>> TAGS_CODEC = Codec.either(Codec.STRING, Codec.STRING.listOf()).xmap(
+        either -> either.map(List::of, List::copyOf),
+        list -> list.size() == 1 ? Either.left(list.get(0)) : Either.right(list));
+
     private static Impact impactByLevel(int level) {
         for (Impact impact : Impact.values()) {
             if (impact.level() == level) return impact;
@@ -93,11 +114,12 @@ public record Origin(
             TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText),
             Codec.FLOAT.optionalFieldOf("name_scroll_speed", 1.0f).forGetter(Origin::nameScrollSpeed),
             Codec.INT.optionalFieldOf("max_players", OriginCaps.INHERIT).forGetter(Origin::maxPlayers),
-            OriginUpgrade.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(Origin::upgrades)
+            OriginUpgrade.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(Origin::upgrades),
+            TAGS_CODEC.optionalFieldOf("tags", List.of()).forGetter(Origin::tags)
         ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description,
-                           nameScrollSpeed, maxPlayers, upgrades) ->
+                           nameScrollSpeed, maxPlayers, upgrades, tags) ->
             new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description,
-                nameScrollSpeed, maxPlayers, upgrades)));
+                nameScrollSpeed, maxPlayers, upgrades, tags)));
     }
 
     public Component name() {
@@ -115,7 +137,7 @@ public record Origin(
     public static Origin empty(ResourceLocation id) {
         return new Origin(id, Collections.emptyList(), IconData.EMPTY, Impact.NONE,
             Integer.MAX_VALUE, 0, true, true, Optional.empty(), Optional.empty(), 1.0f, OriginCaps.UNLIMITED,
-            List.of());
+            List.of(), List.of());
     }
 
     public void write(RegistryFriendlyByteBuf buf) {
@@ -133,6 +155,7 @@ public record Origin(
         buf.writeVarInt(maxPlayers);
         buf.writeVarInt(upgrades.size());
         for (OriginUpgrade upgrade : upgrades) upgrade.write(buf);
+        buf.writeCollection(tags, FriendlyByteBuf::writeUtf);
     }
 
     public static Origin read(RegistryFriendlyByteBuf buf) {
@@ -154,7 +177,8 @@ public record Origin(
             OriginUpgrade upgrade = OriginUpgrade.read(buf);
             if (upgrade != null) upgrades.add(upgrade);
         }
+        List<String> tags = buf.readList(FriendlyByteBuf::readUtf);
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
-            nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades);
+            nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags);
     }
 }
