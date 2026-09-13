@@ -114,7 +114,8 @@ public record Origin(
             TextComponent.CODEC.optionalFieldOf("description").forGetter(Origin::descriptionText),
             Codec.FLOAT.optionalFieldOf("name_scroll_speed", 1.0f).forGetter(Origin::nameScrollSpeed),
             Codec.INT.optionalFieldOf("max_players", OriginCaps.INHERIT).forGetter(Origin::maxPlayers),
-            OriginUpgrade.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(Origin::upgrades),
+            dev.overgrown.apoli.codec.LoggedOptionalField.of("upgrades", OriginUpgrade.CODEC.listOf(), List.of())
+                .forGetter(Origin::upgrades),
             TAGS_CODEC.optionalFieldOf("tags", List.of()).forGetter(Origin::tags)
         ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description,
                            nameScrollSpeed, maxPlayers, upgrades, tags) ->

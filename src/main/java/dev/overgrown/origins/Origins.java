@@ -48,6 +48,8 @@ public final class Origins implements ModInitializer {
 
         ConditionTypes.ENTITY.register(id("origin"), new OriginCondition());
         ConditionTypes.ENTITY.register(id("origin_tag"), new dev.overgrown.origins.condition.OriginTagCondition());
+        ConditionTypes.ENTITY.register(id("impact"), new dev.overgrown.origins.condition.ImpactCondition());
+        ConditionTypes.BI_ENTITY.register(id("impact"), new dev.overgrown.origins.condition.ImpactBiEntityCondition());
         ConditionTypes.ENTITY.register(id("stored_origin"), new StoredOriginCondition());
         ConditionTypes.ENTITY.register(id("stored_value"), new StoredValueCondition());
         ActionTypes.BI_ENTITY.register(id("copy_origin"), new CopyOriginAction());
@@ -73,6 +75,7 @@ public final class Origins implements ModInitializer {
         OriginsServerEvents.register();
         BadgeManager.init();
         dev.overgrown.origins.origin.OriginPowerSources.register();
+        dev.overgrown.origins.origin.OriginCauseDescriber.register();
 
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(idWrap(id("origins"), new OriginLoader()));
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(idWrap(id("origin_layers"), new OriginLayerLoader()));

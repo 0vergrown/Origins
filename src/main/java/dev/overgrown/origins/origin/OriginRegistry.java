@@ -50,12 +50,23 @@ public final class OriginRegistry {
     }
 
     public static void replaceAll(Collection<Origin> origins) {
-        BY_ID.clear();
-        BY_ID.put(EMPTY_ID, Origin.empty(EMPTY_ID));
         anyUpgrades = false;
         for (Origin origin : origins) {
-            BY_ID.put(origin.id(), origin);
-            if (!origin.upgrades().isEmpty()) anyUpgrades = true;
+            if (!origin.upgrades().isEmpty()) {
+                anyUpgrades = true;
+                break;
+            }
         }
+        store(origins);
+    }
+
+    public static void acceptSynced(Collection<Origin> origins) {
+        store(origins);
+    }
+
+    private static void store(Collection<Origin> origins) {
+        BY_ID.clear();
+        BY_ID.put(EMPTY_ID, Origin.empty(EMPTY_ID));
+        for (Origin origin : origins) BY_ID.put(origin.id(), origin);
     }
 }
