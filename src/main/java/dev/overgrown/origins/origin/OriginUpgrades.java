@@ -13,6 +13,9 @@ public final class OriginUpgrades {
 
     private static final int INTERVAL = 20;
 
+    private static final java.util.Set<ResourceLocation> UNKNOWN_TARGETS =
+        java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private OriginUpgrades() {}
 
     public static void tick(MinecraftServer server) {
@@ -54,7 +57,14 @@ public final class OriginUpgrades {
         for (int i = 0; i < upgrades.size(); i++) {
             OriginUpgrade upgrade = upgrades.get(i);
             if (upgrade.origin().equals(originId)) continue;
-            if (OriginRegistry.get(upgrade.origin()) == null) continue;
+            if (OriginRegistry.get(upgrade.origin()) == null) {
+                if (UNKNOWN_TARGETS.add(upgrade.origin())) {
+                    dev.overgrown.origins.Origins.LOGGER.warn(
+                        "Origin {} upgrades to {}, which is not a loaded origin — that entry can never fire.",
+                        originId, upgrade.origin());
+                }
+                continue;
+            }
             if (upgrade.test(player)) return upgrade;
         }
         return null;

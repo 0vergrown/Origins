@@ -34,8 +34,17 @@ public final class OriginManager {
     private static final int MAX_RECONCILE_PASSES = 8;
     private OriginManager() {}
 
+    private static final String LAYER_SOURCE_PREFIX = "layer/";
+
     private static ResourceLocation sourceFor(ResourceLocation layerId) {
-        return new ResourceLocation(layerId.getNamespace(), "layer/" + layerId.getPath());
+        return new ResourceLocation(layerId.getNamespace(), LAYER_SOURCE_PREFIX + layerId.getPath());
+    }
+
+    public static @org.jetbrains.annotations.Nullable ResourceLocation layerOfSource(ResourceLocation sourceId) {
+        String path = sourceId.getPath();
+        if (!path.startsWith(LAYER_SOURCE_PREFIX)) return null;
+        return new ResourceLocation(sourceId.getNamespace(),
+            path.substring(LAYER_SOURCE_PREFIX.length()));
     }
 
     public static void chooseOrigin(ServerPlayer player, ResourceLocation layerId,

@@ -34,7 +34,7 @@ public final class OriginsClientNetwork {
             int lc = buf.readVarInt();
             for (int i = 0; i < lc; i++) layers.add(OriginLayer.read(buf));
             client.execute(() -> {
-                OriginRegistry.replaceAll(origins);
+                OriginRegistry.acceptSynced(origins);
                 OriginLayers.replaceAll(layers);
             });
         });

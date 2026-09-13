@@ -9,6 +9,19 @@ public enum Impact implements StringRepresentable {
     MEDIUM("medium", 2),
     HIGH("high", 3);
 
+    public static final com.mojang.serialization.Codec<Impact> CODEC =
+        StringRepresentable.fromEnum(Impact::values);
+
+    public static final com.mojang.serialization.Codec<Integer> LEVEL_CODEC =
+        com.mojang.serialization.Codec.either(com.mojang.serialization.Codec.INT, CODEC).xmap(
+            either -> either.map(level -> level, Impact::level),
+            level -> {
+                for (Impact impact : values()) {
+                    if (impact.level == level) return com.mojang.datafixers.util.Either.right(impact);
+                }
+                return com.mojang.datafixers.util.Either.left(level);
+            });
+
     private final String name;
     private final int level;
 

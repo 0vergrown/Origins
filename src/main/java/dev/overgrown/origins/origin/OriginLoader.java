@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
@@ -32,10 +33,17 @@ public final class OriginLoader extends SimpleJsonResourceReloadListener {
             ResourceLocation id = entry.getKey();
             try {
                 if (!entry.getValue().isJsonObject()) continue;
+                if (!ApoliReloadListener.loadConditionPasses(
+                    new com.mojang.serialization.Dynamic<>(JsonOps.INSTANCE, entry.getValue()), id)) continue;
                 JsonObject json = (JsonObject) IdWildcards.apply(entry.getValue(), id);
-                Origin.codec(id).codec().parse(JsonOps.INSTANCE, json)
-                    .resultOrPartial(err -> Origins.LOGGER.error("Failed to load origin {}: {}", id, err))
-                    .ifPresent(origin -> grouped.computeIfAbsent(id, k -> new ArrayList<>()).add(origin));
+                dev.overgrown.apoli.codec.LoggedOptionalField.setContext(id);
+                try {
+                    Origin.codec(id).codec().parse(JsonOps.INSTANCE, json)
+                        .resultOrPartial(err -> Origins.LOGGER.error("Failed to load origin {}: {}", id, err))
+                        .ifPresent(origin -> grouped.computeIfAbsent(id, k -> new ArrayList<>()).add(origin));
+                } finally {
+                    dev.overgrown.apoli.codec.LoggedOptionalField.clearContext();
+                }
             } catch (Exception e) {
                 Origins.LOGGER.error("Failed to load origin {}: {}", id, e.getMessage());
             }
@@ -46,6 +54,14 @@ public final class OriginLoader extends SimpleJsonResourceReloadListener {
             winners.add(versions.get(0));
         }
         OriginRegistry.replaceAll(winners);
-        Origins.LOGGER.info("Loaded {} origins.", OriginRegistry.size());
+        int withUpgrades = 0;
+        for (Origin origin : winners) {
+            if (!origin.upgrades().isEmpty()) withUpgrades++;
+        }
+        if (withUpgrades > 0) {
+            Origins.LOGGER.info("Loaded {} origins, {} of them with upgrades.", OriginRegistry.size(), withUpgrades);
+        } else {
+            Origins.LOGGER.info("Loaded {} origins.", OriginRegistry.size());
+        }
     }
 }
