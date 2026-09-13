@@ -21,7 +21,7 @@ public final class OriginsClientNetwork {
     private OriginsClientNetwork() {}
 
     public static void handleSyncRegistries(SyncRegistriesS2C payload) {
-        OriginRegistry.replaceAll(payload.origins());
+        OriginRegistry.acceptSynced(payload.origins());
         OriginLayers.replaceAll(payload.layers());
     }
 

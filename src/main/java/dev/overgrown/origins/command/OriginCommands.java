@@ -28,6 +28,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import dev.overgrown.origins.item.OrbOfOriginItem;
 
 import java.util.Collection;
 import java.util.List;
@@ -109,7 +112,62 @@ public final class OriginCommands {
                         .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
                             .executes(ctx -> capClear(ctx, ResourceLocationArgument.getId(ctx, "layer"),
                                 ResourceLocationArgument.getId(ctx, "origin")))))))
+            .then(Commands.literal("orb").requires(ApoliPermissions.require("origins.command.origin.orb", 2))
+                .then(Commands.argument("targets", EntityArgument.players())
+                    .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
+                        .executes(ctx -> orb(ctx, EntityArgument.getPlayers(ctx, "targets"),
+                            ResourceLocationArgument.getId(ctx, "layer"), null))
+                        .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
+                            .executes(ctx -> orb(ctx, EntityArgument.getPlayers(ctx, "targets"),
+                                ResourceLocationArgument.getId(ctx, "layer"),
+                                ResourceLocationArgument.getId(ctx, "origin"))))))
+                .then(Commands.argument("layer", ResourceLocationArgument.id()).suggests(LAYERS)
+                    .executes(ctx -> orb(ctx, List.of(ctx.getSource().getPlayerOrException()),
+                        ResourceLocationArgument.getId(ctx, "layer"), null))
+                    .then(Commands.argument("origin", ResourceLocationArgument.id()).suggests(ORIGINS)
+                        .executes(ctx -> orb(ctx, List.of(ctx.getSource().getPlayerOrException()),
+                            ResourceLocationArgument.getId(ctx, "layer"),
+                            ResourceLocationArgument.getId(ctx, "origin"))))))
             .then(StorageCommands.build()));
+    }
+
+    private static int orb(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> targets,
+                           ResourceLocation layerId, ResourceLocation originId) {
+        OriginLayer layer = OriginLayers.get(layerId);
+        if (layer == null) {
+            ctx.getSource().sendFailure(Component.literal("Unknown origin layer: " + layerId));
+            return 0;
+        }
+        if (layer.swappable()) {
+            ctx.getSource().sendFailure(Component.literal(
+                "Layer " + layerId + " is swappable, so an orb cannot choose for it."));
+            return 0;
+        }
+        if (originId != null && OriginRegistry.get(originId) == null) {
+            ctx.getSource().sendFailure(Component.literal("Unknown origin: " + originId));
+            return 0;
+        }
+
+        int given = 0;
+        for (ServerPlayer target : targets) {
+            ItemStack stack = OrbOfOriginItem.forLayer(layerId, originId);
+            if (!target.getInventory().add(stack)) {
+                ItemEntity dropped = target.drop(stack, false);
+                if (dropped != null) {
+                    dropped.setNoPickUpDelay();
+                    dropped.setTarget(target.getUUID());
+                }
+            }
+            given++;
+        }
+
+        Component what = originId == null
+            ? Component.literal("an Orb of Origin for ").append(layer.name())
+            : Component.literal("an Orb of Origin for ").append(layer.name()).append(" \u2192 ")
+                .append(OriginRegistry.getOrEmpty(originId).name());
+        int count = given;
+        ctx.getSource().sendSuccess(() -> Component.literal("Gave " + count + " player(s) ").append(what), true);
+        return given;
     }
 
     private static int capList(CommandContext<CommandSourceStack> ctx, ResourceLocation onlyLayer) {

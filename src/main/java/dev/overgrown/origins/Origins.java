@@ -43,6 +43,8 @@ public final class Origins {
 
         ConditionTypes.ENTITY.register(id("origin"), new OriginCondition());
         ConditionTypes.ENTITY.register(id("origin_tag"), new dev.overgrown.origins.condition.OriginTagCondition());
+        ConditionTypes.ENTITY.register(id("impact"), new dev.overgrown.origins.condition.ImpactCondition());
+        ConditionTypes.BI_ENTITY.register(id("impact"), new dev.overgrown.origins.condition.ImpactBiEntityCondition());
         ConditionTypes.ENTITY.register(id("stored_origin"), new StoredOriginCondition());
         ConditionTypes.ENTITY.register(id("stored_value"), new StoredValueCondition());
 
@@ -69,6 +71,7 @@ public final class Origins {
         modBus.addListener(OriginsNetwork::register);
         dev.overgrown.origins.badge.BadgeManager.init();
         dev.overgrown.origins.origin.OriginPowerSources.register();
+        dev.overgrown.origins.origin.OriginCauseDescriber.register();
 
         LOGGER.info("Origins initialized — '{}' namespace falls back to 'apoli'.", MOD_ID);
     }
