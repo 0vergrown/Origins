@@ -146,7 +146,6 @@ public final class OriginsServerNetwork {
             return;
         }
         OriginManager.chooseOrigin(player, layerId, originId, fromOrb);
-        broadcastPlayerOrigins(player.getServer(), player);
         advanceOrClose(player, fromOrb);
         if (wasRandom) {
             sendOriginRoll(player, layer, originId);
