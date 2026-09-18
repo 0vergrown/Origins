@@ -86,7 +86,6 @@ public final class OriginRandomizer {
         if (pick == null) return;
 
         OriginManager.chooseOrigin(player, layer.id(), pick, false);
-        OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
         if (rolled) {
             OriginsServerNetwork.sendOriginRoll(player, layer, pick);
         }

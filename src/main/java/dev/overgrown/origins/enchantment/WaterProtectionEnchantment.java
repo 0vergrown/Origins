@@ -1,20 +1,11 @@
 package dev.overgrown.origins.enchantment;
 
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 
 public final class WaterProtectionEnchantment extends Enchantment {
-
-    public static final TagKey<DamageType> PROTECTED_FROM = TagKey.create(
-        Registries.DAMAGE_TYPE, new ResourceLocation("origins", "water_protection"));
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {
         EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
@@ -37,12 +28,6 @@ public final class WaterProtectionEnchantment extends Enchantment {
     @Override
     public int getMaxLevel() {
         return 4;
-    }
-
-    @Override
-    public int getDamageProtection(int level, DamageSource source) {
-        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return 0;
-        return source.is(PROTECTED_FROM) ? level * 2 : 0;
     }
 
     @Override

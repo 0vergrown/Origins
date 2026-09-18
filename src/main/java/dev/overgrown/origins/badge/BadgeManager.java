@@ -2,7 +2,7 @@ package dev.overgrown.origins.badge;
 
 import dev.overgrown.apoli.power.ApoliPowers;
 import dev.overgrown.apoli.power.Power;
-import dev.overgrown.apoli.power.builtin.ActionOnKeyPressPower;
+import dev.overgrown.apoli.power.PowerKeys;
 import dev.overgrown.apoli.power.builtin.MultiplePower;
 import dev.overgrown.apoli.power.builtin.RecipePower;
 import dev.overgrown.apoli.power.builtin.TogglePower;
@@ -89,8 +89,9 @@ public final class BadgeManager {
         if (power.type() instanceof TogglePower && cfg instanceof TogglePower.Config toggle) {
             return List.of(new KeybindBadge(TOGGLE_SPRITE, "origins.gui.badge.toggle", toggle.key().key()));
         }
-        if (power.type() instanceof ActionOnKeyPressPower && cfg instanceof ActionOnKeyPressPower.Config active) {
-            return List.of(new KeybindBadge(ACTIVE_SPRITE, "origins.gui.badge.active", active.key().key()));
+        String activeKey = PowerKeys.activeKey(power);
+        if (activeKey != null) {
+            return List.of(new KeybindBadge(ACTIVE_SPRITE, "origins.gui.badge.active", activeKey));
         }
         if (power.type() instanceof RecipePower && cfg instanceof RecipePower.Config recipeCfg) {
             CraftingRecipeBadge badge = recipeAutoBadge(recipeCfg, registries);

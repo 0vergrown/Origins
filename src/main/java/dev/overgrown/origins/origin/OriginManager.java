@@ -66,6 +66,9 @@ public final class OriginManager {
         applyOriginPowers(player, layer, origin);
         reconcileLayers(player);
 
+        MinecraftServer server = player.getServer();
+        if (server != null) OriginsServerNetwork.broadcastPlayerOrigins(server, player);
+
         if (hasChosenAllLayers(player, state)) {
             state.setSelectingOrigin(false);
             ModifyPlayerSpawnHandler.teleportToModifiedSpawn(player);
