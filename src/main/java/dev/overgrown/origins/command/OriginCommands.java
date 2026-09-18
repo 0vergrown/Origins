@@ -310,7 +310,6 @@ public final class OriginCommands {
                 continue;
             }
             OriginManager.chooseOrigin(player, layerId, originId, false);
-            OriginsServerNetwork.broadcastPlayerOrigins(player.getServer(), player);
             PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
             if (layer.swappable()) {
                 if (state != null && state.poolOf(layerId).contains(originId)) {
