@@ -211,6 +211,7 @@ public final class SwapManager {
         state.setActiveSwap(targetLayerId, incomingId);
         reconcile(state, container, targetLayerId);
         ActionOnSwapPower.fire(player, targetLayerId, outgoingId, resolvedIncoming);
+        dev.overgrown.origins.advancement.OriginsCriteria.chose(player, targetLayerId, resolvedIncoming);
         broadcast(player);
         return true;
     }

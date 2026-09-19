@@ -68,6 +68,7 @@ public final class OriginManager {
 
         MinecraftServer server = player.getServer();
         if (server != null) OriginsServerNetwork.broadcastPlayerOrigins(server, player);
+        dev.overgrown.origins.advancement.OriginsCriteria.chose(player, layerId, originId);
 
         if (hasChosenAllLayers(player, state)) {
             state.setSelectingOrigin(false);
@@ -256,6 +257,7 @@ public final class OriginManager {
         }
         SwapManager.reconcileAll(player);
         reconcileLayers(player);
+        dev.overgrown.origins.advancement.OriginsCriteria.refresh(player);
     }
 
     private static void demoteSwappableLayerRecord(ServerPlayer player, PlayerOriginsImpl state,
