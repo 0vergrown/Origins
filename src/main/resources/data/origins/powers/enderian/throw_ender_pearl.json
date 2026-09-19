@@ -1,84 +1,127 @@
 {
-  "type": "origins:fire_projectile",
-  "texture_location": "minecraft:textures/item/ender_pearl.png",
-  "cooldown": 30,
-  "hud_render": {
-    "sprite_location": "origins:textures/gui/sprites/hud_render/apace/resource_bar.png",
-    "bar_index": 6
-  },
-  "speed": 1.5,
-  "divergence": 1,
-  "sound": "minecraft:entity.ender_pearl.throw",
-  "bientity_action_on_miss": {
-    "type": "apoli:teleport_to",
-    "success_action": {
-      "type": "apoli:actor_action",
-      "action": {
-        "type": "apoli:and",
-        "actions": [
-          {
-            "type": "apoli:set_fall_distance",
-            "fall_distance": 0
-          },
-          {
-            "type": "apoli:spawn_particles",
-            "particle": "minecraft:portal",
-            "count": 32,
-            "speed": 0.5,
-            "offset_y": 1.0,
-            "spread": {
-              "x": 0.4,
-              "y": 0.6,
-              "z": 0.4
-            }
-          },
-          {
-            "type": "apoli:play_sound",
-            "sound": "minecraft:entity.enderman.teleport",
-            "category": "players",
-            "volume": 1.0,
-            "pitch": 1.0
+  "type": "apoli:multiple",
+  "throw-pearl": {
+    "type": "origins:fire_projectile",
+    "texture_location": "minecraft:textures/item/ender_pearl.png",
+    "cooldown": 10,
+    "hud_render": {
+      "should_render": false,
+      "sprite_location": "apoli:textures/gui/resource_bar.png",
+      "bar_index": 6
+    },
+    "speed": 1.5,
+    "divergence": 1,
+    "sound": "minecraft:entity.ender_pearl.throw",
+    "condition": {
+      "type": "apoli:resource",
+      "resource": "*:*_cooldown",
+      "comparison": "==",
+      "compare_to": 0
+    },
+    "shooter_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:change_resource",
+          "resource": "*:*_health-scaling",
+          "change": "(max_health - health) * 5 + 30",
+          "operation": "set"
+        },
+        {
+          "type": "apoli:delay",
+          "ticks": 1,
+          "action": {
+            "type": "apoli:trigger_cooldown",
+            "power": "*:*_cooldown"
           }
-        ]
+        }
+      ]
+    },
+    "bientity_action_on_miss": {
+      "type": "apoli:teleport_to",
+      "success_action": {
+        "type": "apoli:actor_action",
+        "action": {
+          "type": "apoli:and",
+          "actions": [
+            {
+              "type": "apoli:set_fall_distance",
+              "fall_distance": 0
+            },
+            {
+              "type": "apoli:spawn_particles",
+              "particle": "minecraft:portal",
+              "count": 32,
+              "speed": 0.5,
+              "offset_y": 1,
+              "spread": {
+                "x": 0.4,
+                "y": 0.6,
+                "z": 0.4
+              }
+            },
+            {
+              "type": "apoli:play_sound",
+              "sound": "minecraft:entity.enderman.teleport",
+              "category": "players",
+              "volume": 1,
+              "pitch": 1
+            }
+          ]
+        }
       }
+    },
+    "owner_target_bientity_action_on_hit": {
+      "type": "apoli:teleport_to",
+      "success_action": {
+        "type": "apoli:actor_action",
+        "action": {
+          "type": "apoli:and",
+          "actions": [
+            {
+              "type": "apoli:set_fall_distance",
+              "fall_distance": 0
+            },
+            {
+              "type": "apoli:spawn_particles",
+              "particle": "minecraft:portal",
+              "count": 32,
+              "speed": 0.5,
+              "offset_y": 1,
+              "spread": {
+                "x": 0.4,
+                "y": 0.6,
+                "z": 0.4
+              }
+            },
+            {
+              "type": "apoli:play_sound",
+              "sound": "minecraft:entity.enderman.teleport",
+              "category": "players",
+              "volume": 1,
+              "pitch": 1
+            }
+          ]
+        }
+      }
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
     }
   },
-  "owner_target_bientity_action_on_hit": {
-    "type": "apoli:teleport_to",
-    "success_action": {
-      "type": "apoli:actor_action",
-      "action": {
-        "type": "apoli:and",
-        "actions": [
-          {
-            "type": "apoli:set_fall_distance",
-            "fall_distance": 0
-          },
-          {
-            "type": "apoli:spawn_particles",
-            "particle": "minecraft:portal",
-            "count": 32,
-            "speed": 0.5,
-            "offset_y": 1.0,
-            "spread": {
-              "x": 0.4,
-              "y": 0.6,
-              "z": 0.4
-            }
-          },
-          {
-            "type": "apoli:play_sound",
-            "sound": "minecraft:entity.enderman.teleport",
-            "category": "players",
-            "volume": 1.0,
-            "pitch": 1.0
-          }
-        ]
-      }
-    }
+  "health-scaling": {
+    "type": "apoli:resource",
+    "enforce_limits": false,
+    "retain_value": true
   },
-  "key": {
-    "key": "key.origins.primary_active",
-    "continuous": false
+  "cooldown": {
+    "type": "apoli:cooldown",
+    "cooldown": "*:*_health-scaling",
+    "hud_render": {
+      "should_render": true,
+      "sprite_location": "apoli:textures/gui/resource_bar.png",
+      "bar_index": 6
+    }
   }
 }

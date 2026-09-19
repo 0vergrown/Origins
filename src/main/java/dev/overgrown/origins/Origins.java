@@ -65,6 +65,7 @@ public final class Origins {
         dev.overgrown.apoli.power.PowerTypeRegistry.register(
             id("action_on_swap"), new dev.overgrown.origins.power.ActionOnSwapPower());
 
+        dev.overgrown.origins.advancement.OriginsCriteria.register(modBus);
         PlayerOriginsAttachment.register(modBus);
         StoredDataAttachment.register(modBus);
         OriginsItems.register(modBus);
