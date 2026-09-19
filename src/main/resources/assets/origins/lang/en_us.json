@@ -121,6 +121,8 @@
     "power.origins.arachnid/carnivore.description": "Your diet is restricted to meat, you can't eat vegetables.",
     "power.origins.blazeborn/fire_immunity.name": "Fire Immunity",
     "power.origins.blazeborn/fire_immunity.description": "You are immune to all types of fire damage.",
+    "power.origins.blazeborn/lava_vision.name": "Infernal Sight",
+    "power.origins.blazeborn/lava_vision.description": "You can see clearly through lava, allowing you to navigate the Nether's molten depths with ease.",
     "power.origins.blazeborn/nether_spawn.name": "Nether Inhabitant",
     "power.origins.blazeborn/nether_spawn.description": "Your natural spawn will be in the Nether.",
     "power.origins.blazeborn/burning_wrath.name": "Burning Wrath",

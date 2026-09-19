@@ -1,5 +1,4 @@
 {
   "type": "apoli:fluid_vision",
-  "fluid": "lava",
-  "hidden": true
+  "fluid": "lava"
 }
