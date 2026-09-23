@@ -22,6 +22,7 @@ import dev.overgrown.origins.network.OriginsServerNetwork;
 import dev.overgrown.origins.origin.OriginLayerLoader;
 import dev.overgrown.origins.origin.OriginLoader;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -76,6 +77,8 @@ public final class Origins implements ModInitializer {
         BadgeManager.init();
         dev.overgrown.origins.origin.OriginPowerSources.register();
         dev.overgrown.origins.origin.OriginCauseDescriber.register();
+
+        ServerLifecycleEvents.SERVER_STARTED.register(OriginsWorldConfig::attachServer);
 
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(idWrap(id("origins"), new OriginLoader()));
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(idWrap(id("origin_layers"), new OriginLayerLoader()));
