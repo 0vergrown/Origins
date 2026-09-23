@@ -1,6 +1,8 @@
 package dev.overgrown.origins.origin;
 
+import dev.overgrown.origins.OriginsWorldConfig;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,8 +51,15 @@ public final class OriginLayers {
         return out;
     }
 
-    public static void replaceAll(Collection<OriginLayer> layers) {
+    public static void replaceAll(Collection<OriginLayer> layers, @Nullable MinecraftServer server) {
+        var cfg = OriginsWorldConfig.get(server);
+        layers = cfg.filterLayers(layers);
+
         BY_ID.clear();
-        for (OriginLayer layer : layers) BY_ID.put(layer.id(), layer);
+        for (OriginLayer layer : layers) {
+            var original = layer.conditionedOrigins();
+
+            BY_ID.put(layer.id(), layer.setConditionedOrigins(cfg.filterLayerOrigins(original, layer.id())));
+        }
     }
 }
