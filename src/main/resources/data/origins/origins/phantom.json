@@ -1,5 +1,6 @@
 {
 	"powers": [
+		"origins:phantom/toggle_icon",
 		"origins:phantom/phantomize",
 		"origins:phantom/translucent",
 		"origins:phantom/phasing",

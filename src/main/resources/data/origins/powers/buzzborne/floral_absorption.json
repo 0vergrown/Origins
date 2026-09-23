@@ -1,0 +1,1248 @@
+{
+  "badges": [
+    {
+      "type": "origins:tooltip",
+      "sprite": "origins:textures/gui/badge/isaacfanta/active.png",
+      "text": [
+        "Active ([",
+        {
+          "keybind": "key.origins.primary_active",
+          "color": "white"
+        },
+        "])"
+      ]
+    }
+  ],
+  "type": "apoli:multiple",
+  "cooldown": {
+    "type": "apoli:cooldown",
+    "cooldown": 700,
+    "hud_render": {
+      "should_render": true,
+      "sprite_location": "origins:textures/gui/sprites/hud_render/huang/resource_bar_02.png",
+      "bar_index": 20,
+      "order": 1
+    }
+  },
+  "spore_blossom": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:nausea",
+            "duration": 300,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block_anywhere",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:spore_blossom"
+          }
+        }
+      ]
+    }
+  },
+  "allium": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:fire_resistance",
+            "duration": 300,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:allium"
+          }
+        }
+      ]
+    }
+  },
+  "dandelion": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:saturation",
+            "duration": 4,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:dandelion"
+          }
+        }
+      ]
+    }
+  },
+  "poppy": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:night_vision",
+            "duration": 600,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:poppy"
+          }
+        }
+      ]
+    }
+  },
+  "blue_orchid": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:luck",
+            "duration": 1200,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:blue_orchid"
+          }
+        }
+      ]
+    }
+  },
+  "azure_bluet": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:blindness",
+            "duration": 300,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:azure_bluet"
+          }
+        }
+      ]
+    }
+  },
+  "tulips": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:weakness",
+            "duration": 400,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:in_tag",
+            "tag": "origins:tulips"
+          }
+        }
+      ]
+    }
+  },
+  "oxeye_daisy": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:regeneration",
+            "duration": 400,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:oxeye_daisy"
+          }
+        }
+      ]
+    }
+  },
+  "cornflower": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:invisibility",
+            "duration": 300,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:cornflower"
+          }
+        }
+      ]
+    }
+  },
+  "lily_of_the_valley": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:poison",
+            "duration": 180,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:lily_of_the_valley"
+          }
+        }
+      ]
+    }
+  },
+  "wither_rose": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:wither",
+            "duration": 140,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:wither_rose"
+          }
+        }
+      ]
+    }
+  },
+  "torchflower": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:glowing",
+            "duration": 240,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:torchflower"
+          }
+        }
+      ]
+    }
+  },
+  "pink_petals": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:absorption",
+            "duration": 440,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:pink_petals"
+          }
+        }
+      ]
+    }
+  },
+  "sunflower": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:haste",
+            "duration": 260,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:sunflower"
+          }
+        }
+      ]
+    }
+  },
+  "peony": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:hunger",
+            "duration": 300,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:peony"
+          }
+        }
+      ]
+    }
+  },
+  "lilac": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:unluck",
+            "duration": 400,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:lilac"
+          }
+        }
+      ]
+    }
+  },
+  "rose_bush": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:strength",
+            "duration": 340,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:rose_bush"
+          }
+        }
+      ]
+    }
+  },
+  "pitcher_plant": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:mining_fatigue",
+            "duration": 340,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:in_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:pitcher_plant"
+          }
+        }
+      ]
+    }
+  },
+  "chorus_flower": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:slow_falling",
+            "duration": 800,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:on_block",
+          "block_condition": {
+            "type": "apoli:block",
+            "block": "minecraft:chorus_flower"
+          }
+        }
+      ]
+    }
+  },
+  "azalea": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:jump_boost",
+            "duration": 300,
+            "amplifier": 0,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:or",
+          "conditions": [
+            {
+              "type": "apoli:on_block",
+              "block_condition": {
+                "type": "apoli:block",
+                "block": "minecraft:flowering_azalea_leaves"
+              }
+            },
+            {
+              "type": "apoli:on_block",
+              "block_condition": {
+                "type": "apoli:block",
+                "block": "minecraft:flowering_azalea"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "cherry": {
+    "type": "apoli:active_self",
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:apply_effect",
+          "effect": {
+            "effect": "minecraft:speed",
+            "duration": 400,
+            "amplifier": 1,
+            "show_particles": true,
+            "show_icon": true
+          }
+        },
+        {
+          "type": "apoli:change_resource",
+          "resource": "origins:buzzborne/pollinator_pollen_bar",
+          "change": 1
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/floral_absorption_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:block.amethyst_block.chime"
+        }
+      ]
+    },
+    "cooldown": 1,
+    "hud_render": {
+      "should_render": false
+    },
+    "key": {
+      "key": "key.origins.primary_active",
+      "continuous": false
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/floral_absorption_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:or",
+          "conditions": [
+            {
+              "type": "apoli:on_block",
+              "block_condition": {
+                "type": "apoli:block",
+                "block": "minecraft:cherry_leaves"
+              }
+            },
+            {
+              "type": "apoli:in_block",
+              "block_condition": {
+                "type": "apoli:block",
+                "block": "minecraft:cherry_sapling"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

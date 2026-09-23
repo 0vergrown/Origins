@@ -1,8 +1,8 @@
 {
-  "type": "origins:modify_harvest",
+  "type": "apoli:modify_harvest",
   "allow": true,
   "block_condition": {
-    "type": "origins:in_tag",
+    "type": "apoli:in_tag",
     "tag": "origins:natural_stone"
   }
 }

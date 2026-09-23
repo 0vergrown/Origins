@@ -1,7 +1,7 @@
 {
   "type": "apoli:multiple",
   "throw-pearl": {
-    "type": "origins:fire_projectile",
+    "type": "apoli:fire_projectile",
     "texture_location": "minecraft:textures/item/ender_pearl.png",
     "cooldown": 10,
     "hud_render": {

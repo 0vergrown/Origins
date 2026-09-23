@@ -1,0 +1,9 @@
+{
+  "type": "apoli:restrict_armor",
+  "chest": {
+    "type": "apoli:ingredient",
+    "ingredient": {
+      "item": "minecraft:elytra"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "hidden": true,
+  "type": "apoli:particle",
+  "particle": "minecraft:falling_nectar",
+  "count": 1,
+  "frequency": 3,
+  "offset_y": 1.0,
+  "spread": {
+    "x": 0.25,
+    "y": 0.15,
+    "z": 0.25
+  },
+  "visible_in_first_person": false,
+  "condition": {
+    "type": "apoli:resource",
+    "resource": "origins:buzzborne/pollinator_pollen_bar",
+    "comparison": ">",
+    "compare_to": 0
+  }
+}

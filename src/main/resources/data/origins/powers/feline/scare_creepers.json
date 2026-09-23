@@ -1,11 +1,11 @@
 {
-  "type": "origins:scare_mobs",
+  "type": "apoli:scare_mobs",
   "radius": 6.0,
   "speed": 1.2,
   "bientity_condition": {
-    "type": "origins:target_condition",
+    "type": "apoli:target_condition",
     "condition": {
-      "type": "origins:entity_type",
+      "type": "apoli:entity_type",
       "entity_type": "minecraft:creeper"
     }
   }

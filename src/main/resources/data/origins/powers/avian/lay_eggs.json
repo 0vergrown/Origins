@@ -1,16 +1,16 @@
 {
-  "type": "origins:action_on_wake_up",
+  "type": "apoli:action_on_wake_up",
   "entity_action": {
-    "type": "origins:and",
+    "type": "apoli:and",
     "actions": [
       {
-        "type": "origins:give",
+        "type": "apoli:give",
         "stack": {
           "item": "minecraft:egg"
         }
       },
       {
-        "type": "origins:play_sound",
+        "type": "apoli:play_sound",
         "sound": "minecraft:entity.chicken.egg"
       }
     ]

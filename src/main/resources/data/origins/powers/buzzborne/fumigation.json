@@ -1,0 +1,89 @@
+{
+  "type": "apoli:multiple",
+  "smoke": {
+    "type": "apoli:resource",
+    "min": 0,
+    "max": 1,
+    "start_value": 0,
+    "hud_render": {
+      "should_render": false
+    }
+  },
+  "smoke_check": {
+    "type": "apoli:action_over_time",
+    "interval": 10,
+    "condition": {
+      "type": "apoli:block_in_radius",
+      "inverted": false,
+      "radius": 5,
+      "shape": "sphere",
+      "comparison": ">=",
+      "compare_to": 1,
+      "block_condition": {
+        "type": "apoli:and",
+        "conditions": [
+          {
+            "type": "apoli:in_tag",
+            "tag": "minecraft:campfires"
+          },
+          {
+            "type": "apoli:block_state",
+            "property": "lit",
+            "value": true
+          }
+        ]
+      }
+    },
+    "rising_action": {
+      "type": "apoli:modify_resource",
+      "resource": "origins:buzzborne/fumigation_smoke",
+      "modifier": {
+        "operation": "set_base",
+        "value": 1
+      }
+    },
+    "falling_action": {
+      "type": "apoli:modify_resource",
+      "resource": "origins:buzzborne/fumigation_smoke",
+      "modifier": {
+        "operation": "set_base",
+        "value": 0
+      }
+    }
+  },
+  "nausea": {
+    "type": "apoli:stacking_status_effect",
+    "min_stacks": 0,
+    "max_stacks": 45,
+    "duration_per_stack": 40,
+    "tick_rate": 20,
+    "effects": [
+      {
+        "effect": "minecraft:nausea",
+        "duration": 40,
+        "amplifier": 0,
+        "is_ambient": false,
+        "show_particles": false,
+        "show_icon": true
+      }
+    ],
+    "condition": {
+      "type": "apoli:resource",
+      "resource": "origins:buzzborne/fumigation_smoke",
+      "comparison": "==",
+      "compare_to": 1
+    }
+  },
+  "blurry": {
+    "type": "apoli:shader",
+    "shader": "minecraft:shaders/post/blur.json",
+    "toggleable": false,
+    "priority": 10,
+    "condition": {
+      "type": "apoli:resource",
+      "resource": "origins:buzzborne/fumigation_smoke",
+      "comparison": "==",
+      "compare_to": 1
+    }
+  }
+}

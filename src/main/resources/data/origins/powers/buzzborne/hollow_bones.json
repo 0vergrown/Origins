@@ -1,0 +1,19 @@
+{
+  "type": "apoli:multiple",
+  "health": {
+    "type": "apoli:attribute",
+    "modifier": {
+      "attribute": "minecraft:generic.max_health",
+      "operation": "addition",
+      "value": -6
+    }
+  },
+  "size": {
+    "type": "apoli:scale",
+    "scale": 0.65,
+    "scale_types": [
+      "width",
+      "height"
+    ]
+  }
+}
