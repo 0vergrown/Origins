@@ -1,6 +1,8 @@
 package dev.overgrown.origins.origin;
 
+import dev.overgrown.origins.OriginsWorldConfig;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -49,7 +51,9 @@ public final class OriginRegistry {
         return BY_ID.size();
     }
 
-    public static void replaceAll(Collection<Origin> origins) {
+    public static void replaceAll(Collection<Origin> origins, @Nullable MinecraftServer server) {
+        var cfg = OriginsWorldConfig.get(server);
+
         anyUpgrades = false;
         for (Origin origin : origins) {
             if (!origin.upgrades().isEmpty()) {
@@ -57,16 +61,20 @@ public final class OriginRegistry {
                 break;
             }
         }
-        store(origins);
+        store(cfg.filterOrigins(origins), cfg);
     }
 
     public static void acceptSynced(Collection<Origin> origins) {
-        store(origins);
+        store(origins, OriginsWorldConfig.get(null));
     }
 
-    private static void store(Collection<Origin> origins) {
+    private static void store(Collection<Origin> origins, OriginsWorldConfig cfg) {
         BY_ID.clear();
         BY_ID.put(EMPTY_ID, Origin.empty(EMPTY_ID));
-        for (Origin origin : origins) BY_ID.put(origin.id(), origin);
+        for (Origin origin : origins) {
+            var original = origin.powerEntries();
+
+            BY_ID.put(origin.id(), origin.setPowerEntries(cfg.filterPowers(original, origin.id())));
+        }
     }
 }
