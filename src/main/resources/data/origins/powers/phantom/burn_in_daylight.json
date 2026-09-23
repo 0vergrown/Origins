@@ -1,18 +1,18 @@
 {
-  "type": "origins:action_over_time",
+  "type": "apoli:action_over_time",
   "entity_action": {
-    "type": "origins:set_on_fire",
+    "type": "apoli:set_on_fire",
     "duration": 6
   },
   "interval": 20,
   "condition": {
-    "type": "origins:and",
+    "type": "apoli:and",
     "conditions": [
       {
-        "type": "origins:exposed_to_sun"
+        "type": "apoli:exposed_to_sun"
       },
       {
-        "type": "origins:invisible",
+        "type": "apoli:invisible",
         "inverted": true
       }
     ]

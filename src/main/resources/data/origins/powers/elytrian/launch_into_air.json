@@ -1,10 +1,10 @@
 {
-  "type":"origins:action_on_key_press",
+  "type":"apoli:action_on_key_press",
   "entity_action":{
-    "type":"origins:and",
+    "type":"apoli:and",
     "actions":[
       {
-        "type":"origins:add_velocity",
+        "type":"apoli:add_velocity",
         "x":0.00,
         "y":2.00,
         "z":0.00,
@@ -12,7 +12,7 @@
         "set":false
       },
       {
-        "type":"origins:play_sound",
+        "type":"apoli:play_sound",
         "sound":"minecraft:entity.parrot.fly",
         "volume":1.00,
         "pitch":1.00

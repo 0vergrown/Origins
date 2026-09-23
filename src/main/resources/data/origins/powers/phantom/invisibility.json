@@ -1,8 +1,8 @@
 {
-  "type": "origins:invisibility",
+  "type": "apoli:invisibility",
   "render_armor": true,
   "condition": {
-    "type": "origins:power_active",
+    "type": "apoli:power_active",
     "power": "origins:phantom/phantomize"
   }
 }

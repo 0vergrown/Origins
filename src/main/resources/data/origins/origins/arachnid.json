@@ -1,5 +1,6 @@
 {
 	"powers": [
+		"origins:arachnid/toggle_icon",
 		"origins:arachnid/climbing",
 		"origins:arachnid/master_of_webs",
 		"origins:arachnid/carnivore",

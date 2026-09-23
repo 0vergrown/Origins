@@ -1,0 +1,22 @@
+{
+  "powers": [
+    "origins:buzzborne/floral_absorption",
+    "origins:buzzborne/pollinator",
+    "origins:buzzborne/honey_extractor",
+    "origins:buzzborne/gentle_wings",
+    "origins:buzzborne/apiary_kin",
+    "origins:buzzborne/air_affinity",
+    "origins:buzzborne/nectarivore",
+    "origins:buzzborne/hollow_bones",
+    "origins:buzzborne/built_in_wings",
+    "origins:buzzborne/fumigation",
+    "origins:buzzborne/nectar_drips",
+    "origins:buzzborne/rain_soaked",
+    "origins:buzzborne/toggle_icon"
+  ],
+  "icon": {
+    "item": "minecraft:honeycomb"
+  },
+  "order": 10,
+  "impact": 2
+}

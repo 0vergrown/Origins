@@ -1,0 +1,16 @@
+{
+  "hidden": true,
+  "type": "apoli:overlay",
+  "texture": "origins:textures/gui/sprites/toggles/vekhi/climbing_toggle.png",
+  "gui_scale_lock": 0,
+  "anchor": "bottom_center",
+  "visible_in_third_person": true,
+  "x": 102,
+  "y": -1,
+  "width": 20,
+  "height": 20,
+  "condition": {
+    "type": "apoli:power_active",
+    "power": "origins:arachnid/climbing_toggle"
+  }
+}

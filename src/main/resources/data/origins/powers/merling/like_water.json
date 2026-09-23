@@ -1,19 +1,19 @@
 {
-  "type": "origins:modify_falling",
+  "type": "apoli:modify_falling",
   "velocity": 0.0,
   "take_fall_damage": false,
   "condition": {
-    "type": "origins:and",
+    "type": "apoli:and",
     "conditions": [
       {
-        "type": "origins:fluid_height",
+        "type": "apoli:fluid_height",
         "fluid": "minecraft:water",
         "comparison": "==",
         "compare_to": 0,
         "inverted": true
       },
       {
-        "type": "origins:sneaking",
+        "type": "apoli:sneaking",
         "inverted": true
       }
     ]

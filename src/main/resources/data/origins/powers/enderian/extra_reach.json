@@ -1,5 +1,5 @@
 {
-  "type": "origins:attribute",
+  "type": "apoli:attribute",
   "modifiers": [
     {
       "name": "Extra Reach block reach",

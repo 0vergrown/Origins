@@ -1,15 +1,15 @@
 {
-  "type": "origins:action_over_time",
+  "type": "apoli:action_over_time",
   "interval": 1,
   "entity_action": {
-    "type": "origins:if_else",
+    "type": "apoli:if_else",
     "condition": {
-      "type": "origins:status_effect",
+      "type": "apoli:status_effect",
       "effect": "minecraft:slow_falling",
       "inverted": true
     },
     "if_action": {
-      "type": "origins:apply_effect",
+      "type": "apoli:apply_effect",
       "effect": {
         "effect": "minecraft:slow_falling",
         "duration": -1,
@@ -21,18 +21,18 @@
     }
   },
   "falling_action": {
-    "type": "origins:clear_effect",
+    "type": "apoli:clear_effect",
     "effect": "minecraft:slow_falling"
   },
   "condition": {
-    "type": "origins:and",
+    "type": "apoli:and",
     "conditions": [
       {
-        "type": "origins:sneaking",
+        "type": "apoli:sneaking",
         "inverted": true
       },
       {
-        "type": "origins:fall_flying",
+        "type": "apoli:fall_flying",
         "inverted": true
       }
     ]

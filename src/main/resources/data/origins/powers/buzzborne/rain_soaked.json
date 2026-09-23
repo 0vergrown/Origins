@@ -1,0 +1,32 @@
+{
+  "type": "apoli:multiple",
+  "rain": {
+    "type": "apoli:stacking_status_effect",
+    "min_stacks": -1,
+    "max_stacks": 12,
+    "duration_per_stack": 19,
+    "effects": [
+      {
+        "effect": "minecraft:weakness",
+        "is_ambient": true,
+        "show_particles": true,
+        "show_icon": true
+      }
+    ],
+    "condition": {
+      "type": "apoli:or",
+      "conditions": [
+        {
+          "type": "apoli:fluid_height",
+          "fluid": "minecraft:water",
+          "comparison": "==",
+          "compare_to": 0,
+          "inverted": true
+        },
+        {
+          "type": "apoli:in_rain"
+        }
+      ]
+    }
+  }
+}
