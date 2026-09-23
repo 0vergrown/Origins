@@ -1,0 +1,16 @@
+{
+  "hidden": true,
+  "type": "apoli:overlay",
+  "texture": "origins:textures/gui/sprites/toggles/vekhi/phasing_toggle.png",
+  "visible_in_third_person": true,
+  "gui_scale_lock": 0,
+  "anchor": "bottom_center",
+  "x": 102,
+  "y": -1,
+  "width": 20,
+  "height": 20,
+  "condition": {
+    "type": "apoli:power_active",
+    "power": "origins:phantom/phantomize"
+  }
+}

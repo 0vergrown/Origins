@@ -1,13 +1,13 @@
 {
-  "type": "origins:multiple",
+  "type": "apoli:multiple",
   "webbing": {
     "type": "apoli:action_on_hit",
     "target_action": {
-      "type": "origins:block_action_at",
+      "type": "apoli:block_action_at",
       "block_action": {
-        "type": "origins:if_else",
+        "type": "apoli:if_else",
         "condition": {
-          "type": "origins:replacable"
+          "type": "apoli:replacable"
         },
         "if_action": {
           "type": "apoli:ghost_block",
@@ -23,30 +23,30 @@
     }
   },
   "punch_through": {
-    "type": "origins:prevent_block_selection",
+    "type": "apoli:prevent_block_selection",
     "block_condition": {
       "type": "apoli:block",
       "block": "minecraft:cobweb"
     },
     "condition": {
-      "type": "origins:sneaking",
+      "type": "apoli:sneaking",
       "inverted": true
     }
   },
   "sense": {
     "type": "apoli:entity_glow",
     "entity_condition": {
-      "type": "origins:and",
+      "type": "apoli:and",
       "conditions": [
         {
-          "type": "origins:in_block_anywhere",
+          "type": "apoli:in_block_anywhere",
           "block_condition": {
             "type": "apoli:block",
             "block": "minecraft:cobweb"
           }
         },
         {
-          "type": "origins:entity_group",
+          "type": "apoli:entity_group",
           "group": "arthropod",
           "inverted": true
         }
@@ -59,7 +59,7 @@
     "self_glow_target": false
   },
   "web_crafting": {
-    "type": "origins:recipe",
+    "type": "apoli:recipe",
     "recipe": {
       "id": "origins:master_of_webs/web_crafting",
       "type": "minecraft:crafting_shapeless",
@@ -77,7 +77,7 @@
     }
   },
   "web_walking": {
-    "type": "origins:modify_block_stuck_speed",
+    "type": "apoli:modify_block_stuck_speed",
     "block_condition": {
       "type": "apoli:block",
       "block": "minecraft:cobweb"

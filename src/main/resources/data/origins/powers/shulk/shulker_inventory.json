@@ -1,5 +1,5 @@
 {
-  "type": "origins:inventory",
+  "type": "apoli:inventory",
   "title":{
     "translate": "container.shulker_inventory_power"
   },

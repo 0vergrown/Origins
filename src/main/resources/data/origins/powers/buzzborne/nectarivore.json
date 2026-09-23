@@ -1,0 +1,76 @@
+{
+  "badges": [
+    {
+      "type": "origins:tooltip",
+      "sprite": "origins:textures/gui/badge/isaacfanta/info.png",
+      "text": "In addition to this, honey bottles restore 5 hunger points, and you can eat honeycombs."
+    }
+  ],
+  "type": "apoli:multiple",
+  "bottles": {
+    "type": "apoli:prevent_item_use",
+    "item_condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:food"
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": {
+            "item": "minecraft:honey_bottle"
+          },
+          "inverted": true
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": {
+            "item": "minecraft:honeycomb"
+          },
+          "inverted": true
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": {
+            "tag": "origins:ignore_diet"
+          },
+          "inverted": true
+        }
+      ]
+    }
+  },
+  "honey": {
+    "type": "apoli:modify_food",
+    "item_condition": {
+      "type": "apoli:ingredient",
+      "ingredient": {
+        "item": "minecraft:honey_bottle"
+      }
+    },
+    "food_modifier": {
+      "name": "Increased food points",
+      "operation": "addition",
+      "value": -1.5
+    },
+    "saturation_modifier": {
+      "name": "Increased saturation points",
+      "operation": "addition",
+      "value": 4.8
+    }
+  },
+  "honeycomb": {
+    "type": "apoli:edible_item",
+    "item_condition": {
+      "type": "apoli:ingredient",
+      "ingredient": {
+        "item": "minecraft:honeycomb"
+      }
+    },
+    "food_component": {
+      "hunger": 6,
+      "saturation": 14.4,
+      "meat": false
+    },
+    "use_action": "eat"
+  }
+}

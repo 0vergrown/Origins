@@ -11,7 +11,7 @@
     },
     "origins:passive"
   ],
-  "type": "origins:attribute",
+  "type": "apoli:attribute",
   "modifier": {
     "attribute": "minecraft:generic.movement_speed",
     "value": 0.2,

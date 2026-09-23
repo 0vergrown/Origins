@@ -6,7 +6,6 @@
 		"origins:merling/swim_speed",
 		"origins:merling/like_water",
 		"origins:merling/aquatic",
-		"origins:merling/conduit_power_on_land",
 		"origins:merling/air_from_potions"
 	],
 	"icon": {

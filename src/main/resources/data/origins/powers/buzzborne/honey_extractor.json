@@ -1,0 +1,111 @@
+{
+  "type": "apoli:multiple",
+  "cooldown": {
+    "type": "apoli:cooldown",
+    "cooldown": 200,
+    "hud_render": {
+      "should_render": true,
+      "sprite_location": "origins:textures/gui/sprites/hud_render/spiderkolo/resource_bar_01.png",
+      "bar_index": 0,
+      "order": 2
+    }
+  },
+  "harvest": {
+    "type": "apoli:action_on_block_use",
+    "block_action": {
+      "type": "apoli:spawn_particles",
+      "particle": {
+        "type": "minecraft:dust",
+        "color": [
+          0.96,
+          0.95,
+          0.76
+        ],
+        "scale": 1.5
+      },
+      "count": 3,
+      "speed": 0,
+      "offset_y": 0.25
+    },
+    "block_condition": {
+      "type": "apoli:or",
+      "conditions": [
+        {
+          "type": "apoli:in_tag",
+          "tag": "origins:tall_flowers"
+        },
+        {
+          "type": "apoli:in_tag",
+          "tag": "origins:small_flowers"
+        },
+        {
+          "type": "apoli:block",
+          "block": "minecraft:cherry_sapling"
+        },
+        {
+          "type": "apoli:block",
+          "block": "minecraft:cherry_leaves"
+        },
+        {
+          "type": "apoli:block",
+          "block": "minecraft:flowering_azalea"
+        },
+        {
+          "type": "apoli:block",
+          "block": "minecraft:flowering_azalea_leaves"
+        },
+        {
+          "type": "apoli:block",
+          "block": "minecraft:chorus_flower"
+        }
+      ]
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:resource",
+          "resource": "origins:buzzborne/honey_extractor_cooldown",
+          "comparison": "==",
+          "compare_to": 0
+        },
+        {
+          "type": "apoli:equipped_item",
+          "equipment_slot": "mainhand",
+          "item_condition": {
+            "type": "apoli:ingredient",
+            "ingredient": {
+              "item": "minecraft:glass_bottle"
+            }
+          }
+        }
+      ]
+    },
+    "entity_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "apoli:equipped_item_action",
+          "equipment_slot": "mainhand",
+          "action": {
+            "type": "apoli:consume",
+            "amount": 1
+          }
+        },
+        {
+          "type": "apoli:spawn_entity",
+          "entity_type": "minecraft:item",
+          "tag": "{Item:{id:\"minecraft:honey_bottle\",Count:1b}}"
+        },
+        {
+          "type": "apoli:trigger_cooldown",
+          "power": "origins:buzzborne/honey_extractor_cooldown"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:entity.bee.pollinate"
+        }
+      ]
+    }
+  }
+}

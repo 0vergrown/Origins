@@ -1,7 +1,7 @@
 {
-  "type": "origins:multiple",
+  "type": "apoli:multiple",
   "toggle": {
-    "type": "origins:toggle",
+    "type": "apoli:toggle",
     "active_by_default": false,
     "key": {
       "key": "key.origins.primary_active",
@@ -10,34 +10,34 @@
     "retain_state": true
   },
   "climbing": {
-    "type": "origins:climbing",
+    "type": "apoli:climbing",
     "allow_holding": true,
     "hold_condition": {
-      "type": "origins:sneaking"
+      "type": "apoli:sneaking"
     },
     "condition": {
-      "type": "origins:and",
+      "type": "apoli:and",
       "conditions": [
         {
-          "type": "origins:or",
+          "type": "apoli:or",
           "conditions": [
             {
-              "type": "origins:collided_horizontally"
+              "type": "apoli:collided_horizontally"
             },
             {
-              "type": "origins:block_collision",
+              "type": "apoli:block_collision",
               "offset_x": 0.01,
               "offset_z": 0.01,
               "offset_y": 0
             },
             {
-              "type": "origins:block_collision",
+              "type": "apoli:block_collision",
               "offset_x": -0.01,
               "offset_z": -0.01,
               "offset_y": 0
             },
             {
-              "type": "origins:in_block_anywhere",
+              "type": "apoli:in_block_anywhere",
               "block_condition": {
                 "type": "apoli:block",
                 "block": "minecraft:cobweb"
@@ -46,7 +46,7 @@
           ]
         },
         {
-          "type": "origins:power_active",
+          "type": "apoli:power_active",
           "power": "origins:arachnid/climbing_toggle"
         }
       ]

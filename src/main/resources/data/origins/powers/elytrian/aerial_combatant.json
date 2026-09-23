@@ -1,10 +1,10 @@
 {
-  "type": "origins:modify_damage_dealt",
+  "type": "apoli:modify_damage_dealt",
   "modifier": {
     "value": 1,
     "operation": "multiply_base"
   },
   "condition": {
-    "type": "origins:fall_flying"
+    "type": "apoli:fall_flying"
   }
 }

@@ -1,7 +1,7 @@
 {
-  "type":"origins:action_over_time",
+  "type":"apoli:action_over_time",
   "rising_action":{
-    "type":"origins:apply_effect",
+    "type":"apoli:apply_effect",
     "effect":{
       "effect":"minecraft:night_vision",
       "duration":-1,
@@ -12,12 +12,12 @@
     }
   },
   "falling_action":{
-    "type":"origins:clear_effect",
+    "type":"apoli:clear_effect",
     "effect":"minecraft:night_vision"
   },
   "interval":1,
   "condition": {
-    "type": "origins:submerged_in",
+    "type": "apoli:submerged_in",
     "fluid": "minecraft:water",
     "inverted": true
   }

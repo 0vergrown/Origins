@@ -1,0 +1,62 @@
+{
+  "type": "apoli:multiple",
+  "flight": {
+    "type": "apoli:creative_flight",
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:in_rain",
+          "inverted": true
+        },
+        {
+          "type": "apoli:fluid_height",
+          "fluid": "minecraft:water",
+          "comparison": "==",
+          "compare_to": 0
+        }
+      ]
+    }
+  },
+  "modify_flight_speed": {
+    "type": "apoli:modify_air_speed",
+    "modifier": {
+      "operation": "multiply_base_multiplicative",
+      "value": -0.5
+    },
+    "condition": {
+      "type": "apoli:creative_flying"
+    }
+  },
+  "sprint_flight_speed": {
+    "type": "apoli:modify_air_speed",
+    "modifier": {
+      "operation": "multiply_base_multiplicative",
+      "value": -0.42
+    },
+    "condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:creative_flying"
+        },
+        {
+          "type": "apoli:sprinting"
+        }
+      ]
+    }
+  },
+  "vertical_flight_speed": {
+    "type": "apoli:modify_velocity",
+    "axes": [
+      "y"
+    ],
+    "modifier": {
+      "operation": "multiply_total",
+      "value": -0.5
+    },
+    "condition": {
+      "type": "apoli:creative_flying"
+    }
+  }
+}
