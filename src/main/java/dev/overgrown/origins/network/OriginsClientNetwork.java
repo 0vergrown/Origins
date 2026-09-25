@@ -27,7 +27,7 @@ public final class OriginsClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(SyncRegistriesS2C.TYPE, (payload, context) ->
             context.client().execute(() -> {
                 OriginRegistry.acceptSynced(payload.origins());
-                OriginLayers.replaceAll(payload.layers());
+                OriginLayers.replaceAll(payload.layers(), null);
             }));
 
         ClientPlayNetworking.registerGlobalReceiver(SyncBadgesS2C.TYPE, (payload, context) ->
