@@ -22,7 +22,7 @@ public final class OriginsClientNetwork {
 
     public static void handleSyncRegistries(SyncRegistriesS2C payload) {
         OriginRegistry.acceptSynced(payload.origins());
-        OriginLayers.replaceAll(payload.layers());
+        OriginLayers.replaceAll(payload.layers(), null);
     }
 
     public static void handleSyncBadges(SyncBadgesS2C payload) {

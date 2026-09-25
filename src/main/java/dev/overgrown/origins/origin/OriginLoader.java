@@ -7,6 +7,7 @@ import com.mojang.serialization.JsonOps;
 import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
 import dev.overgrown.origins.Origins;
+import dev.overgrown.origins.OriginsWorldConfig;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -53,7 +54,7 @@ public final class OriginLoader extends SimpleJsonResourceReloadListener {
             versions.sort(Comparator.comparingInt(Origin::loadingPriority).reversed());
             winners.add(versions.get(0));
         }
-        OriginRegistry.replaceAll(winners);
+        OriginRegistry.replaceAll(winners, OriginsWorldConfig.server);
         int withUpgrades = 0;
         for (Origin origin : winners) {
             if (!origin.upgrades().isEmpty()) withUpgrades++;
