@@ -136,7 +136,9 @@ public abstract class OriginDisplayScreen extends Screen {
 
     protected void blitWindowBorder(GuiGraphics graphics) {
         beginBlit();
+        RenderSystem.disableDepthTest();
         graphics.blit(tex.border(), guiLeft, guiTop, 0.0F, 0.0F, windowWidth, windowHeight, windowWidth, windowHeight);
+        RenderSystem.enableDepthTest();
     }
 
     private void renderOriginWindow(GuiGraphics graphics, int mouseX, int mouseY) {

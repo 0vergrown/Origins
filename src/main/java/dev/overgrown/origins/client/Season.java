@@ -6,6 +6,7 @@ import java.time.Month;
 public enum Season {
     DEFAULT("default", 0.0F),
     RAINBOW("rainbow", 0.5F),
+    HALLOW("hallow", 0.25F),
     FRIGID("frigid", 1.0F);
 
     private final String dir;
@@ -29,12 +30,16 @@ public enum Season {
         switch (dev.overgrown.origins.OriginsConfig.guiTheme()) {
             case "default": return DEFAULT;
             case "rainbow": return RAINBOW;
+            case "hallow": return HALLOW;
             case "frigid": return FRIGID;
             default: break;
         }
         LocalDate date = LocalDate.now();
         if (date.getMonth() == Month.JUNE) {
             return RAINBOW;
+        }
+        if (date.getMonth() == Month.OCTOBER) {
+            return HALLOW;
         }
         if (date.getMonth() == Month.DECEMBER && date.getDayOfMonth() >= 24 && date.getDayOfMonth() <= 26) {
             return FRIGID;
