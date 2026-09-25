@@ -72,6 +72,7 @@ public final class Origins {
         modBus.addListener(OriginsNetwork::register);
         dev.overgrown.origins.badge.BadgeManager.init();
         dev.overgrown.origins.origin.OriginPowerSources.register();
+        dev.overgrown.origins.origin.OriginGraveInscription.register();
         dev.overgrown.origins.origin.OriginCauseDescriber.register();
 
         LOGGER.info("Origins initialized — '{}' namespace falls back to 'apoli'.", MOD_ID);
