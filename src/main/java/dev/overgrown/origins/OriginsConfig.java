@@ -15,7 +15,7 @@ import java.util.Optional;
 public final class OriginsConfig {
     private static final String FILE = "origins.json";
 
-    public static final List<String> GUI_THEMES = List.of("seasonal", "default", "rainbow", "frigid");
+    public static final List<String> GUI_THEMES = List.of("seasonal", "default", "rainbow", "hallow", "frigid");
 
     private record Data(String guiTheme, Optional<Boolean> seasonalGui) {
         static final Codec<Data> CODEC = RecordCodecBuilder.create(i -> i.group(
