@@ -12,6 +12,7 @@ import dev.overgrown.apoli.power.builtin.ModifyPlayerSpawnHandler;
 import dev.overgrown.apoli.skill.SkillTrees;
 import dev.overgrown.origins.condition.OriginCondition;
 import dev.overgrown.origins.Origins;
+import dev.overgrown.origins.OriginsWorldConfig;
 import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.OriginsServerNetwork;
@@ -240,6 +241,10 @@ public final class OriginManager {
         PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
         PowerContainer container = PowerContainerAttachment.getOrCreate(player);
         for (var entry : state.snapshot().entrySet()) {
+            if (OriginsWorldConfig.blocks(entry.getKey(), entry.getValue())) {
+                if (container != null) container.removeAllFromSource(sourceFor(entry.getKey()));
+                continue;
+            }
             OriginLayer layer = OriginLayers.get(entry.getKey());
             if (layer == null) continue;
             if (layer.swappable()) {

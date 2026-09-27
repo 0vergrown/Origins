@@ -17,11 +17,13 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class BadgeManager {
 
@@ -32,6 +34,8 @@ public final class BadgeManager {
     private static final ResourceLocation ACTIVE_SPRITE = Origins.id("textures/gui/badge/isaacfanta/active.png");
     private static final ResourceLocation RECIPE_SPRITE = Origins.id("textures/gui/badge/isaacfanta/recipe.png");
 
+    private static final Set<String> WARNED = new HashSet<>();
+
     private BadgeManager() {}
 
     public static void init() {
@@ -41,6 +45,11 @@ public final class BadgeManager {
     public static void clear() {
         STANDALONE.clear();
         BY_POWER.clear();
+        WARNED.clear();
+    }
+
+    static void warnOnce(String message) {
+        if (WARNED.add(message)) Origins.LOGGER.warn(message);
     }
 
     public static Map<ResourceLocation, List<Badge>> collectForSend(MinecraftServer server) {
@@ -60,7 +69,7 @@ public final class BadgeManager {
                                          RegistryAccess registries) {
         List<Badge> explicit = BY_POWER.get(id);
         if (explicit != null && !explicit.isEmpty()) {
-            return resolve(explicit, recipes, registries);
+            return resolve(id, explicit, recipes, registries);
         }
 
         if (power.type() instanceof MultiplePower && power.config() instanceof MultiplePower.Cfg cfg) {
@@ -75,10 +84,20 @@ public final class BadgeManager {
         return autoBadges(id, power, recipes, registries);
     }
 
-    private static List<Badge> resolve(List<Badge> badges, RecipeManager recipes, RegistryAccess registries) {
+    private static List<Badge> resolve(ResourceLocation powerId, List<Badge> badges, RecipeManager recipes,
+                                       RegistryAccess registries) {
         List<Badge> out = new LinkedList<>();
         for (Badge badge : badges) {
-            out.add(badge instanceof CraftingRecipeBadge crafting ? crafting.resolve(recipes, registries) : badge);
+            if (!(badge instanceof CraftingRecipeBadge crafting)) {
+                out.add(badge);
+                continue;
+            }
+            CraftingRecipeBadge resolved = crafting.resolve(recipes, registries);
+            if (resolved.output().isEmpty()) {
+                crafting.recipe().flatMap(source -> source.left()).ifPresent(recipeId -> warnOnce("crafting_recipe badge on power "
+                    + powerId + " shows no grid: " + recipeId + " is not a loaded crafting recipe"));
+            }
+            out.add(resolved);
         }
         return out;
     }
@@ -106,7 +125,7 @@ public final class BadgeManager {
         try {
             recipe = RecipeManager.fromJson(cfg.recipeId(), cfg.recipeAsJson());
         } catch (Exception e) {
-            Origins.LOGGER.warn("Bad recipe for auto badge {}: {}", cfg.recipeId(), e.toString());
+            warnOnce("Bad recipe for auto badge " + cfg.recipeId() + ": " + e);
             return null;
         }
         if (!(recipe instanceof CraftingRecipe crafting)) return null;

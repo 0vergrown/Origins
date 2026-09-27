@@ -1,257 +1,195 @@
 package dev.overgrown.origins;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonWriter;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.overgrown.apoli.Apoli;
-import dev.overgrown.origins.origin.*;
+import dev.overgrown.origins.origin.ConditionedOrigin;
+import dev.overgrown.origins.origin.Origin;
+import dev.overgrown.origins.origin.OriginLayer;
+import dev.overgrown.origins.origin.OriginLayers;
+import dev.overgrown.origins.origin.OriginPowerEntry;
+import dev.overgrown.origins.origin.OriginRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-public record OriginsWorldConfig (
-    HashMap<ResourceLocation, LayerConfig> layers,
-    HashMap<ResourceLocation, OriginConfig> origins
-) {
-    public static MinecraftServer server;
+public final class OriginsWorldConfig {
+    private static final String FILE = "origins/config.json";
+    private static final String LEGACY_FILE = "origins/layers.json";
 
-    public static void attachServer(MinecraftServer minecraftServer)  {
-        server = minecraftServer;
+    private record Toggle(boolean enabled, Map<ResourceLocation, Boolean> entries) {
+        static Codec<Toggle> codec(String entriesKey) {
+            return RecordCodecBuilder.create(i -> i.group(
+                Codec.BOOL.optionalFieldOf("enabled").xmap(value -> value.orElse(true), Optional::of)
+                    .forGetter(Toggle::enabled),
+                Codec.unboundedMap(ResourceLocation.CODEC, Codec.BOOL).optionalFieldOf(entriesKey)
+                    .xmap(value -> value.orElse(Map.of()), Optional::of).forGetter(Toggle::entries)
+            ).apply(i, Toggle::new));
+        }
 
-        OriginsWorldConfig.get(server);
+        boolean allows(ResourceLocation id) {
+            return !Boolean.FALSE.equals(entries.get(id));
+        }
     }
 
-    public HashMap<ResourceLocation, LayerConfig> nonDefaultLayers(HashMap<ResourceLocation, LayerConfig> original) {
-        HashMap<ResourceLocation, LayerConfig> result = new HashMap<>();
+    private record Data(Map<ResourceLocation, Toggle> layers, Map<ResourceLocation, Toggle> origins) {
+        static final Codec<Data> CODEC = RecordCodecBuilder.create(i -> i.group(
+            Codec.unboundedMap(ResourceLocation.CODEC, Toggle.codec("origins"))
+                .optionalFieldOf("layers", Map.of()).forGetter(Data::layers),
+            Codec.unboundedMap(ResourceLocation.CODEC, Toggle.codec("powers"))
+                .optionalFieldOf("origins", Map.of()).forGetter(Data::origins)
+        ).apply(i, Data::new));
+    }
 
-        for (var entry : original.entrySet()) {
-            if (!entry.getValue().enabled()) {
-                result.put(entry.getKey(), entry.getValue());
-                continue;
+    private static volatile @Nullable Data active;
+
+    private OriginsWorldConfig() {}
+
+    public static void apply(MinecraftServer server) {
+        Path root = server.getWorldPath(LevelResource.ROOT);
+        Path path = root.resolve(FILE);
+        Path source = Files.exists(path) ? path : root.resolve(LEGACY_FILE);
+        Data stored = null;
+        boolean writable = true;
+        if (Files.exists(source)) {
+            try {
+                DataResult<Data> result = Data.CODEC.parse(JsonOps.INSTANCE, GsonHelper.parse(Files.readString(source)));
+                stored = result.resultOrPartial(error ->
+                    Origins.LOGGER.warn("[Origins] Invalid {}: {}", source, error)).orElse(null);
+                writable = result.result().isPresent();
+            } catch (Exception e) {
+                Origins.LOGGER.warn("[Origins] Couldn't read {} ({}); it is left untouched and nothing is disabled.",
+                    source, e.toString());
+                writable = false;
             }
+        }
+        Data data = complete(stored);
+        if (writable) write(path, data);
+        active = data;
+        OriginRegistry.refilter();
+        OriginLayers.refilter();
+    }
 
-            for (var origin : entry.getValue().origins.entrySet()) {
-                if (!origin.getValue()) {
-                    result.put(entry.getKey(), entry.getValue());
-                    break;
+    public static void clear() {
+        active = null;
+    }
+
+    public static boolean blocks(ResourceLocation layer, ResourceLocation origin) {
+        Data data = active;
+        if (data == null) return false;
+        Toggle layerToggle = data.layers().get(layer);
+        if (layerToggle != null && (!layerToggle.enabled() || !layerToggle.allows(origin))) return true;
+        Toggle originToggle = data.origins().get(origin);
+        return originToggle != null && !originToggle.enabled();
+    }
+
+    public static @Nullable Origin filter(Origin origin) {
+        Data data = active;
+        if (data == null) return origin;
+        Toggle toggle = data.origins().get(origin.id());
+        if (toggle == null) return origin;
+        if (!toggle.enabled()) return null;
+        boolean changed = false;
+        List<OriginPowerEntry> entries = new ArrayList<>(origin.powerEntries().size());
+        for (OriginPowerEntry entry : origin.powerEntries()) {
+            List<ResourceLocation> powers = new ArrayList<>(entry.powers().size());
+            for (ResourceLocation power : entry.powers()) {
+                if (toggle.allows(power)) powers.add(power);
+                else changed = true;
+            }
+            entries.add(new OriginPowerEntry(entry.condition(), powers));
+        }
+        return changed ? origin.withPowerEntries(entries) : origin;
+    }
+
+    public static @Nullable OriginLayer filter(OriginLayer layer) {
+        Data data = active;
+        if (data == null) return layer;
+        Toggle toggle = data.layers().get(layer.id());
+        if (toggle != null && !toggle.enabled()) return null;
+        boolean changed = false;
+        List<ConditionedOrigin> entries = new ArrayList<>(layer.conditionedOrigins().size());
+        for (ConditionedOrigin entry : layer.conditionedOrigins()) {
+            List<ResourceLocation> origins = new ArrayList<>(entry.origins().size());
+            for (ResourceLocation origin : entry.origins()) {
+                Toggle originToggle = data.origins().get(origin);
+                if ((toggle == null || toggle.allows(origin)) && (originToggle == null || originToggle.enabled())) {
+                    origins.add(origin);
+                } else {
+                    changed = true;
                 }
             }
+            entries.add(new ConditionedOrigin(entry.condition(), origins));
         }
-
-        return result;
+        return changed ? layer.withConditionedOrigins(entries) : layer;
     }
 
-    public HashMap<ResourceLocation, OriginConfig> nonDefaultOrigins(HashMap<ResourceLocation, OriginConfig> original) {
-        HashMap<ResourceLocation, OriginConfig> result = new HashMap<>();
+    private static Data complete(@Nullable Data stored) {
+        Map<ResourceLocation, Toggle> layers = new HashMap<>();
+        for (OriginLayer layer : OriginLayers.loaded()) {
+            layers.put(layer.id(), merge(stored == null ? null : stored.layers().get(layer.id()), layer.allOrigins()));
+        }
+        Map<ResourceLocation, Toggle> origins = new HashMap<>();
+        for (Origin origin : OriginRegistry.loaded()) {
+            if (origin.id().equals(OriginRegistry.EMPTY_ID)) continue;
+            origins.put(origin.id(), merge(stored == null ? null : stored.origins().get(origin.id()), origin.powers()));
+        }
+        if (stored != null) {
+            keepDisabled(stored.layers(), layers);
+            keepDisabled(stored.origins(), origins);
+        }
+        return new Data(layers, origins);
+    }
 
-        for (var entry : original.entrySet()) {
-            if (!entry.getValue().enabled()) {
-                result.put(entry.getKey(), entry.getValue());
-                continue;
+    private static Toggle merge(@Nullable Toggle stored, List<ResourceLocation> ids) {
+        Map<ResourceLocation, Boolean> entries = new HashMap<>();
+        if (stored != null) {
+            for (Map.Entry<ResourceLocation, Boolean> entry : stored.entries().entrySet()) {
+                if (!entry.getValue()) entries.put(entry.getKey(), false);
             }
+        }
+        for (ResourceLocation id : ids) entries.putIfAbsent(id, true);
+        return new Toggle(stored == null || stored.enabled(), entries);
+    }
 
-            for (var power : entry.getValue().powers.entrySet()) {
-                if (!power.getValue()) {
-                    result.put(entry.getKey(), entry.getValue());
-                    break;
+    private static void keepDisabled(Map<ResourceLocation, Toggle> stored, Map<ResourceLocation, Toggle> out) {
+        for (Map.Entry<ResourceLocation, Toggle> entry : stored.entrySet()) {
+            if (out.containsKey(entry.getKey())) continue;
+            Toggle kept = merge(entry.getValue(), List.of());
+            if (!kept.enabled() || !kept.entries().isEmpty()) out.put(entry.getKey(), kept);
+        }
+    }
+
+    private static void write(Path path, Data data) {
+        Data.CODEC.encodeStart(JsonOps.INSTANCE, data)
+            .resultOrPartial(error -> Origins.LOGGER.warn("[Origins] Couldn't encode {}: {}", path, error))
+            .ifPresent(json -> {
+                try {
+                    StringWriter text = new StringWriter();
+                    JsonWriter writer = new JsonWriter(text);
+                    writer.setIndent("  ");
+                    GsonHelper.writeValue(writer, json, Comparator.naturalOrder());
+                    String content = text.toString();
+                    if (Files.exists(path) && content.equals(Files.readString(path))) return;
+                    Files.createDirectories(path.getParent());
+                    Files.writeString(path, content);
+                } catch (Exception e) {
+                    Origins.LOGGER.warn("[Origins] Couldn't write {} ({}).", path, e.toString());
                 }
-            }
-        }
-
-        return result;
-    }
-
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .create();
-
-    private static final String FILE = "layers.json";
-
-    private static OriginsWorldConfig defaultCfg() {
-        var result = new OriginsWorldConfig(new HashMap<>(), new HashMap<>());
-
-        for (OriginLayer layer : OriginLayers.all()) {
-            HashMap<ResourceLocation, Boolean> origins = new HashMap<>();
-
-            for (ResourceLocation originID : layer.allOrigins()) {
-                origins.put(originID, true);
-            }
-
-            result.layers.put(layer.id(), new LayerConfig(true, origins));
-        }
-
-        for (Origin origin : OriginRegistry.all()) {
-            if(Objects.equals(origin.id(), new ResourceLocation("origins:empty"))) continue;
-
-            HashMap<ResourceLocation, Boolean> powers = new HashMap<>();
-
-            for (ResourceLocation power : origin.powers()) {
-                powers.put(power, true);
-            }
-
-            result.origins.put(origin.id(), new OriginConfig(true, powers));
-        }
-
-        return result;
-    }
-
-    private OriginsWorldConfig filled()  {
-        var result = new OriginsWorldConfig(nonDefaultLayers(layers), nonDefaultOrigins(origins));
-        var defaultCfg = defaultCfg();
-
-        for (OriginLayer layer : OriginLayers.all()) {
-            HashMap<ResourceLocation, Boolean> origins = layers.getOrDefault(layer.id(), defaultCfg.layers.get(layer.id())).origins;
-
-            for (ResourceLocation originID : layer.allOrigins()) {
-                origins.putIfAbsent(originID, true);
-            }
-
-            result.layers.put(layer.id(), new LayerConfig(layerEnabled(layer.id()), origins));
-        }
-
-        for (Origin origin : OriginRegistry.all()) {
-            if(Objects.equals(origin.id(), new ResourceLocation("origins:empty"))) continue;
-
-            HashMap<ResourceLocation, Boolean> powers = origins.getOrDefault(origin.id(), defaultCfg.origins.get(origin.id())).powers;
-
-            for (ResourceLocation power : origin.powers()) {
-                powers.putIfAbsent(power, true);
-            }
-
-            result.origins.put(origin.id(), new OriginConfig(originEnabled(origin.id()), powers));
-        }
-
-        return result;
-    }
-
-    public static final Codec<OriginsWorldConfig> CODEC = RecordCodecBuilder.create((i) -> i.group(
-            Codec.unboundedMap(ResourceLocation.CODEC, LayerConfig.CODEC).fieldOf("layers").forGetter(OriginsWorldConfig::layers),
-            Codec.unboundedMap(ResourceLocation.CODEC, OriginConfig.CODEC).fieldOf("origins").forGetter(OriginsWorldConfig::origins)
-    ).apply(i, (layers, origins) ->
-        new OriginsWorldConfig(new HashMap<>(layers), new HashMap<>(origins))
-    ));
-
-    private static Path path(MinecraftServer server) {
-        return server.getWorldPath(LevelResource.ROOT).resolve("origins/" + FILE);
-    }
-
-    public record OriginConfig(
-        boolean enabled,
-        HashMap<ResourceLocation, Boolean> powers
-    ) {
-        public boolean powerEnabled(ResourceLocation id) {
-            return !powers.containsKey(id) || powers.get(id);
-        }
-
-        public static Codec<OriginConfig> CODEC = RecordCodecBuilder.create((i) -> i.group(
-                Codec.BOOL.fieldOf("enabled").forGetter(OriginConfig::enabled),
-                Codec.unboundedMap(ResourceLocation.CODEC, Codec.BOOL).fieldOf("powers").forGetter(OriginConfig::powers)
-        ).apply(i, (bl, map) -> new OriginConfig(bl, new HashMap<>(map))));
-    }
-
-    public record LayerConfig(
-        boolean enabled,
-        HashMap<ResourceLocation, Boolean> origins
-
-    ) {
-        public static Codec<LayerConfig> CODEC = RecordCodecBuilder.create((i) -> i.group(
-                Codec.BOOL.fieldOf("enabled").forGetter(LayerConfig::enabled),
-                Codec.unboundedMap(ResourceLocation.CODEC, Codec.BOOL).fieldOf("origins").forGetter(LayerConfig::origins)
-        ).apply(i, (bl, map) -> new LayerConfig(bl, new HashMap<>(map))));
-    }
-
-    public LayerConfig layer(ResourceLocation layer) {
-        return layers.get(layer);
-    }
-
-    public static OriginsWorldConfig get(@Nullable MinecraftServer server) {
-        if (server == null) return defaultCfg();
-
-        Path path = path(server);
-
-        if (!Files.exists(path)) {
-            var config = defaultCfg();
-            save(path, config);
-            return config;
-        }
-
-        try (var reader = Files.newBufferedReader(path)) {
-            var json = JsonParser.parseReader(reader);
-
-            var res = CODEC.parse(JsonOps.INSTANCE, json)
-                    .resultOrPartial(error ->
-                            Apoli.LOGGER.error("Failed to load world config at {}: {}", path, error)
-                    )
-                    .orElseGet(OriginsWorldConfig::defaultCfg);
-
-            res = res.filled();
-
-            save(path, res);
-
-            return res;
-        } catch (IOException e) {
-            Apoli.LOGGER.error("Failed to load world config at {}: {}", path, e);
-            return defaultCfg();
-        }
-    }
-
-    private static void save(Path path, OriginsWorldConfig config) {
-        try {
-            Files.createDirectories(path.getParent());
-
-            var json = CODEC.encodeStart(JsonOps.INSTANCE, config)
-                    .getOrThrow(false, (e) -> Apoli.LOGGER.error("Failed to save world config at {}: {}", path, e));
-
-            try (var writer = Files.newBufferedWriter(path)) {
-                GSON.toJson(json, writer);
-            }
-        } catch (IOException e) {
-            Apoli.LOGGER.error("Failed to save world config at {}: {}", path, e);
-        }
-    }
-
-    public boolean layerEnabled(ResourceLocation layer) {
-        return !layers.containsKey(layer) || layers.get(layer).enabled;
-    }
-
-    public boolean layerOriginEnabled(ResourceLocation layer, ResourceLocation origin) {
-        return !layers.containsKey(layer) || !layers.get(layer).origins.containsKey(origin) || layers.get(layer).origins.get(origin);
-    }
-
-    public boolean originEnabled(ResourceLocation origin) {
-        return !origins.containsKey(origin) || origins.get(origin).enabled;
-    }
-
-    public boolean powerEnabled(ResourceLocation origin, ResourceLocation power) {
-        return !origins.containsKey(origin) || !origins.get(origin).powers.containsKey(power) || origins.get(origin).powers.get(power);
-    }
-
-    public List<ConditionedOrigin> filterLayerOrigins(List<ConditionedOrigin> original, ResourceLocation layer) {
-        return original.stream().map(conditionedOrigin ->
-            new ConditionedOrigin(conditionedOrigin.condition(), conditionedOrigin.origins().stream().filter(origin -> layerOriginEnabled(layer, origin)).toList())
-        ).toList();
-    }
-
-    public List<OriginPowerEntry> filterPowers(List<OriginPowerEntry> original, ResourceLocation origin) {
-        return original.stream().map(originPowerEntry ->
-                new OriginPowerEntry(originPowerEntry.condition(), originPowerEntry.powers().stream().filter(power -> powerEnabled(origin, power)).toList())
-        ).toList();
-    }
-
-    public Collection<OriginLayer> filterLayers(Collection<OriginLayer> original) {
-        return original.stream().filter(layer -> layerEnabled(layer.id())).toList();
-    }
-
-    public Collection<Origin> filterOrigins(Collection<Origin> original) {
-        return original.stream().filter(origin -> originEnabled(origin.id())).toList();
+            });
     }
 }

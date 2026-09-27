@@ -11,7 +11,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public record Origin(
@@ -30,14 +33,15 @@ public record Origin(
     List<OriginUpgrade> upgrades,
     List<String> tags
 ) {
-    public Origin setPowerEntries(List<OriginPowerEntry> values) {
-        return new Origin(id, values, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags);
-    }
-
     public Origin {
         powerEntries = List.copyOf(powerEntries);
         upgrades = List.copyOf(upgrades);
         tags = List.copyOf(tags);
+    }
+
+    public Origin withPowerEntries(List<OriginPowerEntry> entries) {
+        return new Origin(id, entries, icon, impact, order, loadingPriority, unchoosable, special, nameText,
+            descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags);
     }
 
     public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,

@@ -12,7 +12,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 public record OriginLayer(
@@ -43,9 +46,10 @@ public record OriginLayer(
         excludedFromRandom = List.copyOf(excludedFromRandom);
     }
 
-    public OriginLayer setConditionedOrigins(List<ConditionedOrigin> values) {
-        return new OriginLayer(id, order, enabled, values, nameKey, chooseTitleKey, viewTitleKey, missingNameKey, missingDescriptionKey, allowRandom, randomAllowsUnchoosable,
-                excludedFromRandom, defaultOrigin, autoChooseIfNoChoice, hidden, revalidate, random, randomiser, swap, maxPlayersPerOrigin);
+    public OriginLayer withConditionedOrigins(List<ConditionedOrigin> entries) {
+        return new OriginLayer(id, order, enabled, entries, nameKey, chooseTitleKey, viewTitleKey, missingNameKey,
+            missingDescriptionKey, allowRandom, randomAllowsUnchoosable, excludedFromRandom, defaultOrigin,
+            autoChooseIfNoChoice, hidden, revalidate, random, randomiser, swap, maxPlayersPerOrigin);
     }
 
     public record RandomConfig(Style style, Map<ResourceLocation, Integer> weights, int rollDuration) {

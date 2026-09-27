@@ -1,5 +1,6 @@
 package dev.overgrown.origins.event;
 
+import dev.overgrown.origins.OriginsWorldConfig;
 import dev.overgrown.origins.command.OriginCommands;
 import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
@@ -75,13 +76,18 @@ public final class OriginsServerEvents {
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(
             dev.overgrown.origins.origin.OriginUpgrades::tick);
 
+        ServerLifecycleEvents.SERVER_STARTING.register(OriginsWorldConfig::apply);
+
         ServerLifecycleEvents.SERVER_STARTED.register(OriginsServerNetwork::broadcastOriginCaps);
 
-        ServerLifecycleEvents.SERVER_STOPPED.register(server ->
-            dev.overgrown.origins.origin.OriginCaps.clear());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            dev.overgrown.origins.origin.OriginCaps.clear();
+            OriginsWorldConfig.clear();
+        });
 
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> {
             if (!success) return;
+            OriginsWorldConfig.apply(server);
             OriginsServerNetwork.broadcastOriginCaps(server);
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 OriginsServerNetwork.sendRegistries(player);

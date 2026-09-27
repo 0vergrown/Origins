@@ -72,7 +72,7 @@
         }
       ],
       "result": {
-        "id": "minecraft:cobweb"
+        "item": "minecraft:cobweb"
       }
     }
   },
