@@ -18,11 +18,8 @@ import dev.overgrown.origins.item.OriginsItems;
 import dev.overgrown.origins.network.OriginsNetwork;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +33,6 @@ public final class Origins {
     }
 
     public Origins(IEventBus modBus, ModContainer container) {
-        NeoForge.EVENT_BUS.register(this);
-
         NamespaceAlias.addAlias(MOD_ID, "apoli");
 
         OriginsConfig.register(container);
@@ -81,10 +76,5 @@ public final class Origins {
         dev.overgrown.origins.origin.OriginCauseDescriber.register();
 
         LOGGER.info("Origins initialized — '{}' namespace falls back to 'apoli'.", MOD_ID);
-    }
-
-    @SubscribeEvent
-    void onServerStart(ServerStartedEvent event) {
-        OriginsWorldConfig.attachServer(event.getServer());
     }
 }

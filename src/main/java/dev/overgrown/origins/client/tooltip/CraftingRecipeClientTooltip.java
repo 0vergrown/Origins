@@ -1,14 +1,21 @@
 package dev.overgrown.origins.client.tooltip;
 
+import dev.overgrown.apoli.client.TooltipRenderer;
 import dev.overgrown.origins.Origins;
+import dev.overgrown.origins.badge.CraftingRecipeBadge;
 import dev.overgrown.origins.badge.CraftingRecipeTooltipData;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public final class CraftingRecipeClientTooltip implements ClientTooltipComponent {
@@ -19,6 +26,24 @@ public final class CraftingRecipeClientTooltip implements ClientTooltipComponent
 
     public CraftingRecipeClientTooltip(CraftingRecipeTooltipData data) {
         this.data = data;
+    }
+
+    public static void renderBadge(GuiGraphics graphics, Font font, CraftingRecipeBadge badge,
+                                   int mouseX, int mouseY, int widthLimit) {
+        List<ClientTooltipComponent> components = new ArrayList<>();
+        badge.prefix().ifPresent(text -> addLines(components, font, text, widthLimit));
+        if (!badge.output().isEmpty()) {
+            components.add(ClientTooltipComponent.create(
+                new CraftingRecipeTooltipData(badge.inputs(), badge.output(), badge.width())));
+        }
+        badge.suffix().ifPresent(text -> addLines(components, font, text, widthLimit));
+        TooltipRenderer.render(graphics, font, components, mouseX, mouseY);
+    }
+
+    private static void addLines(List<ClientTooltipComponent> out, Font font, Component text, int widthLimit) {
+        for (FormattedCharSequence line : font.split(text, widthLimit)) {
+            out.add(ClientTooltipComponent.create(line));
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package dev.overgrown.origins.event;
 
 import dev.overgrown.origins.Origins;
+import dev.overgrown.origins.OriginsWorldConfig;
 import dev.overgrown.origins.component.PlayerOriginsAttachment;
 import dev.overgrown.origins.component.PlayerOriginsImpl;
 import dev.overgrown.origins.network.OriginsServerNetwork;
@@ -93,6 +94,11 @@ public final class OriginsServerEvents {
     }
 
     @SubscribeEvent
+    public static void onServerAboutToStart(net.neoforged.neoforge.event.server.ServerAboutToStartEvent event) {
+        OriginsWorldConfig.apply(event.getServer());
+    }
+
+    @SubscribeEvent
     public static void onServerStarted(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
         OriginsServerNetwork.broadcastOriginCaps(event.getServer());
     }
@@ -100,12 +106,14 @@ public final class OriginsServerEvents {
     @SubscribeEvent
     public static void onServerStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
         dev.overgrown.origins.origin.OriginCaps.clear();
+        OriginsWorldConfig.clear();
     }
 
     @SubscribeEvent
     public static void onDatapackSync(OnDatapackSyncEvent event) {
 
         if (event.getPlayer() != null) return;
+        OriginsWorldConfig.apply(event.getPlayerList().getServer());
         OriginsServerNetwork.broadcastOriginCaps(event.getPlayerList().getServer());
         for (ServerPlayer player : event.getPlayerList().getPlayers()) {
             OriginsServerNetwork.sendRegistries(player);
