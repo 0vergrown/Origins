@@ -1,8 +1,14 @@
 package dev.overgrown.origins.badge;
 
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.overgrown.apoli.data.TextComponent;
+import dev.overgrown.origins.Origins;
+import dev.overgrown.origins.client.tooltip.CraftingRecipeClientTooltip;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
@@ -13,19 +19,18 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public record CraftingRecipeBadge(
     ResourceLocation spriteId,
-    Optional<ResourceLocation> recipeId,
+    Optional<Either<ResourceLocation, Dynamic<?>>> recipe,
     NonNullList<ItemStack> inputs,
     ItemStack output,
     int width,
@@ -33,9 +38,14 @@ public record CraftingRecipeBadge(
     Optional<Component> suffix
 ) implements Badge {
 
+    private static final ResourceLocation INLINE_RECIPE_ID = Origins.id("crafting_recipe_badge");
+
+    private static final Codec<Dynamic<?>> RECIPE_OBJECT =
+        Codec.PASSTHROUGH.flatXmap(CraftingRecipeBadge::requireObject, CraftingRecipeBadge::requireObject);
+
     public static final MapCodec<CraftingRecipeBadge> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
         ResourceLocation.CODEC.fieldOf("sprite").forGetter(CraftingRecipeBadge::spriteId),
-        ResourceLocation.CODEC.fieldOf("recipe").forGetter(b -> b.recipeId().orElse(null)),
+        Codec.either(ResourceLocation.CODEC, RECIPE_OBJECT).fieldOf("recipe").forGetter(b -> b.recipe().orElse(null)),
         TextComponent.CODEC.optionalFieldOf("prefix").forGetter(CraftingRecipeBadge::prefix),
         TextComponent.CODEC.optionalFieldOf("suffix").forGetter(CraftingRecipeBadge::suffix)
     ).apply(i, (sprite, recipe, prefix, suffix) -> new CraftingRecipeBadge(
@@ -52,17 +62,38 @@ public record CraftingRecipeBadge(
             if (stacks.length > 0) inputs.set(idx, stacks[0]);
         }
         ItemStack output = recipe.getResultItem(registries);
-        return new CraftingRecipeBadge(sprite, Optional.of(recipeId), inputs, output, width, prefix, suffix);
+        return new CraftingRecipeBadge(sprite, Optional.of(Either.left(recipeId)), inputs, output, width, prefix, suffix);
     }
 
     public CraftingRecipeBadge resolve(net.minecraft.world.item.crafting.RecipeManager recipeManager,
                                        HolderLookup.Provider registries) {
-        if (!output.isEmpty() || recipeId.isEmpty()) return this;
-        return recipeManager.byKey(recipeId.get())
-            .map(net.minecraft.world.item.crafting.RecipeHolder::value)
+        if (!output.isEmpty() || recipe.isEmpty()) return this;
+        ResourceLocation id = recipe.get().map(key -> key, CraftingRecipeBadge::inlineId);
+        Optional<? extends Recipe<?>> resolved = recipe.get().map(
+            key -> recipeManager.byKey(key).map(net.minecraft.world.item.crafting.RecipeHolder::value),
+            data -> parseInline(data, id, registries));
+        return resolved
             .filter(r -> r instanceof CraftingRecipe)
-            .map(r -> fromRecipe(spriteId, recipeId.get(), (CraftingRecipe) r, prefix, suffix, registries))
+            .map(r -> fromRecipe(spriteId, id, (CraftingRecipe) r, prefix, suffix, registries))
             .orElse(this);
+    }
+
+    private static ResourceLocation inlineId(Dynamic<?> data) {
+        return data.get("id").asString().result()
+            .map(ResourceLocation::tryParse)
+            .orElse(INLINE_RECIPE_ID);
+    }
+
+    private static <T> Optional<Recipe<?>> parseInline(Dynamic<T> data, ResourceLocation id,
+                                                       HolderLookup.Provider registries) {
+        return Recipe.CODEC.parse(registries.createSerializationContext(data.getOps()), data.getValue())
+            .resultOrPartial(err -> BadgeManager.warnOnce("Bad inline recipe on crafting_recipe badge " + id + ": " + err));
+    }
+
+    private static DataResult<Dynamic<?>> requireObject(Dynamic<?> recipe) {
+        return recipe.getMapValues().result().isPresent()
+            ? DataResult.success(recipe)
+            : DataResult.error(() -> "Expected a recipe id or a recipe object");
     }
 
     @Override
@@ -79,14 +110,7 @@ public record CraftingRecipeBadge(
     @Override
     public void renderTooltip(GuiGraphics graphics, Font font, int mouseX, int mouseY, int widthLimit,
                               ResourceLocation powerId, float time) {
-        List<Component> lines = new ArrayList<>();
-        prefix.ifPresent(lines::add);
-        suffix.ifPresent(lines::add);
-        Optional<TooltipComponent> visual = output.isEmpty()
-            ? Optional.empty()
-            : Optional.of(new CraftingRecipeTooltipData(inputs, output, width));
-        if (lines.isEmpty() && visual.isEmpty()) return;
-        graphics.renderTooltip(font, lines, visual, mouseX, mouseY);
+        CraftingRecipeClientTooltip.renderBadge(graphics, font, this, mouseX, mouseY, widthLimit);
     }
 
     @Override

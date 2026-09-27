@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
 import dev.overgrown.origins.Origins;
-import dev.overgrown.origins.OriginsWorldConfig;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -25,7 +24,6 @@ import java.util.Set;
 public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new Gson();
     private static final String DIR = "origin_layers";
-
 
     public OriginLayerLoader() {
         super(GSON, DIR);
@@ -51,7 +49,7 @@ public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
                 Origins.LOGGER.error("Failed to load origin layer {}: {}", id, e.getMessage());
             }
         }
-        OriginLayers.replaceAll(layers, OriginsWorldConfig.server);
+        OriginLayers.replaceAll(layers);
         Origins.LOGGER.info("Loaded {} origin layers.", OriginLayers.size());
     }
 

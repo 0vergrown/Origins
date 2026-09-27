@@ -226,5 +226,9 @@
     "power.origins.buzzborne/rain_soaked.name": "Rain-Soaked",
     "power.origins.buzzborne/rain_soaked.description": "Being in water or rain grants Weakness and disables your ability to fly.",
     "origin.origins.buzzborne.name": "Buzzborne",
-    "origin.origins.buzzborne.description": "A winged servant of the hive, able to harness the power of flowers and honey. Your abilities are fueled by pollen."
+    "origin.origins.buzzborne.description": "A winged servant of the hive, able to harness the power of flowers and honey. Your abilities are fueled by pollen.",
+    "death.attack.hurt_by_water": "%1$s took a bath for too long",
+    "death.attack.hurt_by_water.player": "%1$s was put underwater by %2$s",
+    "death.attack.no_water_for_gills": "%1$s didn't manage to keep wet",
+    "death.attack.no_water_for_gills.player": "%1$s didn't manage to keep wet because they were fighting %2$s"
 }

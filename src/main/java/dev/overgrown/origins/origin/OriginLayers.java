@@ -2,7 +2,6 @@ package dev.overgrown.origins.origin;
 
 import dev.overgrown.origins.OriginsWorldConfig;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +14,7 @@ import java.util.Map;
 
 public final class OriginLayers {
     private static final Map<ResourceLocation, OriginLayer> BY_ID = new HashMap<>();
+    private static final List<OriginLayer> LOADED = new ArrayList<>();
 
     private OriginLayers() {}
 
@@ -51,15 +51,26 @@ public final class OriginLayers {
         return out;
     }
 
-    public static void replaceAll(Collection<OriginLayer> layers, @Nullable MinecraftServer server) {
-        var cfg = OriginsWorldConfig.get(server);
-        layers = cfg.filterLayers(layers);
+    public static Collection<OriginLayer> loaded() {
+        return Collections.unmodifiableList(LOADED);
+    }
 
+    public static void replaceAll(Collection<OriginLayer> layers) {
+        LOADED.clear();
+        LOADED.addAll(layers);
+        refilter();
+    }
+
+    public static void refilter() {
         BY_ID.clear();
-        for (OriginLayer layer : layers) {
-            var original = layer.conditionedOrigins();
-
-            BY_ID.put(layer.id(), layer.setConditionedOrigins(cfg.filterLayerOrigins(original, layer.id())));
+        for (OriginLayer layer : LOADED) {
+            OriginLayer shown = OriginsWorldConfig.filter(layer);
+            if (shown != null) BY_ID.put(layer.id(), shown);
         }
+    }
+
+    public static void acceptSynced(Collection<OriginLayer> layers) {
+        BY_ID.clear();
+        for (OriginLayer layer : layers) BY_ID.put(layer.id(), layer);
     }
 }
