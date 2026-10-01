@@ -1,0 +1,225 @@
+{
+    "name": "Split",
+    "description": "You are able to split yourself into two, which will summon a clone of you. You will lose half of your health and size, but you can use a slime ball to add more slime!",
+    "type": "origins:multiple",
+
+    "as": {
+        "type": "origins:active_self",
+        "key": "key.origins.primary_active",
+        "cooldown": 200,
+        "hud_render": {
+            "sprite_location": "origins:textures/gui/sprites/hud_render/vevekhi/resource_bar_01.png",
+            "bar_index": 23
+        },
+        "entity_action": {
+            "type": "origins:and",
+            "actions": [
+                {
+                    "type": "origins:execute_command",
+                    "command": "playsound minecraft:entity.slime.hurt master @a"
+                },
+                {
+                    "type": "origins:if_else",
+                    "condition": {
+                        "type": "origins:resource",
+                        "resource": "*:*_resource",
+                        "comparison": "==",
+                        "compare_to": 0
+                    },
+                    "if_action": {
+                        "type": "apoli:summon_clone",
+                        "max_life_ticks": 6000,
+                        "inherit_equipment": true,
+                        "bientity_action": {
+                            "type": "origins:target_action",
+                            "action": {
+                                "type": "origins:and",
+                                "actions": [
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "power grant @s origins:slimekin/slimy"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale delay set pehkui:height 0 @s"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale delay set pehkui:width 0 @s"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale set pehkui:height 0.75 @s"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale set pehkui:width 0.75 @s"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "else_action": {
+                        "type": "apoli:summon_clone",
+                        "max_life_ticks": 6000,
+                        "inherit_equipment": true,
+                        "bientity_action": {
+                            "type": "origins:target_action",
+                            "action": {
+                                "type": "origins:and",
+                                "actions": [
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "power grant @s origins:slimekin/slimy"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale delay set pehkui:height 0 @s"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale delay set pehkui:width 0 @s"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale set pehkui:height 0.5 @s"
+                                    },
+                                    {
+                                        "type": "origins:execute_command",
+                                        "command": "scale set pehkui:width 0.5 @s"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "origins:change_resource",
+                    "resource": "*:*_health_resource",
+                    "operation": "add",
+                    "change": "-1 * (max_health / 2)"
+                },
+                {
+                    "type": "origins:change_resource",
+                    "resource": "*:*_resource",
+                    "operation": "add",
+                    "change": 1
+                }
+            ]
+        },
+        "condition": {
+            "type": "origins:resource",
+            "resource": "*:*_resource",
+            "comparison": "!=",
+            "compare_to": 2
+        }
+    },
+    "scale_one": {
+        "type": "apoli:scale",
+        "scale_types": ["apoli:width", "apoli:height"],
+        "modifier": {
+            "operation": "set_total",
+            "amount": "0.75"
+        },
+        "condition": {
+            "type": "origins:resource",
+            "resource": "*:*_resource",
+            "comparison": "==",
+            "compare_to": 1
+        }
+    },
+    "scale_two": {
+        "type": "apoli:scale",
+        "scale_types": ["apoli:width", "apoli:height"],
+        "modifier": {
+            "operation": "set_total",
+            "amount": "0.5"
+        },
+        "condition": {
+            "type": "origins:resource",
+            "resource": "*:*_resource",
+            "comparison": "==",
+            "compare_to": 2
+        }
+    },
+    "resource": {
+        "type": "origins:resource",
+        "min": 0,
+        "max": 2
+    },
+    "health_resource": {
+        "type": "origins:resource",
+        "min": -10000,
+        "start_value": 0,
+        "max": 0
+    },
+    "health": {
+        "type": "apoli:attribute",
+        "modifier": {
+            "name": "Max health increase",
+            "attribute": "minecraft:generic.max_health",
+            "operation": "add_base_early",
+            "resource": "*:*_health_resource"
+        }
+    },
+    "slimeball": {
+        "type": "origins:active_self",
+        "key": "key.use",
+        "entity_action": {
+            "type": "origins:and",
+            "actions": [
+                {
+                    "type": "origins:swing_hand",
+                    "hand": "mainhand"
+                },
+                {
+                    "type": "origins:equipped_item_action",
+                    "equipment_slot": "mainhand",
+                    "action": {
+                        "type": "origins:consume",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "apoli:play_sound",
+                    "sound": "minecraft:entity.slime.squish",
+                    "volume": 0.6
+                },
+                {
+                    "type": "origins:change_resource",
+                    "resource": "*:*_resource",
+                    "operation": "add",
+                    "change": -1
+                },
+                {
+                    "type": "origins:change_resource",
+                    "resource": "*:*_health_resource",
+                    "operation": "add",
+                    "change": "max_health * 2"
+                }
+            ]
+        },
+        "condition": {
+            "type": "origins:and",
+            "conditions": [
+                {
+                    "type": "origins:resource",
+                    "resource": "*:*_resource",
+                    "comparison": "!=",
+                    "compare_to": 0
+                },
+                {
+                    "type": "origins:equipped_item",
+                    "equipment_slot": "mainhand",
+                    "item_condition": {
+                        "type": "origins:ingredient",
+                        "ingredient": {
+                            "type": "origins:ingredient",
+                            "item": "minecraft:slime_ball"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
