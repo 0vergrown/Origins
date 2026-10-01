@@ -1,0 +1,21 @@
+{
+    "name": "Slime-Like Body",
+    "description": "As a slime you are way weaker than others are, you will have less overall armor and heal at half the speed.",
+    "type": "origins:multiple",
+    "armor": {
+        "type": "apoli:attribute",
+        "modifier": {
+            "name": "Max health increase",
+            "attribute": "minecraft:generic.armor",
+            "operation": "add_base_early",
+            "value": -4
+        }
+    },
+    "regen": {
+        "type": "apoli:modify_healing",
+        "modifier": {
+            "operation": "multiply_total",
+            "value": -0.5
+        }
+    }
+}

@@ -1,0 +1,70 @@
+{
+    "name": "Slimy",
+    "description": "As a slime you are green and see-through, you also are way bouncier than others! You also jump way higher when you crouch, which can be used to get a boost!",
+    "type": "origins:multiple",
+    "color": {
+        "type": "origins:model_color",
+        "red": 0.0,
+        "green": 1.0,
+        "blue": 0.0,
+        "alpha": 0.5,
+        "condition": {
+            "type": "origins:and",
+            "conditions": [
+                {
+                    "type": "origins:in_rain",
+                    "inverted": true
+                },
+                {
+                    "type": "origins:in_block_anywhere",
+                    "block_condition": {
+                        "type": "apoli:block",
+                        "block": "water"
+                    },
+                    "comparison": "==",
+                    "compare_to": 0
+                }
+            ]
+        }
+    },
+    "bounce": {
+        "type": "apoli:modify_bounciness",
+        "modifier": {
+            "operation": "multiply_base_multiplicative",
+            "value": 0.1
+        },
+        "entity_action": {
+            "type": "apoli:play_sound",
+            "sound": "minecraft:entity.slime.squish",
+            "volume": 0.6
+        }
+    },
+    "aot": {
+        "type": "origins:action_over_time",
+        "entity_action": {
+            "type": "origins:apply_effect",
+            "effect": {
+                "amplifier": 2,
+                "duration": 2,
+                "id": "minecraft:jump_boost",
+                "show_particles": false,
+                "show_icon": false
+            }
+        },
+        "condition": {
+            "type": "origins:sneaking"
+        },
+        "interval": 1
+    },
+    "model": {
+        "type":"apoli:modify_model_parts",
+        "transformations":[
+            {
+                "model_part":"whole",
+                "type":"y_scale",
+                "value":"0 + ( velocity_y / 2 )",
+                "easing":"smooth"
+            }
+        ]
+    }
+}

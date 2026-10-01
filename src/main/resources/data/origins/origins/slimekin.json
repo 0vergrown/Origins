@@ -1,0 +1,16 @@
+{
+    "name": "Slimekin",
+    "description": "A little green guy made of slime.. It's in the name! As a slimekin, you don't do much and they kinda just hop around and split into parts! Fun life I know!",
+    "icon": {
+        "item": "minecraft:slime_ball"
+    },
+    "powers": [
+        "origins:slimekin/slimy",
+        "origins:slimekin/extra_slime",
+        "origins:slimekin/split",
+        "origins:slimekin/slime-like_body",
+        "origins:slimekin/hydrophilic",
+        "origins:slimekin/sliming_out"
+    ],
+    "impact": 2
+}

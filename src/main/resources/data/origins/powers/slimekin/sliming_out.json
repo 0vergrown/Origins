@@ -1,0 +1,40 @@
+{
+    "name": "Sliming Out",
+    "description": "You can throw out a chunk of your body forward, which will start to bounce off walls and deal damage when it hits something!",
+    "type": "apoli:fire_projectile",
+    "texture_location": "minecraft:textures/item/slime_ball.png",
+    "key": "key.origins.secondary_active",
+    "hud_render": {
+        "sprite_location": "origins:textures/gui/sprites/hud_render/vevekhi/resource_bar_01.png",
+        "bar_index": 23,
+        "icon_index": 2
+    },
+    "cooldown": 150,
+    "speed": 1.5,
+    "reflective": true,
+    "max_bounces": 3,
+    "bounce_speed": 0.85,
+    "max_distance": 64,
+    "owner_target_bientity_action_on_hit": {
+        "type": "origins:and",
+        "actions": [
+            {
+                "type": "origins:damage",
+                "amount": 9,
+                "damage_type": "minecraft:arrow"
+            },
+            {
+                "type": "origins:execute_command",
+                "command": "playsound minecraft:entity.slime.jump master @a ~ ~ ~ 4 0.5"
+            }
+        ]
+    },
+    "bientity_action_on_bounce": {
+        "type": "origins:target_action",
+        "action": {
+            "type": "apoli:play_sound",
+            "sound": "minecraft:entity.slime.squish",
+            "volume": 4
+        }
+    }
+}
