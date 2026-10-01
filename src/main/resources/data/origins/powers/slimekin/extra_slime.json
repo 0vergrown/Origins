@@ -1,0 +1,27 @@
+{
+    "name": "Extra Slime",
+    "description": "When you take a nap, sometimes you can't control yourself and you get slime on the bed! Disgusting!",
+    "badges": [
+        {
+            "type": "origins:tooltip",
+            "text": "You have a chance to drop a slimeball upon waking up!",
+            "sprite": "origins:textures/gui/badge/isaacfanta/info.png"
+        }
+    ],
+    "type": "origins:action_on_wake_up",
+    "entity_action": {
+        "type": "origins:chance",
+        "action": {
+            "type": "origins:spawn_entity",
+            "entity_type": "item",
+            "tag": "{Item:{id:\"minecraft:slime_ball\",count:1},PickupDelay:1200}",
+            "entity_action": {
+                "type": "origins:play_sound",
+                "sound": "minecraft:entity.sniffer.drop_seed",
+                "volume": 1.0,
+                "pitch": 1.0
+            }
+        },
+        "chance": 0.15
+    }
+}

@@ -1,0 +1,89 @@
+{
+    "name": "Hydrophilic",
+    "description": "You absorb water when you are in it, meaning when you are in a water block or rain you will be slower!",
+    "type": "origins:multiple",
+    "slowness": {
+        "type": "origins:action_over_time",
+        "entity_action": {
+            "type": "origins:apply_effect",
+            "effect": {
+                "id": "minecraft:slowness",
+                "amplifier": 1,
+                "duration": 3,
+                "show_icon": false,
+                "show_particles": false
+            }
+        },
+        "interval": 1,
+        "condition": {
+            "type": "origins:or",
+            "conditions": [
+                {
+                    "type": "origins:in_rain"
+                },
+                {
+                    "type": "origins:in_block_anywhere",
+                    "block_condition": {
+                        "type": "apoli:block",
+                        "block": "water"
+                    },
+                    "comparison": "!=",
+                    "compare_to": 0
+                }
+            ]
+        }
+    },
+    "green": {
+        "type": "apoli:overlay",
+        "texture": "minecraft:textures/misc/nausea.png",
+        "red": 0.0,
+        "green": 0.0,
+        "blue": 1,
+        "strength": 0.9,
+        "draw_mode": "nausea",
+        "draw_phase": "above_hud",
+        "visible_in_third_person": true,
+        "hide_with_hud": true,
+        "condition": {
+            "type": "origins:or",
+            "conditions": [
+                {
+                    "type": "origins:in_rain"
+                },
+                {
+                    "type": "origins:in_block_anywhere",
+                    "block_condition": {
+                        "type": "apoli:block",
+                        "block": "water"
+                    },
+                    "comparison": "!=",
+                    "compare_to": 0
+                }
+            ]
+        }
+    },
+    "model_color": {
+        "type": "origins:model_color",
+        "red": 0.0,
+        "green": 0.5,
+        "blue": 1.0,
+        "alpha": 0.5,
+        "condition": {
+            "type": "origins:or",
+            "conditions": [
+                {
+                    "type": "origins:in_rain"
+                },
+                {
+                    "type": "origins:in_block_anywhere",
+                    "block_condition": {
+                        "type": "apoli:block",
+                        "block": "water"
+                    },
+                    "comparison": "!=",
+                    "compare_to": 0
+                }
+            ]
+        }
+    }
+}
