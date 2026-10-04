@@ -32,8 +32,17 @@
           "actions": [
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:dandelion"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:dandelion"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_dandelion"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -62,8 +71,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:poppy"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:poppy"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_poppy"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -92,8 +110,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:blue_orchid"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:blue_orchid"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_blue_orchid"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -122,8 +149,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:allium"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:allium"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_allium"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -152,8 +188,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:azure_bluet"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:azure_bluet"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_azure_bluet"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -182,8 +227,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:red_tulip"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:red_tulip"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_red_tulip"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -212,8 +266,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:pink_tulip"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:pink_tulip"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_pink_tulip"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -242,8 +305,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:white_tulip"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:white_tulip"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_white_tulip"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -272,8 +344,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:orange_tulip"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:orange_tulip"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_orange_tulip"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -302,8 +383,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:cornflower"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:cornflower"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_cornflower"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -332,8 +422,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:lily_of_the_valley"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:lily_of_the_valley"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_lily_of_the_valley"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -362,8 +461,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:wither_rose"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:wither_rose"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_wither_rose"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -392,8 +500,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:oxeye_daisy"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:oxeye_daisy"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_oxeye_daisy"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
@@ -422,8 +539,17 @@
             },
             {
               "condition": {
-                "type": "apoli:block",
-                "block": "minecraft:torchflower"
+                "type": "apoli:or",
+                "conditions": [
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:torchflower"
+                  },
+                  {
+                    "type": "apoli:block",
+                    "block": "minecraft:potted_torchflower"
+                  }
+                ]
               },
               "action": {
                 "type": "apoli:and",
