@@ -9,6 +9,20 @@
       }
     }
   },
+  "inedible_tooltip": {
+    "type": "apoli:tooltip",
+    "item_condition": {
+      "type": "apoli:ingredient",
+      "ingredient": {
+        "item": "minecraft:pumpkin_pie"
+      }
+    },
+    "text": {
+      "translate": "origins.tooltip.inedible",
+      "color": "gray"
+    },
+    "position": "below_name"
+  },
   "prevent_seeing": {
     "type": "apoli:prevent_entity_render",
     "entity_condition": {
