@@ -1,23 +1,54 @@
 {
-  "type": "apoli:prevent_item_use",
-  "item_condition": {
-    "type": "apoli:and",
-    "conditions": [
-      {
-        "type": "apoli:food"
-      },
-      {
-        "type": "apoli:ingredient",
-        "ingredient": [
-          {
-            "tag": "origins:meat"
-          },
-          {
-            "tag": "origins:ignore_diet"
-          }
-        ],
-        "inverted": true
-      }
-    ]
+  "type": "apoli:multiple",
+  "prevent_eating": {
+    "type": "apoli:prevent_item_use",
+    "item_condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:food"
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": [
+            {
+              "tag": "origins:meat"
+            },
+            {
+              "tag": "origins:ignore_diet"
+            }
+          ],
+          "inverted": true
+        }
+      ]
+    }
+  },
+  "inedible_tooltip": {
+    "type": "apoli:tooltip",
+    "item_condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:food"
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": [
+            {
+              "tag": "origins:meat"
+            },
+            {
+              "tag": "origins:ignore_diet"
+            }
+          ],
+          "inverted": true
+        }
+      ]
+    },
+    "text": {
+      "translate": "origins.tooltip.inedible",
+      "color": "gray"
+    },
+    "position": "below_name"
   }
 }

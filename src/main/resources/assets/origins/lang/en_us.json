@@ -43,6 +43,7 @@
     "origins.gui.badge.recipe.crafting.shaped": "Provides the following shaped crafting recipe:",
     "origins.gui.badge.recipe.crafting.shapeless": "Provides the following shapeless crafting recipe:",
     "origins.gui.badge.recipe.crafting.unknown": "Provides the following crafting recipe:",
+    "origins.tooltip.inedible": "Inedible",
     "origins.randomiser.first_join": "%1$s was randomly assigned the %2$s origin.",
     "origins.randomiser.death": "%1$s died and is now %2$s.",
     "origins.randomiser.sleep": "%1$s woke up as %2$s.",

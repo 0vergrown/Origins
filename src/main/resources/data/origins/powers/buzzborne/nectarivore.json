@@ -72,5 +72,42 @@
       "meat": false
     },
     "use_action": "eat"
+  },
+  "inedible_tooltip": {
+    "type": "apoli:tooltip",
+    "item_condition": {
+      "type": "apoli:and",
+      "conditions": [
+        {
+          "type": "apoli:food"
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": {
+            "item": "minecraft:honey_bottle"
+          },
+          "inverted": true
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": {
+            "item": "minecraft:honeycomb"
+          },
+          "inverted": true
+        },
+        {
+          "type": "apoli:ingredient",
+          "ingredient": {
+            "tag": "origins:ignore_diet"
+          },
+          "inverted": true
+        }
+      ]
+    },
+    "text": {
+      "translate": "origins.tooltip.inedible",
+      "color": "gray"
+    },
+    "position": "below_name"
   }
 }
