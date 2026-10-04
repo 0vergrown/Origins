@@ -40,6 +40,7 @@
         "green": 0.0,
         "blue": 1,
         "strength": 0.9,
+        "anchor": "center",
         "draw_mode": "nausea",
         "draw_phase": "above_hud",
         "anchor": "center",
