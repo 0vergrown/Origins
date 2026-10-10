@@ -1,9 +1,10 @@
 {
-  "type": "apoli:attribute",
+  "type": "apoli:modify_velocity",
+  "axes": [
+    "y"
+  ],
   "modifier": {
-    "attribute": "minecraft:generic.movement_speed",
-    "operation": "multiply_total_multiplicative",
-    "value": 0.15
-  },
-  "update_health": false
+    "value": 0.8,
+    "operation": "multiply_base"
+  }
 }
