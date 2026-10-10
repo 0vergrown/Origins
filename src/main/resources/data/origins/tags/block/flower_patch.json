@@ -1,19 +1,61 @@
 {
   "replace": false,
   "values": [
-    "flowerpatch:dandelion_patch",
-    "flowerpatch:poppy_patch",
-    "flowerpatch:blue_orchid_patch",
-    "flowerpatch:allium_patch",
-    "flowerpatch:azure_bluet_patch",
-    "flowerpatch:red_tulip_patch",
-    "flowerpatch:orange_tulip_patch",
-    "flowerpatch:white_tulip_patch",
-    "flowerpatch:pink_tulip_patch",
-    "flowerpatch:oxeye_daisy_patch",
-    "flowerpatch:cornflower_patch",
-    "flowerpatch:lily_of_the_valley_patch",
-    "flowerpatch:wither_rose_patch",
-    "flowerpatch:torchflower"
+    {
+      "id": "flowerpatch:dandelion_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:poppy_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:blue_orchid_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:allium_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:azure_bluet_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:red_tulip_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:orange_tulip_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:white_tulip_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:pink_tulip_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:oxeye_daisy_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:cornflower_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:lily_of_the_valley_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:wither_rose_patch",
+      "required": false
+    },
+    {
+      "id": "flowerpatch:torchflower",
+      "required": false
+    }
   ]
 }
