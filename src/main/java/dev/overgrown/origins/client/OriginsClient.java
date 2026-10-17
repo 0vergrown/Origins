@@ -1,5 +1,6 @@
 package dev.overgrown.origins.client;
 
+import dev.overgrown.apoli.client.ApoliKeyMappings;
 import dev.overgrown.origins.Origins;
 import dev.overgrown.origins.badge.CraftingRecipeTooltipData;
 import dev.overgrown.origins.client.screen.ViewOriginScreen;
@@ -62,9 +63,8 @@ public final class OriginsClient implements ClientModInitializer {
                     Minecraft.getInstance().setScreen(new ViewOriginScreen());
                 }
             }
-            while (swapOriginKeybind.consumeClick()) {
-                if (Minecraft.getInstance().screen != null) continue;
-                if (!ClientPlayNetworking.canSend(SwapCycleC2S.TYPE)) continue;
+            if (client.player != null && ApoliKeyMappings.consumePress(swapOriginKeybind, false)
+                && ClientPlayNetworking.canSend(SwapCycleC2S.TYPE)) {
                 ClientPlayNetworking.send(new SwapCycleC2S(Screen.hasShiftDown()));
             }
         });

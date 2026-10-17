@@ -54,8 +54,8 @@ public final class SwapOriginScreen extends OriginDisplayScreen {
         ResourceLocation main = OriginsClientState.get(player.getUUID())
             .getOrDefault(targetLayerId, OriginRegistry.EMPTY_ID);
         entries.add(main);
-        entries.addAll(SwapManager.pool(player, targetLayerId, main,
-            OriginsClientState.getPool(player.getUUID())));
+        entries.addAll(SwapManager.pool(targetLayerId, main,
+            OriginsClientState.getPool(player.getUUID()), OriginsClientState.getAvailable(player.getUUID())));
         activeOrigin = OriginsClientState.getSwaps(player.getUUID()).get(targetLayerId);
         if (activeOrigin == null) activeOrigin = main;
     }

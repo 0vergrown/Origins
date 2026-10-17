@@ -60,6 +60,12 @@ public final class OriginsServerNetwork {
             new SyncPlayerSwapsS2C(subject.getUUID(), state.swapSnapshot(), state.poolSnapshot()));
     }
 
+    public static void sendSwapPool(ServerPlayer player, java.util.Map<ResourceLocation, List<ResourceLocation>> available) {
+        if (!ServerPlayNetworking.canSend(player, dev.overgrown.origins.network.payload.SyncSwapPoolS2C.TYPE)) return;
+        ServerPlayNetworking.send(player,
+            new dev.overgrown.origins.network.payload.SyncSwapPoolS2C(player.getUUID(), available));
+    }
+
     public static void broadcastPlayerSwaps(MinecraftServer server, ServerPlayer subject) {
         for (ServerPlayer recipient : server.getPlayerList().getPlayers()) {
             sendPlayerSwapsTo(recipient, subject);

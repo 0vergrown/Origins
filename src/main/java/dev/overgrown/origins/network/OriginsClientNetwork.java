@@ -56,6 +56,19 @@ public final class OriginsClientNetwork {
                 }));
 
         ClientPlayNetworking.registerGlobalReceiver(
+            dev.overgrown.origins.network.payload.SyncSwapPoolS2C.TYPE, (payload, context) ->
+                context.client().execute(() -> {
+                    OriginsClientState.setAvailable(payload.subject(), payload.available());
+                    Minecraft client = Minecraft.getInstance();
+                    if (client.player == null || !client.player.getUUID().equals(payload.subject())) return;
+                    if (client.screen instanceof dev.overgrown.origins.client.screen.ViewOriginScreen view) {
+                        view.refresh();
+                    } else if (client.screen instanceof dev.overgrown.origins.client.screen.SwapOriginScreen swap) {
+                        swap.refresh();
+                    }
+                }));
+
+        ClientPlayNetworking.registerGlobalReceiver(
             dev.overgrown.origins.network.payload.OpenSwapScreenS2C.TYPE, (payload, context) ->
                 context.client().execute(() -> Minecraft.getInstance().setScreen(
                     new dev.overgrown.origins.client.screen.SwapOriginScreen(payload.layerId()))));

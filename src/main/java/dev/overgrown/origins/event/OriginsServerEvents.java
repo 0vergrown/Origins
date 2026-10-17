@@ -66,6 +66,7 @@ public final class OriginsServerEvents {
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            dev.overgrown.origins.origin.SwapManager.forgetAvailable(handler.player);
             PlayerOriginsImpl state = PlayerOriginsAttachment.get(handler.player);
             if (state != null) {
                 state.setSelectingOrigin(false);
@@ -78,6 +79,8 @@ public final class OriginsServerEvents {
 
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(
             dev.overgrown.origins.origin.OriginUpgrades::tick);
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(
+            dev.overgrown.origins.origin.SwapManager::tickPools);
 
         ServerLifecycleEvents.SERVER_STARTING.register(OriginsWorldConfig::apply);
 

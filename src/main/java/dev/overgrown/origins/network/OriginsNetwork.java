@@ -25,6 +25,8 @@ public final class OriginsNetwork {
         PayloadTypeRegistry.playS2C().register(dev.overgrown.origins.network.payload.OriginRollS2C.TYPE, dev.overgrown.origins.network.payload.OriginRollS2C.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(CloseChooseScreenS2C.TYPE, CloseChooseScreenS2C.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(SyncPlayerSwapsS2C.TYPE, SyncPlayerSwapsS2C.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(dev.overgrown.origins.network.payload.SyncSwapPoolS2C.TYPE,
+            dev.overgrown.origins.network.payload.SyncSwapPoolS2C.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(OpenSwapScreenS2C.TYPE, OpenSwapScreenS2C.STREAM_CODEC);
         PayloadTypeRegistry.playC2S().register(ChooseOriginC2S.TYPE, ChooseOriginC2S.STREAM_CODEC);
         PayloadTypeRegistry.playC2S().register(SwapCycleC2S.TYPE, SwapCycleC2S.STREAM_CODEC);
