@@ -68,6 +68,19 @@ public final class OriginsServerNetwork {
         ServerPlayNetworking.send(recipient, OriginsPackets.SYNC_PLAYER_SWAPS, buf);
     }
 
+    public static void sendSwapPool(ServerPlayer player, Map<ResourceLocation, java.util.List<ResourceLocation>> available) {
+        if (!ServerPlayNetworking.canSend(player, OriginsPackets.SYNC_SWAP_POOL)) return;
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeUUID(player.getUUID());
+        buf.writeVarInt(available.size());
+        for (Map.Entry<ResourceLocation, java.util.List<ResourceLocation>> e : available.entrySet()) {
+            buf.writeResourceLocation(e.getKey());
+            buf.writeVarInt(e.getValue().size());
+            for (ResourceLocation id : e.getValue()) buf.writeResourceLocation(id);
+        }
+        ServerPlayNetworking.send(player, OriginsPackets.SYNC_SWAP_POOL, buf);
+    }
+
     public static void broadcastPlayerSwaps(MinecraftServer server, ServerPlayer subject) {
         for (ServerPlayer recipient : server.getPlayerList().getPlayers()) {
             sendPlayerSwapsTo(recipient, subject);

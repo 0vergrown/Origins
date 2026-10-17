@@ -59,10 +59,10 @@ public final class OriginsClient implements ClientModInitializer {
                     Minecraft.getInstance().setScreen(new ViewOriginScreen());
                 }
             }
-            while (swapOriginKeybind.consumeClick()) {
-                if (Minecraft.getInstance().screen != null) continue;
-                if (!net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-                        .canSend(dev.overgrown.origins.network.OriginsPackets.SWAP_CYCLE)) continue;
+            if (client.player != null
+                && dev.overgrown.apoli.client.ApoliKeyMappings.consumePress(swapOriginKeybind, false)
+                && net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+                    .canSend(dev.overgrown.origins.network.OriginsPackets.SWAP_CYCLE)) {
                 net.minecraft.network.FriendlyByteBuf buf =
                     net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
                 buf.writeBoolean(net.minecraft.client.gui.screens.Screen.hasShiftDown());

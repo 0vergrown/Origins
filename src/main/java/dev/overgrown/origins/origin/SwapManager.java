@@ -14,13 +14,18 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public final class SwapManager {
+
+    private static final int POOL_REFRESH_TICKS = 10;
+    private static final Map<UUID, Map<ResourceLocation, List<ResourceLocation>>> LAST_AVAILABLE = new HashMap<>();
 
     private SwapManager() {}
 
@@ -82,22 +87,80 @@ public final class SwapManager {
                                               Map<ResourceLocation, ? extends Collection<ResourceLocation>> granted) {
         Set<ResourceLocation> seen = new LinkedHashSet<>();
         for (OriginLayer swapLayer : swapLayersFor(targetLayerId)) {
-            for (ResourceLocation id : swapLayer.availableOrigins(player)) {
-                if (id.equals(main) || id.equals(OriginRegistry.EMPTY_ID)) continue;
-                if (OriginRegistry.get(id) == null) continue;
-                seen.add(id);
-            }
-            Collection<ResourceLocation> explicit = granted.get(swapLayer.id());
-            if (explicit == null) continue;
-            for (ResourceLocation id : explicit) {
-                if (id.equals(main) || id.equals(OriginRegistry.EMPTY_ID)) continue;
-                if (OriginRegistry.get(id) == null) continue;
-                seen.add(id);
-            }
+            collect(seen, swapLayer.availableOrigins(player), main);
+            collect(seen, granted.get(swapLayer.id()), main);
         }
+        return sorted(seen);
+    }
+
+    public static List<ResourceLocation> pool(ResourceLocation targetLayerId, @Nullable ResourceLocation main,
+                                              Map<ResourceLocation, ? extends Collection<ResourceLocation>> granted,
+                                              Map<ResourceLocation, ? extends Collection<ResourceLocation>> available) {
+        Set<ResourceLocation> seen = new LinkedHashSet<>();
+        for (OriginLayer swapLayer : swapLayersFor(targetLayerId)) {
+            collect(seen, available.get(swapLayer.id()), main);
+            collect(seen, granted.get(swapLayer.id()), main);
+        }
+        return sorted(seen);
+    }
+
+    private static void collect(Set<ResourceLocation> seen, @Nullable Collection<ResourceLocation> ids,
+                                @Nullable ResourceLocation main) {
+        if (ids == null) return;
+        for (ResourceLocation id : ids) {
+            if (id.equals(main) || id.equals(OriginRegistry.EMPTY_ID)) continue;
+            if (OriginRegistry.get(id) == null) continue;
+            seen.add(id);
+        }
+    }
+
+    private static List<ResourceLocation> sorted(Set<ResourceLocation> seen) {
         List<ResourceLocation> out = new ArrayList<>(seen);
         out.sort(Comparator.comparing(SwapManager::sortKey).thenComparing(ResourceLocation::toString));
         return out;
+    }
+
+    public static void tickPools(MinecraftServer server) {
+        List<OriginLayer> swappable = OriginLayers.enabledSwappable();
+        if (swappable.isEmpty()) {
+            if (!LAST_AVAILABLE.isEmpty()) LAST_AVAILABLE.clear();
+            return;
+        }
+        int tick = server.getTickCount();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (Math.floorMod(tick + player.getId(), POOL_REFRESH_TICKS) != 0) continue;
+            refreshAvailable(player, swappable);
+        }
+    }
+
+    private static void refreshAvailable(ServerPlayer player, List<OriginLayer> swappable) {
+        Map<ResourceLocation, List<ResourceLocation>> now = availableByLayer(player, swappable);
+        if (now.equals(LAST_AVAILABLE.getOrDefault(player.getUUID(), Map.of()))) return;
+        LAST_AVAILABLE.put(player.getUUID(), now);
+        dev.overgrown.origins.network.OriginsServerNetwork.sendSwapPool(player, now);
+        revalidate(player);
+    }
+
+    private static Map<ResourceLocation, List<ResourceLocation>> availableByLayer(Player player,
+                                                                                List<OriginLayer> swappable) {
+        Map<ResourceLocation, List<ResourceLocation>> out = null;
+        for (int i = 0; i < swappable.size(); i++) {
+            OriginLayer layer = swappable.get(i);
+            List<ResourceLocation> ids = layer.availableOrigins(player);
+            if (ids.isEmpty()) continue;
+            if (out == null) out = new HashMap<>();
+            out.put(layer.id(), List.copyOf(ids));
+        }
+        return out == null ? Map.of() : out;
+    }
+
+    public static void forgetAvailable(Player player) {
+        LAST_AVAILABLE.remove(player.getUUID());
+    }
+
+    public static OriginLayer.SwapConfig swapConfigFor(ResourceLocation targetLayerId) {
+        List<OriginLayer> swapLayers = swapLayersFor(targetLayerId);
+        return swapLayers.isEmpty() ? OriginLayer.SwapConfig.ENABLED : swapLayers.get(0).swap();
     }
 
     private static Map<ResourceLocation, ? extends Collection<ResourceLocation>> granted(Player player) {
@@ -216,16 +279,17 @@ public final class SwapManager {
         return true;
     }
 
-    public static boolean cycle(ServerPlayer player, ResourceLocation targetLayerId, boolean toMain) {
-        if (toMain) return applySwap(player, targetLayerId, null);
+    public static boolean cycle(ServerPlayer player, ResourceLocation targetLayerId, boolean shift) {
+        OriginLayer.SwapConfig config = swapConfigFor(targetLayerId);
+        if (shift && config.shiftReturnsToMain()) return applySwap(player, targetLayerId, null);
         List<ResourceLocation> options = pool(player, targetLayerId);
         if (options.isEmpty()) return false;
         ResourceLocation current = activeSwap(player, targetLayerId);
         if (current == null) return applySwap(player, targetLayerId, options.get(0));
         int index = options.indexOf(current);
         if (index < 0) return applySwap(player, targetLayerId, options.get(0));
-        if (index + 1 >= options.size()) return applySwap(player, targetLayerId, null);
-        return applySwap(player, targetLayerId, options.get(index + 1));
+        if (index + 1 < options.size()) return applySwap(player, targetLayerId, options.get(index + 1));
+        return applySwap(player, targetLayerId, config.wrapToMain() ? null : options.get(0));
     }
 
     public static boolean random(ServerPlayer player, ResourceLocation targetLayerId, boolean includeMain) {
