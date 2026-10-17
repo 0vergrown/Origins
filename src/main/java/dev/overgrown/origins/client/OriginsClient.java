@@ -72,6 +72,16 @@ public final class OriginsClient {
         }
 
         @SubscribeEvent
+        public static void onClientTickPre(ClientTickEvent.Pre event) {
+            if (swapOriginKeybind == null || Minecraft.getInstance().player == null) return;
+            if (dev.overgrown.apoli.client.ApoliKeyMappings.consumePress(swapOriginKeybind, false)) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                    new dev.overgrown.origins.network.payload.SwapCycleC2S(
+                        net.minecraft.client.gui.screens.Screen.hasShiftDown()));
+            }
+        }
+
+        @SubscribeEvent
         public static void onClientTick(ClientTickEvent.Post event) {
             OriginRollQueue.tick(Minecraft.getInstance());
             if (viewCurrentOriginKeybind == null) return;
@@ -80,13 +90,6 @@ public final class OriginsClient {
                 if (!(mc.screen instanceof ViewOriginScreen)) {
                     mc.setScreen(new ViewOriginScreen());
                 }
-            }
-            if (swapOriginKeybind == null) return;
-            while (swapOriginKeybind.consumeClick()) {
-                if (Minecraft.getInstance().screen != null) continue;
-                net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                    new dev.overgrown.origins.network.payload.SwapCycleC2S(
-                        net.minecraft.client.gui.screens.Screen.hasShiftDown()));
             }
         }
     }

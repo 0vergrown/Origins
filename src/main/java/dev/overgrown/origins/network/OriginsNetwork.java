@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class OriginsNetwork {
-    private static final String PROTOCOL_VERSION = "3";
+    private static final String PROTOCOL_VERSION = "4";
 
     private OriginsNetwork() {}
 
@@ -29,6 +29,8 @@ public final class OriginsNetwork {
         registrar.playToClient(dev.overgrown.origins.network.payload.OriginRollS2C.TYPE, dev.overgrown.origins.network.payload.OriginRollS2C.STREAM_CODEC, OriginsNetwork::onOriginRoll);
         registrar.playToClient(dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C.TYPE,
             dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C.STREAM_CODEC, OriginsNetwork::onSyncPlayerSwaps);
+        registrar.playToClient(dev.overgrown.origins.network.payload.SyncSwapPoolS2C.TYPE,
+            dev.overgrown.origins.network.payload.SyncSwapPoolS2C.STREAM_CODEC, OriginsNetwork::onSyncSwapPool);
         registrar.playToClient(dev.overgrown.origins.network.payload.OpenSwapScreenS2C.TYPE,
             dev.overgrown.origins.network.payload.OpenSwapScreenS2C.STREAM_CODEC, OriginsNetwork::onOpenSwapScreen);
         registrar.playToServer(ChooseOriginC2S.TYPE, ChooseOriginC2S.STREAM_CODEC, OriginsNetwork::onChooseOrigin);
@@ -40,6 +42,10 @@ public final class OriginsNetwork {
 
     private static void onSyncPlayerSwaps(dev.overgrown.origins.network.payload.SyncPlayerSwapsS2C payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> OriginsClientNetwork.handleSyncPlayerSwaps(payload));
+    }
+
+    private static void onSyncSwapPool(dev.overgrown.origins.network.payload.SyncSwapPoolS2C payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> OriginsClientNetwork.handleSyncSwapPool(payload));
     }
 
     private static void onOpenSwapScreen(dev.overgrown.origins.network.payload.OpenSwapScreenS2C payload, IPayloadContext ctx) {

@@ -122,8 +122,8 @@ public final class ViewOriginScreen extends OriginDisplayScreen {
             ResourceLocation layerId = originLayers.get(currentLayer).getA().id();
             ResourceLocation main = OriginsClientState.get(player.getUUID())
                 .getOrDefault(layerId, OriginRegistry.EMPTY_ID);
-            visible = !SwapManager.pool(player, layerId, main,
-                OriginsClientState.getPool(player.getUUID())).isEmpty();
+            visible = !SwapManager.pool(layerId, main,
+                OriginsClientState.getPool(player.getUUID()), OriginsClientState.getAvailable(player.getUUID())).isEmpty();
         }
         swapButton.active = visible;
         swapButton.visible = visible;

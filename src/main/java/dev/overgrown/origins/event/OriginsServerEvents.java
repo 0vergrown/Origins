@@ -26,6 +26,7 @@ public final class OriginsServerEvents {
     @SubscribeEvent
     public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
         dev.overgrown.origins.origin.OriginUpgrades.tick(event.getServer());
+        dev.overgrown.origins.origin.SwapManager.tickPools(event.getServer());
     }
 
     @SubscribeEvent
@@ -89,6 +90,7 @@ public final class OriginsServerEvents {
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        dev.overgrown.origins.origin.SwapManager.forgetAvailable(player);
         PlayerOriginsImpl state = PlayerOriginsAttachment.get(player);
         if (state != null) state.setSelectingOrigin(false);
     }

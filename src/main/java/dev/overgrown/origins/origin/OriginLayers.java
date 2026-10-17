@@ -15,6 +15,7 @@ import java.util.Map;
 public final class OriginLayers {
     private static final Map<ResourceLocation, OriginLayer> BY_ID = new HashMap<>();
     private static final List<OriginLayer> LOADED = new ArrayList<>();
+    private static volatile @Nullable List<OriginLayer> swappable;
 
     private OriginLayers() {}
 
@@ -43,6 +44,19 @@ public final class OriginLayers {
         return out;
     }
 
+    public static List<OriginLayer> enabledSwappable() {
+        List<OriginLayer> cached = swappable;
+        if (cached == null) {
+            List<OriginLayer> out = new ArrayList<>();
+            for (OriginLayer l : enabledOrdered()) {
+                if (l.swappable()) out.add(l);
+            }
+            cached = List.copyOf(out);
+            swappable = cached;
+        }
+        return cached;
+    }
+
     public static List<OriginLayer> enabledFor(Player player) {
         List<OriginLayer> out = new ArrayList<>();
         for (OriginLayer l : enabledOrdered()) {
@@ -62,6 +76,7 @@ public final class OriginLayers {
     }
 
     public static void refilter() {
+        swappable = null;
         BY_ID.clear();
         for (OriginLayer layer : LOADED) {
             OriginLayer shown = OriginsWorldConfig.filter(layer);
@@ -70,6 +85,7 @@ public final class OriginLayers {
     }
 
     public static void acceptSynced(Collection<OriginLayer> layers) {
+        swappable = null;
         BY_ID.clear();
         for (OriginLayer layer : layers) BY_ID.put(layer.id(), layer);
     }

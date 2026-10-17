@@ -45,6 +45,17 @@ public final class OriginsClientNetwork {
         }
     }
 
+    public static void handleSyncSwapPool(dev.overgrown.origins.network.payload.SyncSwapPoolS2C payload) {
+        OriginsClientState.setAvailable(payload.subject(), payload.available());
+        net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
+        if (client.player == null || !client.player.getUUID().equals(payload.subject())) return;
+        if (client.screen instanceof dev.overgrown.origins.client.screen.ViewOriginScreen view) {
+            view.refresh();
+        } else if (client.screen instanceof dev.overgrown.origins.client.screen.SwapOriginScreen swap) {
+            swap.refresh();
+        }
+    }
+
     public static void handleOpenSwapScreen(dev.overgrown.origins.network.payload.OpenSwapScreenS2C payload) {
         net.minecraft.client.Minecraft.getInstance().setScreen(
             new dev.overgrown.origins.client.screen.SwapOriginScreen(payload.layerId()));
