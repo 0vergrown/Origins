@@ -1,10 +1,6 @@
 {
-  "type": "apoli:modify_velocity",
-  "axes": [
-    "y"
-  ],
-  "modifier": {
-    "value": 0.8,
-    "operation": "multiply_base"
-  }
+  "type": "apoli:attribute_modify_transfer",
+  "class": "modify_air_speed",
+  "attribute": "minecraft:generic.movement_speed",
+  "multiplier": 1
 }
