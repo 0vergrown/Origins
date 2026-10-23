@@ -14,7 +14,7 @@ public final class OriginsConfig {
                  "set gui_theme instead. false here forces the default texture.")
         .define("seasonal_gui", true);
 
-    private static final List<String> GUI_THEMES = List.of("seasonal", "default", "rainbow", "hallow", "frigid");
+    private static final List<String> GUI_THEMES = List.of("seasonal", "default", "rainbow", "hallow", "frigid", "gilded");
 
     private static final ModConfigSpec.ConfigValue<String> GUI_THEME = BUILDER
         .comment("Origins GUI / Orb of Origin texture theme:",
