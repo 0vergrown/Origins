@@ -7,7 +7,8 @@ public enum Season {
     DEFAULT("default", 0.0F),
     RAINBOW("rainbow", 0.5F),
     HALLOW("hallow", 0.25F),
-    FRIGID("frigid", 1.0F);
+    FRIGID("frigid", 1.0F),
+    GILDED("gilded", 0.0F);
 
     private final String dir;
     private final float modelValue;
@@ -26,11 +27,13 @@ public enum Season {
     }
 
     public static Season current() {
+
         switch (dev.overgrown.origins.OriginsConfig.guiTheme()) {
             case "default": return DEFAULT;
             case "rainbow": return RAINBOW;
             case "hallow": return HALLOW;
             case "frigid": return FRIGID;
+            case "gilded": return GILDED;
             default: break;
         }
         LocalDate date = LocalDate.now();
