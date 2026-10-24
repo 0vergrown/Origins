@@ -1,23 +1,33 @@
 {
-  "type":"apoli:action_over_time",
-  "rising_action":{
-    "type":"apoli:apply_effect",
-    "effect":{
-      "effect":"minecraft:night_vision",
-      "duration":-1,
-      "amplifier":0,
-      "is_ambient":false,
-      "show_particles":false,
-      "show_icon":false
+  "type": "apoli:multiple",
+  "night_vision": {
+    "type":"apoli:action_over_time",
+    "rising_action":{
+      "type":"apoli:apply_effect",
+      "effect":{
+        "effect":"minecraft:night_vision",
+        "duration":-1,
+        "amplifier":0,
+        "is_ambient":false,
+        "show_particles":false,
+        "show_icon":false
+      }
+    },
+    "falling_action":{
+      "type":"apoli:clear_effect",
+      "effect":"minecraft:night_vision"
+    },
+    "interval":1,
+    "condition": {
+      "type": "apoli:submerged_in",
+      "fluid": "minecraft:water"
     }
   },
-  "falling_action":{
-    "type":"apoli:clear_effect",
-    "effect":"minecraft:night_vision"
-  },
-  "interval":1,
-  "condition": {
-    "type": "apoli:submerged_in",
-    "fluid": "minecraft:water"
+  "fluid_vision": {
+    "type": "apoli:fluid_vision",
+    "fluid": "water",
+    "start": 0,
+    "end": 128,
+    "render_overlay": false
   }
 }

@@ -15,8 +15,14 @@
             "type": "origins:and",
             "actions": [
                 {
-                    "type": "origins:execute_command",
-                    "command": "playsound minecraft:entity.slime.hurt master @a"
+                    "type": "apoli:play_sound",
+                    "sound": "minecraft:entity.slime.hurt",
+                    "category": "master",
+                    "volume": 1.00,
+                    "pitch": 1.00,
+                    "follow_entity": true,
+                    "global": false,
+                    "internal": false
                 },
                 {
                     "type": "origins:if_else",
