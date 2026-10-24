@@ -1,39 +1,33 @@
 {
-  "type": "apoli:action_over_time",
-  "interval": 1,
-  "entity_action": {
-    "type": "apoli:if_else",
-    "condition": {
-      "type": "apoli:status_effect",
-      "effect": "minecraft:slow_falling",
-      "inverted": true
-    },
-    "if_action": {
-      "type": "apoli:apply_effect",
-      "effect": {
-        "effect": "minecraft:slow_falling",
-        "duration": -1,
-        "amplifier": 0,
-        "is_ambient": false,
-        "show_particles": false,
-        "show_icon": false
-      }
-    }
-  },
-  "falling_action": {
-    "type": "apoli:clear_effect",
-    "effect": "minecraft:slow_falling"
-  },
+  "type": "apoli:modify_falling",
+  "velocity": 0.01,
+  "take_fall_damage": false,
   "condition": {
-    "type": "apoli:and",
+    "type": "apoli:any_of",
     "conditions": [
       {
-        "type": "apoli:sneaking",
-        "inverted": true
+        "type": "apoli:all_of",
+        "conditions": [
+          {
+            "type": "apoli:sneaking"
+          },
+          {
+            "type": "apoli:fall_flying"
+          }
+        ]
       },
       {
-        "type": "apoli:fall_flying",
-        "inverted": true
+        "type": "apoli:all_of",
+        "conditions": [
+          {
+            "type": "apoli:sneaking",
+            "inverted": true
+          },
+          {
+            "type": "apoli:fall_flying",
+            "inverted": true
+          }
+        ]
       }
     ]
   }
