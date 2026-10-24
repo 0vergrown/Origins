@@ -6,10 +6,10 @@
     "cooldown": 10,
     "hud_render": {
       "should_render": false,
-      "sprite_location": "apoli:textures/gui/resource_bar.png",
+      "sprite_location": "origins:textures/gui/sprites/hud_render/apace/resource_bar_01.png",
       "bar_index": 6
     },
-    "speed": 1.5,
+    "speed": 1.9,
     "divergence": 1,
     "offset_y": -0.1,
     "sound": "minecraft:entity.ender_pearl.throw",
@@ -121,7 +121,7 @@
     "cooldown": "*:*_health-scaling",
     "hud_render": {
       "should_render": true,
-      "sprite_location": "apoli:textures/gui/resource_bar.png",
+      "sprite_location": "origins:textures/gui/sprites/hud_render/apace/resource_bar_01.png",
       "bar_index": 6
     }
   }
