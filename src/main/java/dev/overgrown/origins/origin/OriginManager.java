@@ -290,9 +290,18 @@ public final class OriginManager {
             SwapManager.revokeSwapGrants(player, layer.id());
             state.setOrigin(layer.id(), pick);
             applyOriginPowers(player, layer, origin);
+            dev.overgrown.origins.advancement.OriginsCriteria.chose(player, layer.id(), pick);
             chose = true;
         }
         return chose;
+    }
+
+    public static void finishAutomaticChoice(ServerPlayer player) {
+        PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
+        if (!hasChosenAllLayers(player, state)) return;
+        state.setSelectingOrigin(false);
+        ModifyPlayerSpawnHandler.teleportToModifiedSpawn(player);
+        ActionOnCallbackPower.fireChosen(player, false);
     }
 
     private static boolean dependenciesSettled(Player player, PlayerOriginsImpl state, OriginLayer layer) {
@@ -341,24 +350,29 @@ public final class OriginManager {
     }
 
     private static ResourceLocation autoPick(Player player, OriginLayer layer, boolean includeDefaults) {
-        ResourceLocation onlyChoosable = null;
-        ResourceLocation onlyAvailable = null;
-        int choosable = 0;
-        int available = 0;
-        for (ResourceLocation id : layer.availableOrigins(player)) {
-            Origin origin = OriginRegistry.get(id);
-            if (origin == null) continue;
-            if (!availableTo(player, layer.id(), id)) continue;
-            if (++available == 1) onlyAvailable = id;
-            if (origin.choosable() && ++choosable == 1) onlyChoosable = id;
-        }
         if (layer.autoChooseIfNoChoice()) {
+            ResourceLocation onlyChoosable = null;
+            ResourceLocation onlyAvailable = null;
+            int choosable = 0;
+            int available = 0;
+            for (ResourceLocation id : layer.availableOrigins(player)) {
+                Origin origin = OriginRegistry.get(id);
+                if (origin == null) continue;
+                if (!availableTo(player, layer.id(), id)) continue;
+                if (++available == 1) onlyAvailable = id;
+                if (origin.choosable() && ++choosable == 1) onlyChoosable = id;
+            }
             if (choosable == 1) return onlyChoosable;
             if (choosable == 0 && available == 1) return onlyAvailable;
         }
-        if (choosable > 0 || !includeDefaults || hasChoosableOrigins(player, layer)) return null;
-        ResourceLocation defaultOrigin = layer.defaultOrigin();
-        return defaultOrigin != null && OriginRegistry.get(defaultOrigin) != null ? defaultOrigin : null;
+        return includeDefaults ? defaultOriginFor(player, layer) : null;
+    }
+
+    private static @Nullable ResourceLocation defaultOriginFor(Player player, OriginLayer layer) {
+        ResourceLocation id = layer.defaultOrigin();
+        if (id == null || id.equals(OriginRegistry.EMPTY_ID) || OriginRegistry.get(id) == null) return null;
+        if (OriginsWorldConfig.blocks(layer.id(), id) || !availableTo(player, layer.id(), id)) return null;
+        return id;
     }
 
     private static boolean redriveDerivedLayers(Player player) {

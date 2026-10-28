@@ -9,11 +9,19 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
-public record SpriteBadge(ResourceLocation spriteId) implements Badge {
+import java.util.List;
+
+public record SpriteBadge(ResourceLocation spriteId, List<ResourceLocation> fallback) implements Badge {
 
     public static final MapCodec<SpriteBadge> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-        ResourceLocation.CODEC.fieldOf("sprite").forGetter(SpriteBadge::spriteId)
+        ResourceLocation.CODEC.fieldOf("sprite").forGetter(SpriteBadge::spriteId),
+        BadgeFallback.CODEC.optionalFieldOf("fallback", List.of()).forGetter(SpriteBadge::fallback)
     ).apply(i, SpriteBadge::new));
+
+    @Override
+    public Badge withFallback(List<ResourceLocation> fallback) {
+        return new SpriteBadge(spriteId, fallback);
+    }
 
     @Override
     public ResourceLocation typeId() {
@@ -36,6 +44,6 @@ public record SpriteBadge(ResourceLocation spriteId) implements Badge {
     }
 
     public static SpriteBadge fromNetwork(RegistryFriendlyByteBuf buf) {
-        return new SpriteBadge(buf.readResourceLocation());
+        return new SpriteBadge(buf.readResourceLocation(), List.of());
     }
 }

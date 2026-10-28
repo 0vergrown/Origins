@@ -31,7 +31,7 @@ public final class OriginsServerEvents {
             OriginManager.reapplyAll(player);
 
             OriginRandomizer.onFirstJoin(player);
-            OriginManager.checkAutoChoosingLayers(player, true);
+            boolean autoChose = OriginManager.checkAutoChoosingLayers(player, true);
 
             PlayerOriginsImpl state = PlayerOriginsAttachment.getOrCreate(player);
 
@@ -52,6 +52,8 @@ public final class OriginsServerEvents {
             if (pending != null) {
                 state.setSelectingOrigin(true);
                 OriginsServerNetwork.openChooseScreen(player, pending, false);
+            } else if (autoChose) {
+                OriginManager.finishAutomaticChoice(player);
             }
         });
 

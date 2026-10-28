@@ -8,11 +8,17 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.List;
+
 public interface Badge {
 
     Codec<Badge> CODEC = BadgeTypes.ID_CODEC.dispatch("type", Badge::typeId, BadgeTypes::codecFor);
 
     ResourceLocation spriteId();
+
+    List<ResourceLocation> fallback();
+
+    Badge withFallback(List<ResourceLocation> fallback);
 
     ResourceLocation typeId();
 

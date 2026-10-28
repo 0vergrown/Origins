@@ -1,6 +1,7 @@
 package dev.overgrown.origins.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.overgrown.apoli.client.TextureFallbacks;
 import dev.overgrown.apoli.power.ApoliPowers;
 import dev.overgrown.apoli.power.Power;
 import dev.overgrown.origins.Origins;
@@ -296,9 +297,10 @@ public abstract class OriginDisplayScreen extends Screen {
                 by = nameLineY - 1 + offY * step;
             }
             if (by >= startY - 12 && by <= endY + 12) {
-                int spriteSize = BadgeClientState.spriteSize(badge.spriteId());
+                ResourceLocation sprite = TextureFallbacks.first(badge.spriteId(), badge.fallback());
+                int spriteSize = BadgeClientState.spriteSize(sprite);
                 beginBlit();
-                graphics.blit(badge.spriteId(), bx, by, 9, 9, 0.0F, 0.0F, spriteSize, spriteSize, spriteSize, spriteSize);
+                graphics.blit(sprite, bx, by, 9, 9, 0.0F, 0.0F, spriteSize, spriteSize, spriteSize, spriteSize);
                 if (badge.hasTooltip()
                     && mouseX >= bx && mouseX < bx + 9 && mouseY >= by && mouseY < by + 9) {
                     hoveredBadge = badge;
