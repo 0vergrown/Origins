@@ -1,9 +1,6 @@
 package dev.overgrown.origins.badge;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import com.mojang.serialization.JsonOps;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
@@ -12,8 +9,10 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.NotNull;
+import org.quiltmc.parsers.json.*;
+import org.quiltmc.parsers.json.gson.GsonReader;
 
-import java.io.Reader;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,22 +26,24 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
     public record Prepared(Map<ResourceLocation, Badge> standalone, Map<ResourceLocation, List<Badge>> byPower) {}
 
     @Override
-    protected Prepared prepare(ResourceManager rm, ProfilerFiller profiler) {
+    protected @NotNull Prepared prepare(ResourceManager rm, ProfilerFiller profiler) {
         Map<ResourceLocation, Badge> standalone = new LinkedHashMap<>();
         Map<ResourceLocation, List<Badge>> byPower = new LinkedHashMap<>();
 
-        rm.listResources(BADGES_DIR, loc -> loc.getPath().endsWith(".json")).forEach((loc, resource) -> {
-            ResourceLocation badgeId = trim(loc, BADGES_DIR);
-            JsonElement json = read(resource, loc);
+        rm.listResources(BADGES_DIR, loc -> loc.getPath().endsWith(".json") || loc.getPath().endsWith(".jsonc") || loc.getPath().endsWith(".json5")).forEach((loc, resource) -> {
+            String extension = loc.getPath().substring(loc.getPath().lastIndexOf('.') + 1);
+            ResourceLocation badgeId = trim(loc, BADGES_DIR, extension);
+            JsonElement json = read(resource, loc, format(extension));
             if (json == null) return;
             Badge.CODEC.parse(JsonOps.INSTANCE, json)
                 .resultOrPartial(err -> Origins.LOGGER.error("Failed to read badge {}: {}", badgeId, err))
                 .ifPresent(badge -> standalone.put(badgeId, badge));
         });
 
-        rm.listResources(POWERS_DIR, loc -> loc.getPath().endsWith(".json")).forEach((loc, resource) -> {
-            ResourceLocation powerId = trim(loc, POWERS_DIR);
-            JsonElement json = read(resource, loc);
+        rm.listResources(POWERS_DIR, loc -> loc.getPath().endsWith(".json") || loc.getPath().endsWith(".jsonc") || loc.getPath().endsWith(".json5")).forEach((loc, resource) -> {
+            String extension = loc.getPath().substring(loc.getPath().lastIndexOf('.') + 1);
+            ResourceLocation powerId = trim(loc, POWERS_DIR, extension);
+            JsonElement json = read(resource, loc, format(extension));
             if (!(json instanceof JsonObject obj) || !obj.has(BADGES_DIR)) return;
             if (GsonHelper.getAsBoolean(obj, "hidden", false)) return;
             if (!(obj.get(BADGES_DIR) instanceof JsonArray array)) return;
@@ -85,18 +86,26 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
         return null;
     }
 
-    private static ResourceLocation trim(ResourceLocation loc, String dir) {
+    private static ResourceLocation trim(ResourceLocation loc, String dir, String extension) {
         String path = loc.getPath();
-        path = path.substring(dir.length() + 1, path.length() - ".json".length());
+        path = path.substring(dir.length() + 1, path.length() - extension.length() - 1);
         return new ResourceLocation(loc.getNamespace(), path);
     }
 
-    private static JsonElement read(Resource resource, ResourceLocation loc) {
-        try (Reader reader = resource.openAsReader()) {
-            return GsonHelper.parse(reader, true);
+    private static JsonElement read(Resource resource, ResourceLocation loc, JsonFormat format) {
+        try (GsonReader reader = new GsonReader(JsonReader.create(resource.openAsReader(), format))) {
+            return new Gson().fromJson(reader, JsonElement.class);
         } catch (Exception e) {
             Origins.LOGGER.error("Failed to read badge resource {}: {}", loc, e.toString());
             return null;
         }
+    }
+
+    private static JsonFormat format(String extension) {
+        return switch (extension) {
+            case "json5" -> JsonFormat.JSON5;
+            case "jsonc" -> JsonFormat.JSONC;
+            default -> JsonFormat.JSON;
+        };
     }
 }
