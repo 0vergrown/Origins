@@ -17,13 +17,19 @@ import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
 
-public record KeybindBadge(ResourceLocation spriteId, String text, String keyId) implements Badge {
+public record KeybindBadge(ResourceLocation spriteId, String text, String keyId, List<ResourceLocation> fallback) implements Badge {
 
     public static final MapCodec<KeybindBadge> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
         ResourceLocation.CODEC.fieldOf("sprite").forGetter(KeybindBadge::spriteId),
         Codec.STRING.fieldOf("text").forGetter(KeybindBadge::text),
-        Codec.STRING.optionalFieldOf("key", Key.PRIMARY_ACTIVE).forGetter(KeybindBadge::keyId)
+        Codec.STRING.optionalFieldOf("key", Key.PRIMARY_ACTIVE).forGetter(KeybindBadge::keyId),
+        BadgeFallback.CODEC.optionalFieldOf("fallback", List.of()).forGetter(KeybindBadge::fallback)
     ).apply(i, KeybindBadge::new));
+
+    @Override
+    public Badge withFallback(List<ResourceLocation> fallback) {
+        return new KeybindBadge(spriteId, text, keyId, fallback);
+    }
 
     @Override
     public ResourceLocation typeId() {
@@ -62,6 +68,6 @@ public record KeybindBadge(ResourceLocation spriteId, String text, String keyId)
         ResourceLocation sprite = buf.readResourceLocation();
         String text = buf.readUtf();
         String keyId = buf.readUtf();
-        return new KeybindBadge(sprite, text, keyId);
+        return new KeybindBadge(sprite, text, keyId, List.of());
     }
 }

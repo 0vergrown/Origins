@@ -108,11 +108,11 @@ public final class BadgeManager {
                                           HolderLookup.Provider registries) {
         Object cfg = power.config();
         if (power.type() instanceof TogglePower && cfg instanceof TogglePower.Config toggle) {
-            return List.of(new KeybindBadge(TOGGLE_SPRITE, "origins.gui.badge.toggle", toggle.key().key()));
+            return List.of(new KeybindBadge(TOGGLE_SPRITE, "origins.gui.badge.toggle", toggle.key().key(), List.of()));
         }
         String activeKey = PowerKeys.activeKey(power);
         if (activeKey != null) {
-            return List.of(new KeybindBadge(ACTIVE_SPRITE, "origins.gui.badge.active", activeKey));
+            return List.of(new KeybindBadge(ACTIVE_SPRITE, "origins.gui.badge.active", activeKey, List.of()));
         }
         if (power.type() instanceof RecipePower && cfg instanceof RecipePower.Config recipeCfg) {
             CraftingRecipeBadge badge = recipeAutoBadge(recipeCfg, registries);
