@@ -31,6 +31,10 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven { url = "https://api.modrinth.com/maven" }
+    maven {
+        name = "QuiltMC"
+        url = "https://maven.quiltmc.org/repository/release/"
+    }
 }
 
 base {
@@ -126,6 +130,9 @@ dependencies {
     } else {
         implementation "maven.modrinth:opoli:${apoli_version}"
     }
+
+    implementation("org.quiltmc.parsers:gson:0.3.1")
+    implementation("org.quiltmc.parsers:json:0.3.1")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
