@@ -6,13 +6,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
+import dev.overgrown.apoli.loader.JsonFormatParser;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Reader;
 import java.util.ArrayList;
@@ -21,12 +23,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class OriginLayerLoader extends SimpleJsonResourceReloadListener {
+public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<ResourceLocation, JsonElement>> {
     private static final Gson GSON = new Gson();
     private static final String DIR = "origin_layers";
 
     public OriginLayerLoader() {
-        super(GSON, DIR);
+        super();
+    }
+
+    @Override
+    protected @NotNull Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+        return JsonFormatParser.apply(resourceManager, DIR, GSON, Origins.LOGGER);
     }
 
     @Override
