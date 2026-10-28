@@ -14,12 +14,18 @@ import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
 
-public record TooltipBadge(ResourceLocation spriteId, Component text) implements Badge {
+public record TooltipBadge(ResourceLocation spriteId, Component text, List<ResourceLocation> fallback) implements Badge {
 
     public static final MapCodec<TooltipBadge> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
         ResourceLocation.CODEC.fieldOf("sprite").forGetter(TooltipBadge::spriteId),
-        TextComponent.CODEC.fieldOf("text").forGetter(TooltipBadge::text)
+        TextComponent.CODEC.fieldOf("text").forGetter(TooltipBadge::text),
+        BadgeFallback.CODEC.optionalFieldOf("fallback", List.of()).forGetter(TooltipBadge::fallback)
     ).apply(i, TooltipBadge::new));
+
+    @Override
+    public Badge withFallback(List<ResourceLocation> fallback) {
+        return new TooltipBadge(spriteId, text, fallback);
+    }
 
     @Override
     public ResourceLocation typeId() {
@@ -49,6 +55,6 @@ public record TooltipBadge(ResourceLocation spriteId, Component text) implements
     public static TooltipBadge fromNetwork(FriendlyByteBuf buf) {
         ResourceLocation sprite = buf.readResourceLocation();
         Component text = buf.readComponent();
-        return new TooltipBadge(sprite, text);
+        return new TooltipBadge(sprite, text, List.of());
     }
 }

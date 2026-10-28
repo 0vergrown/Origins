@@ -139,7 +139,25 @@ public final class OriginsServerNetwork {
                 dev.overgrown.origins.badge.Badge.writeNetwork(buf, badge);
             }
         }
+        if (hasBadgeFallbacks(byPower)) {
+            for (Map.Entry<ResourceLocation, List<dev.overgrown.origins.badge.Badge>> entry : byPower.entrySet()) {
+                for (dev.overgrown.origins.badge.Badge badge : entry.getValue()) {
+                    List<ResourceLocation> fallback = badge.fallback();
+                    buf.writeVarInt(fallback.size());
+                    for (ResourceLocation id : fallback) buf.writeResourceLocation(id);
+                }
+            }
+        }
         ServerPlayNetworking.send(player, OriginsPackets.SYNC_BADGES, buf);
+    }
+
+    private static boolean hasBadgeFallbacks(Map<ResourceLocation, List<dev.overgrown.origins.badge.Badge>> byPower) {
+        for (List<dev.overgrown.origins.badge.Badge> badges : byPower.values()) {
+            for (dev.overgrown.origins.badge.Badge badge : badges) {
+                if (!badge.fallback().isEmpty()) return true;
+            }
+        }
+        return false;
     }
 
     public static void sendPlayerOriginsTo(ServerPlayer recipient, ServerPlayer subject) {

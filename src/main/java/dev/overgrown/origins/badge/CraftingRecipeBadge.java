@@ -36,7 +36,8 @@ public record CraftingRecipeBadge(
     ItemStack output,
     int width,
     Optional<Component> prefix,
-    Optional<Component> suffix
+    Optional<Component> suffix,
+    List<ResourceLocation> fallback
 ) implements Badge {
 
     private static final ResourceLocation INLINE_RECIPE_ID = Origins.id("crafting_recipe_badge");
@@ -48,9 +49,10 @@ public record CraftingRecipeBadge(
         ResourceLocation.CODEC.fieldOf("sprite").forGetter(CraftingRecipeBadge::spriteId),
         Codec.either(ResourceLocation.CODEC, RECIPE_OBJECT).fieldOf("recipe").forGetter(b -> b.recipe().orElse(null)),
         TextComponent.CODEC.optionalFieldOf("prefix").forGetter(CraftingRecipeBadge::prefix),
-        TextComponent.CODEC.optionalFieldOf("suffix").forGetter(CraftingRecipeBadge::suffix)
-    ).apply(i, (sprite, recipe, prefix, suffix) -> new CraftingRecipeBadge(
-        sprite, Optional.of(recipe), NonNullList.create(), ItemStack.EMPTY, 3, prefix, suffix)));
+        TextComponent.CODEC.optionalFieldOf("suffix").forGetter(CraftingRecipeBadge::suffix),
+        BadgeFallback.CODEC.optionalFieldOf("fallback", List.of()).forGetter(CraftingRecipeBadge::fallback)
+    ).apply(i, (sprite, recipe, prefix, suffix, fallback) -> new CraftingRecipeBadge(
+        sprite, Optional.of(recipe), NonNullList.create(), ItemStack.EMPTY, 3, prefix, suffix, fallback)));
 
     public static CraftingRecipeBadge fromRecipe(ResourceLocation sprite, ResourceLocation recipeId,
                                                  CraftingRecipe recipe, Optional<Component> prefix,
@@ -63,14 +65,19 @@ public record CraftingRecipeBadge(
             if (stacks.length > 0) inputs.set(idx, stacks[0]);
         }
         ItemStack output = recipe.getResultItem(registries);
-        return new CraftingRecipeBadge(sprite, Optional.of(Either.left(recipeId)), inputs, output, width, prefix, suffix);
+        return new CraftingRecipeBadge(sprite, Optional.of(Either.left(recipeId)), inputs, output, width, prefix, suffix, List.of());
+    }
+
+    @Override
+    public CraftingRecipeBadge withFallback(List<ResourceLocation> fallback) {
+        return new CraftingRecipeBadge(spriteId, recipe, inputs, output, width, prefix, suffix, fallback);
     }
 
     public CraftingRecipeBadge resolve(RecipeManager recipeManager, RegistryAccess registries) {
         if (!output.isEmpty() || recipe.isEmpty()) return this;
         Optional<? extends Recipe<?>> resolved = recipe.get().map(recipeManager::byKey, CraftingRecipeBadge::parseInline);
         if (resolved.isPresent() && resolved.get() instanceof CraftingRecipe crafting) {
-            return fromRecipe(spriteId, crafting.getId(), crafting, prefix, suffix, registries);
+            return fromRecipe(spriteId, crafting.getId(), crafting, prefix, suffix, registries).withFallback(fallback);
         }
         return this;
     }
@@ -130,7 +137,7 @@ public record CraftingRecipeBadge(
         ItemStack output = buf.readItem();
         Optional<Component> prefix = readOptionalComponent(buf);
         Optional<Component> suffix = readOptionalComponent(buf);
-        return new CraftingRecipeBadge(sprite, Optional.empty(), inputs, output, width, prefix, suffix);
+        return new CraftingRecipeBadge(sprite, Optional.empty(), inputs, output, width, prefix, suffix, List.of());
     }
 
     private static void writeOptionalComponent(FriendlyByteBuf buf, Optional<Component> component) {

@@ -42,12 +42,25 @@ public final class OriginsClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(OriginsPackets.SYNC_BADGES, (client, handler, buf, sender) -> {
             int powerCount = buf.readVarInt();
             Map<ResourceLocation, List<dev.overgrown.origins.badge.Badge>> badges = new HashMap<>();
+            List<List<dev.overgrown.origins.badge.Badge>> order = new ArrayList<>(powerCount);
             for (int i = 0; i < powerCount; i++) {
                 ResourceLocation id = buf.readResourceLocation();
                 int badgeCount = buf.readVarInt();
                 List<dev.overgrown.origins.badge.Badge> list = new ArrayList<>(badgeCount);
                 for (int j = 0; j < badgeCount; j++) list.add(dev.overgrown.origins.badge.Badge.fromNetwork(buf));
                 badges.put(id, list);
+                order.add(list);
+            }
+            if (buf.isReadable()) {
+                for (List<dev.overgrown.origins.badge.Badge> list : order) {
+                    for (int j = 0; j < list.size(); j++) {
+                        int count = buf.readVarInt();
+                        if (count == 0) continue;
+                        List<ResourceLocation> fallback = new ArrayList<>(count);
+                        for (int k = 0; k < count; k++) fallback.add(buf.readResourceLocation());
+                        list.set(j, list.get(j).withFallback(List.copyOf(fallback)));
+                    }
+                }
             }
             client.execute(() -> dev.overgrown.origins.client.BadgeClientState.replaceAll(badges));
         });
