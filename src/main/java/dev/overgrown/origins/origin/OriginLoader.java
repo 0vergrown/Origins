@@ -1,12 +1,11 @@
 package dev.overgrown.origins.origin;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
-import dev.overgrown.apoli.loader.JsonFormatParser;
+import dev.overgrown.apoli.loader.JsonDataFiles;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -15,13 +14,10 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class OriginLoader extends SimplePreparableReloadListener<Map<ResourceLocation, JsonElement>> {
-    private static final Gson GSON = new Gson();
+public final class OriginLoader extends SimplePreparableReloadListener<Map<ResourceLocation, JsonDataFiles.Version>> {
     private static final String DIR = "origins";
 
     public OriginLoader() {
@@ -29,26 +25,27 @@ public final class OriginLoader extends SimplePreparableReloadListener<Map<Resou
     }
 
     @Override
-    protected @NotNull Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-        return JsonFormatParser.apply(resourceManager, DIR, GSON, Origins.LOGGER);
+    protected @NotNull Map<ResourceLocation, JsonDataFiles.Version> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+        return JsonDataFiles.loadByPriority(resourceManager, DIR, Origins.LOGGER);
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> entries, ResourceManager resourceManager,
+    protected void apply(Map<ResourceLocation, JsonDataFiles.Version> entries, ResourceManager resourceManager,
                          ProfilerFiller profiler) {
-        Map<ResourceLocation, List<Origin>> grouped = new HashMap<>();
-        for (Map.Entry<ResourceLocation, JsonElement> entry : entries.entrySet()) {
+        List<Origin> loaded = new ArrayList<>(entries.size());
+        for (Map.Entry<ResourceLocation, JsonDataFiles.Version> entry : entries.entrySet()) {
             ResourceLocation id = entry.getKey();
+            JsonElement value = entry.getValue().json();
             try {
-                if (!entry.getValue().isJsonObject()) continue;
+                if (!value.isJsonObject()) continue;
                 if (!ApoliReloadListener.loadConditionPasses(
-                    new com.mojang.serialization.Dynamic<>(JsonOps.INSTANCE, entry.getValue()), id)) continue;
-                JsonObject json = (JsonObject) IdWildcards.apply(entry.getValue(), id);
+                    new com.mojang.serialization.Dynamic<>(JsonOps.INSTANCE, value), id)) continue;
+                JsonObject json = (JsonObject) IdWildcards.apply(value, id);
                 dev.overgrown.apoli.codec.LoggedOptionalField.setContext(id);
                 try {
                     Origin.codec(id).codec().parse(JsonOps.INSTANCE, json)
                         .resultOrPartial(err -> Origins.LOGGER.error("Failed to load origin {}: {}", id, err))
-                        .ifPresent(origin -> grouped.computeIfAbsent(id, k -> new ArrayList<>()).add(origin));
+                        .ifPresent(loaded::add);
                 } finally {
                     dev.overgrown.apoli.codec.LoggedOptionalField.clearContext();
                 }
@@ -56,14 +53,9 @@ public final class OriginLoader extends SimplePreparableReloadListener<Map<Resou
                 Origins.LOGGER.error("Failed to load origin {}: {}", id, e.getMessage());
             }
         }
-        List<Origin> winners = new ArrayList<>(grouped.size());
-        for (List<Origin> versions : grouped.values()) {
-            versions.sort(Comparator.comparingInt(Origin::loadingPriority).reversed());
-            winners.add(versions.get(0));
-        }
-        OriginRegistry.replaceAll(winners);
+        OriginRegistry.replaceAll(loaded);
         int withUpgrades = 0;
-        for (Origin origin : winners) {
+        for (Origin origin : loaded) {
             if (!origin.upgrades().isEmpty()) withUpgrades++;
         }
         if (withUpgrades > 0) {

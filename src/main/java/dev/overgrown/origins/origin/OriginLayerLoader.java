@@ -1,30 +1,27 @@
 package dev.overgrown.origins.origin;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
-import dev.overgrown.apoli.loader.JsonFormatParser;
+import dev.overgrown.apoli.loader.JsonDataFiles;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<ResourceLocation, JsonElement>> {
-    private static final Gson GSON = new Gson();
+public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<ResourceLocation, JsonObject>> {
     private static final String DIR = "origin_layers";
 
     public OriginLayerLoader() {
@@ -32,23 +29,35 @@ public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<
     }
 
     @Override
-    protected @NotNull Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-        return JsonFormatParser.apply(resourceManager, DIR, GSON, Origins.LOGGER);
+    protected @NotNull Map<ResourceLocation, JsonObject> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+        Map<ResourceLocation, List<JsonDataFiles.Source>> stacks = JsonDataFiles.stacks(resourceManager, DIR, Origins.LOGGER);
+        Map<ResourceLocation, JsonObject> merged = new HashMap<>(stacks.size());
+        for (Map.Entry<ResourceLocation, List<JsonDataFiles.Source>> entry : stacks.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            JsonObject layer = null;
+            for (JsonDataFiles.Source source : entry.getValue()) {
+                JsonElement json = JsonDataFiles.read(source, id, Origins.LOGGER);
+                if (json == null || !json.isJsonObject()) continue;
+                JsonObject version = json.getAsJsonObject();
+                if (layer == null || GsonHelper.getAsBoolean(version, "replace", false)) {
+                    layer = version;
+                } else {
+                    mergeInto(layer, version);
+                }
+            }
+            if (layer != null) merged.put(id, layer);
+        }
+        return merged;
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> entries, ResourceManager resourceManager,
+    protected void apply(Map<ResourceLocation, JsonObject> entries, ResourceManager resourceManager,
                          ProfilerFiller profiler) {
-        List<OriginLayer> layers = new ArrayList<>();
-        for (ResourceLocation id : entries.keySet()) {
-            ResourceLocation fullPath = ResourceLocation.fromNamespaceAndPath(
-                id.getNamespace(), DIR + "/" + id.getPath() + ".json");
+        List<OriginLayer> layers = new ArrayList<>(entries.size());
+        for (Map.Entry<ResourceLocation, JsonObject> entry : entries.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            JsonObject merged = entry.getValue();
             try {
-                JsonObject merged = mergeStack(resourceManager.getResourceStack(fullPath), id);
-                if (merged == null && entries.get(id).isJsonObject()) {
-                    merged = entries.get(id).getAsJsonObject();
-                }
-                if (merged == null) continue;
                 if (!ApoliReloadListener.loadConditionPasses(
                     new com.mojang.serialization.Dynamic<>(com.mojang.serialization.JsonOps.INSTANCE, merged), id)) continue;
                 layers.add(OriginLayer.fromJson(id, (JsonObject) IdWildcards.apply(merged, id)));
@@ -58,27 +67,6 @@ public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<
         }
         OriginLayers.replaceAll(layers);
         Origins.LOGGER.info("Loaded {} origin layers.", OriginLayers.size());
-    }
-
-    private static JsonObject mergeStack(List<Resource> stack, ResourceLocation id) {
-        JsonObject acc = null;
-        for (Resource resource : stack) {
-            JsonObject json;
-            try (Reader reader = resource.openAsReader()) {
-                JsonElement el = GsonHelper.parse(reader, true);
-                if (!el.isJsonObject()) continue;
-                json = el.getAsJsonObject();
-            } catch (Exception e) {
-                Origins.LOGGER.error("Failed to read a source of origin layer {}: {}", id, e.getMessage());
-                continue;
-            }
-            if (acc == null || GsonHelper.getAsBoolean(json, "replace", false)) {
-                acc = json.deepCopy();
-            } else {
-                mergeInto(acc, json);
-            }
-        }
-        return acc;
     }
 
     private static void mergeInto(JsonObject acc, JsonObject src) {

@@ -10,14 +10,9 @@ repositories {
 	mavenCentral()
 	mavenLocal()
 	maven { url = "https://api.modrinth.com/maven" }
-	// Mod Menu (the config-screen entrypoint).
 	maven {
 		name = "TerraformersMC"
 		url = "https://maven.terraformersmc.com/releases"
-	}
-	maven {
-		name = "QuiltMC"
-		url = "https://maven.quiltmc.org/repository/release/"
 	}
 }
 
@@ -28,22 +23,12 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Apoli. With apoli_local=true this builds against ~/.m2 (run Apoli's publishToMavenLocal
-	// first, then Origins with --refresh-dependencies); otherwise it pulls the released
-	// Modrinth build (maven.modrinth:opoli:<version>).
 	if (project.apoli_local.toBoolean()) {
 		modImplementation "dev.overgrown.apoli:apoli:${project.apoli_maven_version}"
 	} else {
 		modImplementation "maven.modrinth:opoli:${project.apoli_version}"
 	}
 
-	implementation("org.quiltmc.parsers:gson:0.3.1")
-	implementation("org.quiltmc.parsers:json:0.3.1")
-
-	// Mod Menu (compile-only, optional at runtime) — supplies Origins' in-game settings screen.
-	// The "modmenu" entrypoint is only resolved when Mod Menu is installed, and Menulogue forwards
-	// it to Catalogue. Catalogue on its own goes through custom.catalogue.configFactory instead,
-	// which is reflective and needs no dependency at all.
 	modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}") {
 		exclude group: "net.fabricmc.fabric-api"
 	}
@@ -51,11 +36,6 @@ dependencies {
 
 loom {
 	runs {
-		// Pin the dev client to a fixed username so every `runClient` launch is the SAME player
-		// (same offline UUID -> same playerdata save). Without this, Loom hands the dev client a
-		// random "PlayerNNN" each launch, so every relaunch is a brand-new player with no chosen
-		// origin — which looks exactly like "the origin reset on restart". NeoForge's runtime
-		// already uses a fixed "Dev" account, which is why this only showed up on Fabric.
 		client {
 			programArgs("--username", "Dev")
 		}
