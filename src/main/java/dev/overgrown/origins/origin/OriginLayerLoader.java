@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
 import dev.overgrown.apoli.loader.JsonDataFiles;
+import dev.overgrown.apoli.loader.LoadProblems;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -23,6 +24,7 @@ import java.util.Set;
 
 public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<ResourceLocation, JsonObject>> {
     private static final String DIR = "origin_layers";
+    private volatile Map<ResourceLocation, JsonDataFiles.Source> sources = Map.of();
 
     public OriginLayerLoader() {
         super();
@@ -32,6 +34,7 @@ public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<
     protected @NotNull Map<ResourceLocation, JsonObject> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
         Map<ResourceLocation, List<JsonDataFiles.Source>> stacks = JsonDataFiles.stacks(resourceManager, DIR, Origins.LOGGER);
         Map<ResourceLocation, JsonObject> merged = new HashMap<>(stacks.size());
+        Map<ResourceLocation, JsonDataFiles.Source> top = new HashMap<>(stacks.size());
         for (Map.Entry<ResourceLocation, List<JsonDataFiles.Source>> entry : stacks.entrySet()) {
             ResourceLocation id = entry.getKey();
             JsonObject layer = null;
@@ -39,6 +42,7 @@ public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<
                 JsonElement json = JsonDataFiles.read(source, id, Origins.LOGGER);
                 if (json == null || !json.isJsonObject()) continue;
                 JsonObject version = json.getAsJsonObject();
+                top.put(id, source);
                 if (layer == null || GsonHelper.getAsBoolean(version, "replace", false)) {
                     layer = version;
                 } else {
@@ -47,6 +51,7 @@ public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<
             }
             if (layer != null) merged.put(id, layer);
         }
+        sources = top;
         return merged;
     }
 
@@ -54,15 +59,20 @@ public final class OriginLayerLoader extends SimplePreparableReloadListener<Map<
     protected void apply(Map<ResourceLocation, JsonObject> entries, ResourceManager resourceManager,
                          ProfilerFiller profiler) {
         List<OriginLayer> layers = new ArrayList<>(entries.size());
+        Map<ResourceLocation, JsonDataFiles.Source> files = sources;
         for (Map.Entry<ResourceLocation, JsonObject> entry : entries.entrySet()) {
             ResourceLocation id = entry.getKey();
             JsonObject merged = entry.getValue();
+            JsonDataFiles.Source source = files.get(id);
             try {
                 if (!ApoliReloadListener.loadConditionPasses(
-                    new com.mojang.serialization.Dynamic<>(com.mojang.serialization.JsonOps.INSTANCE, merged), id)) continue;
-                layers.add(OriginLayer.fromJson(id, (JsonObject) IdWildcards.apply(merged, id)));
+                    new com.mojang.serialization.Dynamic<>(com.mojang.serialization.JsonOps.INSTANCE, merged), id, source)) continue;
+                JsonElement json = IdWildcards.apply(merged, id);
+                LoadProblems.parse("origin layer", id, source, "$", OriginLayer.codec(id).codec(),
+                        new com.mojang.serialization.Dynamic<>(com.mojang.serialization.JsonOps.INSTANCE, json))
+                    .ifPresent(layers::add);
             } catch (Exception e) {
-                Origins.LOGGER.error("Failed to load origin layer {}: {}", id, e.getMessage());
+                LoadProblems.error("origin layer", id, source, "Couldn't load this layer: " + e);
             }
         }
         OriginLayers.replaceAll(layers);
