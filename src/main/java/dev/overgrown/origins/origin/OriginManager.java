@@ -221,10 +221,10 @@ public final class OriginManager {
     private static void copyPowerResources(PowerContainerImpl source, PowerContainerImpl target,
                                            ResourceLocation powerId) {
         if (!source.hasPower(powerId) || !target.hasPower(powerId)) return;
-        java.util.OptionalInt single = source.getAuxInt(powerId);
-        if (single.isPresent()) target.setAuxInt(powerId, single.getAsInt());
-        int[] table = source.getAuxInts(powerId);
-        if (table != null) target.setAuxInts(powerId, table.clone());
+        double single = source.getAuxDoubleOr(powerId, Double.NaN);
+        if (!Double.isNaN(single)) target.setAuxDouble(powerId, single);
+        double[] table = source.getAuxDoubles(powerId);
+        if (table != null) target.setAuxDoubles(powerId, table.clone());
     }
 
     private static boolean takeFromDonor(ServerPlayer donor, ResourceLocation fromLayer, ResourceLocation originId) {

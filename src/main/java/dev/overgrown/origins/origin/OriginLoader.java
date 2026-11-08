@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import dev.overgrown.apoli.loader.ApoliReloadListener;
 import dev.overgrown.apoli.loader.IdWildcards;
 import dev.overgrown.apoli.loader.JsonDataFiles;
+import dev.overgrown.apoli.loader.LoadProblems;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -36,21 +37,20 @@ public final class OriginLoader extends SimplePreparableReloadListener<Map<Resou
         for (Map.Entry<ResourceLocation, JsonDataFiles.Version> entry : entries.entrySet()) {
             ResourceLocation id = entry.getKey();
             JsonElement value = entry.getValue().json();
+            JsonDataFiles.Source source = entry.getValue().source();
             try {
-                if (!value.isJsonObject()) continue;
-                if (!ApoliReloadListener.loadConditionPasses(
-                    new com.mojang.serialization.Dynamic<>(JsonOps.INSTANCE, value), id)) continue;
-                JsonObject json = (JsonObject) IdWildcards.apply(value, id);
-                dev.overgrown.apoli.codec.LoggedOptionalField.setContext(id);
-                try {
-                    Origin.codec(id).codec().parse(JsonOps.INSTANCE, json)
-                        .resultOrPartial(err -> Origins.LOGGER.error("Failed to load origin {}: {}", id, err))
-                        .ifPresent(loaded::add);
-                } finally {
-                    dev.overgrown.apoli.codec.LoggedOptionalField.clearContext();
+                if (!value.isJsonObject()) {
+                    LoadProblems.error("origin", id, source, "The file isn't a JSON object, so it was skipped.");
+                    continue;
                 }
+                if (!ApoliReloadListener.loadConditionPasses(
+                    new com.mojang.serialization.Dynamic<>(JsonOps.INSTANCE, value), id, source)) continue;
+                JsonObject json = (JsonObject) IdWildcards.apply(value, id);
+                LoadProblems.parse("origin", id, source, "$", Origin.codec(id).codec(),
+                        new com.mojang.serialization.Dynamic<>(JsonOps.INSTANCE, (JsonElement) json))
+                    .ifPresent(loaded::add);
             } catch (Exception e) {
-                Origins.LOGGER.error("Failed to load origin {}: {}", id, e.getMessage());
+                LoadProblems.error("origin", id, source, "Couldn't load this origin: " + e);
             }
         }
         OriginRegistry.replaceAll(loaded);

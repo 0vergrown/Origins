@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import dev.overgrown.apoli.loader.JsonDataFiles;
+import dev.overgrown.apoli.loader.LoadProblems;
 import dev.overgrown.origins.Origins;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -30,9 +31,9 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
         Map<ResourceLocation, Badge> standalone = new LinkedHashMap<>();
         Map<ResourceLocation, List<Badge>> byPower = new LinkedHashMap<>();
 
-        JsonDataFiles.load(rm, BADGES_DIR, Origins.LOGGER).forEach((badgeId, json) ->
-            Badge.CODEC.parse(JsonOps.INSTANCE, json)
-                .resultOrPartial(err -> Origins.LOGGER.error("Failed to read badge {}: {}", badgeId, err))
+        Map<ResourceLocation, JsonDataFiles.Source> badgeFiles = new java.util.HashMap<>();
+        JsonDataFiles.load(rm, BADGES_DIR, Origins.LOGGER, badgeFiles).forEach((badgeId, json) ->
+            LoadProblems.parse("badge", badgeId, badgeFiles.get(badgeId), "$", Badge.CODEC, new Dynamic<>(JsonOps.INSTANCE, json))
                 .ifPresent(badge -> standalone.put(badgeId, badge)));
 
         JsonDataFiles.topSources(rm, POWERS_DIR, NOPLogger.NOP_LOGGER).forEach((powerId, source) -> {
@@ -43,8 +44,8 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
             List<Dynamic<JsonElement>> entries = power.get(BADGES_DIR).asList(Function.identity());
             if (entries.isEmpty()) return;
             List<Badge> badges = new ArrayList<>(entries.size());
-            for (Dynamic<JsonElement> entry : entries) {
-                Badge badge = readBadge(entry, standalone, powerId);
+            for (int i = 0; i < entries.size(); i++) {
+                Badge badge = readBadge(entries.get(i), standalone, powerId, source, "$." + BADGES_DIR + "[" + i + "]");
                 if (badge != null) badges.add(badge);
             }
             if (!badges.isEmpty()) byPower.put(powerId, badges);
@@ -62,21 +63,20 @@ public final class BadgeLoader extends SimplePreparableReloadListener<BadgeLoade
             prepared.standalone().size(), prepared.byPower().size());
     }
 
-    private static Badge readBadge(Dynamic<JsonElement> entry, Map<ResourceLocation, Badge> standalone, ResourceLocation powerId) {
+    private static Badge readBadge(Dynamic<JsonElement> entry, Map<ResourceLocation, Badge> standalone, ResourceLocation powerId,
+                                   JsonDataFiles.Source source, String path) {
         if (entry.getMapValues().result().isPresent()) {
             Dynamic<JsonElement> typed = entry.get("type").result().isPresent()
                 ? entry
                 : entry.set("type", entry.createString(BadgeTypes.DEFAULT.toString()));
-            return Badge.CODEC.parse(typed)
-                .resultOrPartial(err -> Origins.LOGGER.error("Bad inline badge on power {}: {}", powerId, err))
-                .orElse(null);
+            return LoadProblems.parse("power badge", powerId, source, path, Badge.CODEC, typed).orElse(null);
         }
         String reference = entry.asString().result().orElse(null);
         if (reference == null) return null;
         ResourceLocation ref = ResourceLocation.tryParse(reference);
         Badge referenced = ref == null ? null : standalone.get(ref);
         if (referenced == null) {
-            Origins.LOGGER.error("Power {} references undefined badge {}", powerId, reference);
+            LoadProblems.warn("power badge", powerId, source, "Uses the badge " + reference + ", which doesn't exist, so the badge is left out", path);
         }
         return referenced;
     }
