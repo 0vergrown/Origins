@@ -1,10 +1,10 @@
 # Origins
 
-**Origins** lets every player pick a species when they join the world, each with its own strengths, weaknesses, and playstyle. Choose to be a spider-climbing Arachnid, a Nether-immune Blazeborn, a water-bound Merling, or one of several others, each built entirely from [Apoli](https://github.com/0vergrown/Apoli) powers and data.
+**Origins** lets players choose a species when they join a world. Each origin comes with its own strengths, weaknesses, and playstyle. You can play as a wall-climbing Arachnid, a Nether-immune Blazeborn, an aquatic Merling, or one of several other species. Every origin is built entirely from [Apoli](https://github.com/0vergrown/Apoli) powers and data.
 
 ## Branches
 
-This repository holds one branch per Minecraft version / mod loader combination:
+Each Minecraft version and mod loader combination has its own branch:
 
 | Branch                                                                         | Loader   | Minecraft |
 |--------------------------------------------------------------------------------|----------|-----------|
@@ -14,32 +14,32 @@ This repository holds one branch per Minecraft version / mod loader combination:
 
 ## Origins
 
-10 origins ship by default, each defined as ordinary Apoli data and easy to retheme, extend, or replace with a data pack:
+Origins includes 10 species by default. Each one is defined through Apoli data, so data packs can easily change their theme, add to them, or replace them entirely.
 
 | Origin        | Flavor                                                                             |
 |---------------|------------------------------------------------------------------------------------|
 | **Human**     | A regular human. Your ordinary Minecraft experience.                               |
 | **Merling**   | A natural inhabitant of the ocean, not built for long stretches on land.           |
-| **Arachnid**  | Climbs walls and traps foes in webbing - a perfect hunter.                         |
-| **Blazeborn** | A late descendant of the Blaze, naturally immune to the perils of the Nether.      |
-| **Avian**     | Lost the ability to fly long ago, but still glides gracefully from place to place. |
-| **Phantom**   | Half-human, half-phantom - can switch between forms.                               |
+| **Arachnid**  | Climbs walls and traps foes in webbing, making it a natural hunter.                |
+| **Blazeborn** | A descendant of the Blaze, naturally immune to the dangers of the Nether.          |
+| **Avian**     | Lost the ability to fly long ago, but can still glide gracefully from place to place. |
+| **Phantom**   | Half-human, half-phantom. Can switch between forms.                                |
 | **Feline**    | Cat-like grace: always lands on its feet, and creepers steer clear.                |
-| **Elytrian**  | At home flying in open sky; uncomfortable in tight, low spaces.                    |
-| **Enderian**  | Born of the Ender Dragon - can teleport, but takes damage from water.              |
-| **Shulk**     | Related to the Shulker, protected by a shell-like skin.                            |
+| **Elytrian**  | At home flying through open skies, but uncomfortable in tight, low spaces.         |
+| **Enderian**  | Born of the Ender Dragon. Can teleport, but takes damage from water.               |
+| **Shulk**     | Related to the Shulker, with shell-like skin for protection.                       |
 
 ## Features
 
-- **Origin layers**: Group origins into independently-chosen layers (e.g. a "species" layer and a separate "class" layer), each with its own selection rules, merge/replace behavior for data packs, and gating conditions.
-- **Choose-origin screen** with full seasonal re-theming: The GUI's art changes with the in-game calendar date out of the box.
-- **Badges**: Small icons on a power's tooltip that call out extra behavior (a bound keybind, a crafting recipe unlock, custom notes), so a power's tooltip alone tells the full story.
-- **Orb of Origin**: A craftable/obtainable item that lets a player re-roll their origin on demand.
-- **Built-in randomizer**: Auto re-roll a player's origin on death, on sleep, or on command, with an optional "lives" counter before the randomizer kicks in. No separate add-on needed.
-- **Origin transfer**: Steal, give, or copy an origin between players entirely from a data pack or command.
-- Multiplayer-safe: Origin choices sync correctly to every client on join, including mid-session joins.
-- `/origin` commands to get, set, check, and randomize origins and layers, and to open the choose-origin GUI on demand.
+- **Origin layers**: Organize origins into separate layers that players choose independently. For example, you could have a species layer and a class layer. Each layer has its own selection rules, data pack merge and replacement behavior, and conditions for when it can be chosen.
+- **Choose-origin screen**: The selection GUI changes its artwork based on the in-game calendar date, with seasonal themes included by default.
+- **Badges**: Small icons displayed on power tooltips to indicate things like a bound keybind, a crafting recipe unlock, or additional notes.
+- **Orb of Origin**: A craftable or obtainable item that lets players change their origin whenever they want.
+- **Built-in randomizer**: Automatically randomize a player's origin on death, after sleeping, or through a command. You can also set a lives counter that determines how many lives a player gets before randomization starts. No separate add-on required.
+- **Origin transfer**: Steal, give, or copy origins between players using data packs or commands.
+- **Multiplayer support**: Origin choices sync to all clients when a player joins, including players who connect after a session has already started.
+- **`/origin` commands**: Get, set, check, and randomize origins and layers, or open the choose-origin GUI directly.
 
 ## License
 
-The A/O License — see [`LICENSE`](LICENSE). The canonical, always-current text lives on the Handbook: <https://0vergrown.github.io/Handbook/license>.
+The A/O License. See [`LICENSE`](LICENSE) for the repository copy. The canonical, always-current version is available on the [Handbook](https://0vergrown.github.io/Handbook/license).
