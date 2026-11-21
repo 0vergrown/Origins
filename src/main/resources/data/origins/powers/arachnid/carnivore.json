@@ -45,10 +45,24 @@
         }
       ]
     },
-    "text": {
-      "translate": "origins.tooltip.inedible",
+"text": {
+  "translate": "origins.tooltip.inedible",
+  "color": "gray",
+  "extra": [
+    {
+      "text": " (",
       "color": "gray"
     },
+    {
+      "translate": "power.origins.arachnid/carnivore.name",
+      "color": "red"
+    },
+    {
+      "text": ")",
+      "color": "gray"
+    }
+  ]
+},
     "position": "below_name"
   }
 }
