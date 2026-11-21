@@ -1,9 +1,40 @@
 {
-  "type": "apoli:prevent_item_use",
-  "item_condition": {
-    "type": "apoli:ingredient",
-    "ingredient": {
-      "tag": "c:tools/shield"
+  "type": "apoli:multiple",
+  "prevent_shield": {
+    "type": "apoli:prevent_item_use",
+    "item_condition": {
+      "type": "apoli:ingredient",
+      "ingredient": {
+        "tag": "c:tools/shield"
+      }
     }
+  },
+  "unusable_tooltip": {
+    "type": "apoli:tooltip",
+    "item_condition": {
+      "type": "apoli:ingredient",
+      "ingredient": {
+        "tag": "c:tools/shield"
+      }
+    },
+    "text": {
+      "translate": "origins.tooltip.unusable",
+      "color": "gray",
+      "extra": [
+        {
+          "text": " (",
+          "color": "gray"
+        },
+        {
+          "translate": "power.origins.shulk/no_shield.name",
+          "color": "red"
+        },
+        {
+          "text": ")",
+          "color": "gray"
+        }
+      ]
+    },
+    "position": "below_name"
   }
 }
