@@ -48,9 +48,23 @@
       ]
     },
     "text": {
-      "translate": "origins.tooltip.inedible",
+  "translate": "origins.tooltip.inedible",
+  "color": "gray",
+  "extra": [
+    {
+      "text": " (",
       "color": "gray"
     },
+    {
+      "translate": "power.origins.avian/vegetarian.name",
+      "color": "red"
+    },
+    {
+      "text": ")",
+      "color": "gray"
+    }
+  ]
+},
     "position": "below_name"
   }
 }
