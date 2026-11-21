@@ -105,9 +105,23 @@
       ]
     },
     "text": {
-      "translate": "origins.tooltip.inedible",
+  "translate": "origins.tooltip.inedible",
+  "color": "gray",
+  "extra": [
+    {
+      "text": " (",
       "color": "gray"
     },
+    {
+      "translate": "power.origins.buzzborne/nectarivore.name",
+      "color": "red"
+    },
+    {
+      "text": ")",
+      "color": "gray"
+    }
+  ]
+},
     "position": "below_name"
   }
 }
