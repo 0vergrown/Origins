@@ -18,9 +18,23 @@
       }
     },
     "text": {
-      "translate": "origins.tooltip.inedible",
+  "translate": "origins.tooltip.inedible",
+  "color": "gray",
+  "extra": [
+    {
+      "text": " (",
       "color": "gray"
     },
+    {
+      "translate": "power.origins.enderian/pumpkin_hate.name",
+      "color": "red"
+    },
+    {
+      "text": ")",
+      "color": "gray"
+    }
+  ]
+},
     "position": "below_name"
   },
   "prevent_seeing": {
