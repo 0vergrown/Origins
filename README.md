@@ -16,7 +16,7 @@ Each Minecraft version and mod loader combination has its own branch:
 
 ## Origins
 
-Origins includes 10 species by default. Each one is defined through Apoli data, so data packs can easily change their theme, add to them, or replace them entirely.
+Origins includes 12 species by default. Each one is defined through Apoli data, so data packs can easily change their theme, add to them, or replace them entirely.
 
 | Origin        | Flavor                                                                             |
 |---------------|------------------------------------------------------------------------------------|
@@ -30,6 +30,8 @@ Origins includes 10 species by default. Each one is defined through Apoli data, 
 | **Elytrian**  | At home flying through open skies, but uncomfortable in tight, low spaces.         |
 | **Enderian**  | Born of the Ender Dragon. Can teleport, but takes damage from water.               |
 | **Shulk**     | Related to the Shulker, with shell-like skin for protection.                       |
+| **Buzzborne** | Half-bee, half-human. Can fly, gather honey and extract the essence of flowers.    |
+| **Slimekin**  | Humanoid slime race. Bounces around and splits in half.                            |
 
 ## Features
 
