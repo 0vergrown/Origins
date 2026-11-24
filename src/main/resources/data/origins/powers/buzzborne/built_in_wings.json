@@ -1,9 +1,40 @@
 {
-  "type": "apoli:restrict_armor",
-  "chest": {
-    "type": "apoli:ingredient",
-    "ingredient": {
-      "item": "minecraft:elytra"
+  "type": "apoli:multiple",
+  "restrict_elytra": {
+    "type": "apoli:restrict_armor",
+    "chest": {
+      "type": "apoli:ingredient",
+      "ingredient": {
+        "item": "minecraft:elytra"
+      }
     }
+  },
+  "unequippable_tooltip": {
+    "type": "apoli:tooltip",
+    "item_condition": {
+      "type": "apoli:ingredient",
+      "ingredient": {
+        "item": "minecraft:elytra"
+      }
+    },
+    "text": {
+      "translate": "origins.tooltip.unequippable",
+      "color": "gray",
+      "extra": [
+        {
+          "text": " (",
+          "color": "gray"
+        },
+        {
+          "translate": "power.origins.buzzborne/built_in_wings.name",
+          "color": "red"
+        },
+        {
+          "text": ")",
+          "color": "gray"
+        }
+      ]
+    },
+    "position": "below_name"
   }
 }
