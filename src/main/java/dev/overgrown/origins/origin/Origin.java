@@ -31,7 +31,8 @@ public record Origin(
     float nameScrollSpeed,
     int maxPlayers,
     List<OriginUpgrade> upgrades,
-    List<String> tags
+    List<String> tags,
+    boolean hidden
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
@@ -41,7 +42,15 @@ public record Origin(
 
     public Origin withPowerEntries(List<OriginPowerEntry> entries) {
         return new Origin(id, entries, icon, impact, order, loadingPriority, unchoosable, special, nameText,
-            descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags);
+            descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags, hidden);
+    }
+
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
+                  int order, int loadingPriority, boolean unchoosable, boolean special,
+                  Optional<Component> nameText, Optional<Component> descriptionText,
+                  float nameScrollSpeed, int maxPlayers, List<OriginUpgrade> upgrades, List<String> tags) {
+        this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText,
+            nameScrollSpeed, maxPlayers, upgrades, tags, false);
     }
 
     public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
@@ -119,11 +128,12 @@ public record Origin(
             Codec.INT.optionalFieldOf("max_players", OriginCaps.INHERIT).forGetter(Origin::maxPlayers),
             dev.overgrown.apoli.codec.LoggedOptionalField.of("upgrades", OriginUpgrade.CODEC.listOf(), List.of())
                 .forGetter(Origin::upgrades),
-            TAGS_CODEC.optionalFieldOf("tags", List.of()).forGetter(Origin::tags)
+            TAGS_CODEC.optionalFieldOf("tags", List.of()).forGetter(Origin::tags),
+            Codec.BOOL.optionalFieldOf("hidden", false).forGetter(Origin::hidden)
         ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description,
-                           nameScrollSpeed, maxPlayers, upgrades, tags) ->
+                           nameScrollSpeed, maxPlayers, upgrades, tags, hidden) ->
             new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description,
-                nameScrollSpeed, maxPlayers, upgrades, tags)));
+                nameScrollSpeed, maxPlayers, upgrades, tags, hidden)));
     }
 
     public Component name() {
@@ -160,6 +170,7 @@ public record Origin(
         buf.writeVarInt(upgrades.size());
         for (OriginUpgrade upgrade : upgrades) upgrade.write(buf);
         buf.writeCollection(tags, FriendlyByteBuf::writeUtf);
+        buf.writeBoolean(hidden);
     }
 
     public static Origin read(FriendlyByteBuf buf) {
@@ -182,7 +193,8 @@ public record Origin(
             if (upgrade != null) upgrades.add(upgrade);
         }
         List<String> tags = buf.readList(FriendlyByteBuf::readUtf);
+        boolean hidden = buf.readBoolean();
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
-            nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags);
+            nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags, hidden);
     }
 }
