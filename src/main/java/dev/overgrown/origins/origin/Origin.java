@@ -33,7 +33,8 @@ public record Origin(
     float nameScrollSpeed,
     int maxPlayers,
     List<OriginUpgrade> upgrades,
-    List<String> tags
+    List<String> tags,
+    Optional<OriginGui> gui
 ) {
     public Origin {
         powerEntries = List.copyOf(powerEntries);
@@ -41,9 +42,17 @@ public record Origin(
         tags = List.copyOf(tags);
     }
 
+    public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
+                  int order, int loadingPriority, boolean unchoosable, boolean special,
+                  Optional<Component> nameText, Optional<Component> descriptionText, float nameScrollSpeed,
+                  int maxPlayers, List<OriginUpgrade> upgrades, List<String> tags) {
+        this(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special, nameText, descriptionText,
+            nameScrollSpeed, maxPlayers, upgrades, tags, Optional.empty());
+    }
+
     public Origin withPowerEntries(List<OriginPowerEntry> entries) {
         return new Origin(id, entries, icon, impact, order, loadingPriority, unchoosable, special, nameText,
-            descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags);
+            descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags, gui);
     }
 
     public Origin(ResourceLocation id, List<OriginPowerEntry> powerEntries, IconData icon, Impact impact,
@@ -121,11 +130,12 @@ public record Origin(
             Codec.INT.optionalFieldOf("max_players", OriginCaps.INHERIT).forGetter(Origin::maxPlayers),
             dev.overgrown.apoli.codec.LoggedOptionalField.of("upgrades", OriginUpgrade.CODEC.listOf(), List.of())
                 .forGetter(Origin::upgrades),
-            TAGS_CODEC.optionalFieldOf("tags", List.of()).forGetter(Origin::tags)
+            TAGS_CODEC.optionalFieldOf("tags", List.of()).forGetter(Origin::tags),
+            dev.overgrown.apoli.codec.LoggedOptionalField.of("custom_gui", OriginGui.CODEC).forGetter(Origin::gui)
         ).apply(instance, (powerEntries, icon, impact, order, loadingPriority, unchoosable, name, description,
-                           nameScrollSpeed, maxPlayers, upgrades, tags) ->
+                           nameScrollSpeed, maxPlayers, upgrades, tags, gui) ->
             new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, false, name, description,
-                nameScrollSpeed, maxPlayers, upgrades, tags)));
+                nameScrollSpeed, maxPlayers, upgrades, tags, gui)));
     }
 
     public Component name() {
@@ -162,6 +172,7 @@ public record Origin(
         buf.writeVarInt(upgrades.size());
         for (OriginUpgrade upgrade : upgrades) upgrade.write(buf);
         buf.writeCollection(tags, FriendlyByteBuf::writeUtf);
+        OriginGui.writeOptional(buf, gui);
     }
 
     public static Origin read(RegistryFriendlyByteBuf buf) {
@@ -184,7 +195,8 @@ public record Origin(
             if (upgrade != null) upgrades.add(upgrade);
         }
         List<String> tags = buf.readList(FriendlyByteBuf::readUtf);
+        Optional<OriginGui> gui = OriginGui.readOptional(buf);
         return new Origin(id, powerEntries, icon, impact, order, loadingPriority, unchoosable, special,
-            nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags);
+            nameText, descriptionText, nameScrollSpeed, maxPlayers, upgrades, tags, gui);
     }
 }
