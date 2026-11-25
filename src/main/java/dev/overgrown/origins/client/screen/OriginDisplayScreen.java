@@ -30,28 +30,7 @@ public abstract class OriginDisplayScreen extends Screen {
     protected static final int windowWidth = 176;
     protected static final int windowHeight = 182;
 
-    private GuiTextures tex = GuiTextures.of(Season.DEFAULT);
-
-    private record GuiTextures(ResourceLocation background, ResourceLocation border,
-                               ResourceLocation namePlate, ResourceLocation slot, ResourceLocation handle,
-                               ResourceLocation pressed, ResourceLocation[] impact) {
-        static GuiTextures of(Season season) {
-            String base = "textures/gui/choose_origin/" + season.dir() + "/";
-            return new GuiTextures(
-                Origins.id(base + "background.png"),
-                Origins.id(base + "border.png"),
-                Origins.id(base + "name_plate.png"),
-                Origins.id(base + "scroll_bar/slot.png"),
-                Origins.id(base + "scroll_bar.png"),
-                Origins.id(base + "scroll_bar/pressed.png"),
-                new ResourceLocation[]{
-                    Origins.id(base + "impact/none.png"),
-                    Origins.id(base + "impact/low.png"),
-                    Origins.id(base + "impact/medium.png"),
-                    Origins.id(base + "impact/high.png"),
-                });
-        }
-    }
+    private OriginGuiTextures tex = OriginGuiTextures.resolve(null, null, Season.DEFAULT);
 
     protected int guiLeft;
     protected int guiTop;
@@ -83,6 +62,7 @@ public abstract class OriginDisplayScreen extends Screen {
         this.layer = layer;
         this.isOriginRandom = isRandom;
         this.scrollPos = 0;
+        this.tex = OriginGuiTextures.resolve(origin, layer, Season.current());
     }
 
     public void setRandomOriginText(List<Component> names) {
@@ -102,7 +82,7 @@ public abstract class OriginDisplayScreen extends Screen {
         super.init();
         this.guiLeft = (this.width - windowWidth) / 2;
         this.guiTop = (this.height - windowHeight) / 2;
-        this.tex = GuiTextures.of(Season.current());
+        this.tex = OriginGuiTextures.resolve(origin, layer, Season.current());
     }
 
     @Override
@@ -193,14 +173,15 @@ public abstract class OriginDisplayScreen extends Screen {
     private void renderImpactDots(GuiGraphics graphics, int mouseX, int mouseY) {
         Impact impact = origin.impact();
         int level = impact.level();
-        ResourceLocation sprite = tex.impact()[Math.max(0, Math.min(level, tex.impact().length - 1))];
+        ResourceLocation sprite = tex.impact(level);
         beginBlit();
         graphics.blit(sprite, guiLeft + 128, guiTop + 19, 0.0F, 0.0F, 28, 8, 28, 8);
         if (mouseX >= guiLeft + 128 && mouseX <= guiLeft + 158
             && mouseY >= guiTop + 19 && mouseY <= guiTop + 27) {
             MutableComponent tip = Component.translatable("origins.gui.impact.impact")
                 .append(": ")
-                .append(impactName(impact).withStyle(impactColor(impact)));
+                .append(tex.impactName().map(Component::copy)
+                    .orElseGet(() -> impactName(impact).withStyle(impactColor(impact))));
             graphics.renderTooltip(this.font, tip, mouseX, mouseY);
         }
     }

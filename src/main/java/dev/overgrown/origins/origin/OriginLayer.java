@@ -38,7 +38,8 @@ public record OriginLayer(
     RandomConfig random,
     RandomiserConfig randomiser,
     SwapConfig swap,
-    int maxPlayersPerOrigin
+    int maxPlayersPerOrigin,
+    Optional<OriginGui> gui
 ) implements Comparable<OriginLayer> {
 
     public OriginLayer {
@@ -46,10 +47,28 @@ public record OriginLayer(
         excludedFromRandom = List.copyOf(excludedFromRandom);
     }
 
+    public OriginLayer(ResourceLocation id, int order, boolean enabled, List<ConditionedOrigin> conditionedOrigins,
+                       String nameKey, String chooseTitleKey, String viewTitleKey, String missingNameKey,
+                       String missingDescriptionKey, boolean allowRandom, boolean randomAllowsUnchoosable,
+                       List<ResourceLocation> excludedFromRandom, @Nullable ResourceLocation defaultOrigin,
+                       boolean autoChooseIfNoChoice, boolean hidden, boolean revalidate, RandomConfig random,
+                       RandomiserConfig randomiser, SwapConfig swap, int maxPlayersPerOrigin) {
+        this(id, order, enabled, conditionedOrigins, nameKey, chooseTitleKey, viewTitleKey, missingNameKey,
+            missingDescriptionKey, allowRandom, randomAllowsUnchoosable, excludedFromRandom, defaultOrigin,
+            autoChooseIfNoChoice, hidden, revalidate, random, randomiser, swap, maxPlayersPerOrigin, Optional.empty());
+    }
+
+    private record Extras(int maxPlayersPerOrigin, Optional<OriginGui> gui) {
+        static final MapCodec<Extras> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.INT.optionalFieldOf("max_players_per_origin", OriginCaps.UNLIMITED).forGetter(Extras::maxPlayersPerOrigin),
+            dev.overgrown.apoli.codec.LoggedOptionalField.of("custom_gui", OriginGui.CODEC).forGetter(Extras::gui)
+        ).apply(instance, Extras::new));
+    }
+
     public OriginLayer withConditionedOrigins(List<ConditionedOrigin> entries) {
         return new OriginLayer(id, order, enabled, entries, nameKey, chooseTitleKey, viewTitleKey, missingNameKey,
             missingDescriptionKey, allowRandom, randomAllowsUnchoosable, excludedFromRandom, defaultOrigin,
-            autoChooseIfNoChoice, hidden, revalidate, random, randomiser, swap, maxPlayersPerOrigin);
+            autoChooseIfNoChoice, hidden, revalidate, random, randomiser, swap, maxPlayersPerOrigin, gui);
     }
 
     public record RandomConfig(Style style, Map<ResourceLocation, Integer> weights, int rollDuration) {
@@ -223,11 +242,10 @@ public record OriginLayer(
             Codec.BOOL.optionalFieldOf("revalidate").forGetter(l -> Optional.of(l.revalidate())),
             RandomiserConfig.CODEC.optionalFieldOf("randomiser", RandomiserConfig.DEFAULT).forGetter(OriginLayer::randomiser),
             SwapConfig.CODEC.optionalFieldOf("swappable", SwapConfig.DISABLED).forGetter(OriginLayer::swap),
-            Codec.INT.optionalFieldOf("max_players_per_origin", OriginCaps.UNLIMITED)
-                .forGetter(OriginLayer::maxPlayersPerOrigin)
+            Extras.MAP_CODEC.forGetter(l -> new Extras(l.maxPlayersPerOrigin(), l.gui()))
         ).apply(instance, (origins, order, enabled, name, gui, missingName, missingDesc, randomBlock,
                            legacy, defaultOrigin, autoChoose, hidden,
-                           revalidate, randomiser, swap, maxPlayersPerOrigin) -> {
+                           revalidate, randomiser, swap, extras) -> {
             boolean allowRandom;
             boolean allowUnchoosable;
             List<ResourceLocation> exclude;
@@ -246,7 +264,7 @@ public record OriginLayer(
             }
             return new OriginLayer(id, order, enabled, origins, name, gui.choose(), gui.view(), missingName, missingDesc,
                 allowRandom, allowUnchoosable, exclude, defaultOrigin.orElse(null), autoChoose, hidden,
-                revalidate.orElse(autoChoose), randomConfig, randomiser, swap, maxPlayersPerOrigin);
+                revalidate.orElse(autoChoose), randomConfig, randomiser, swap, extras.maxPlayersPerOrigin(), extras.gui());
         }));
     }
 
@@ -292,6 +310,7 @@ public record OriginLayer(
         buf.writeBoolean(swap.shiftReturnsToMain());
         buf.writeBoolean(swap.wrapToMain());
         buf.writeVarInt(maxPlayersPerOrigin);
+        OriginGui.writeOptional(buf, gui);
     }
 
     public static OriginLayer read(FriendlyByteBuf buf) {
@@ -325,10 +344,11 @@ public record OriginLayer(
             buf.readBoolean(), buf.readBoolean());
 
         int maxPlayersPerOrigin = buf.readVarInt();
+        Optional<OriginGui> gui = OriginGui.readOptional(buf);
 
         return new OriginLayer(id, order, enabled, conditioned, nameKey, chooseTitleKey, viewTitleKey,
             missingNameKey, missingDescriptionKey, allowRandom, randomAllowsUnchoosable,
             excludedFromRandom, defaultOrigin, autoChoose, hidden, revalidate,
-            randomConfig, randomiserConfig, swapConfig, maxPlayersPerOrigin);
+            randomConfig, randomiserConfig, swapConfig, maxPlayersPerOrigin, gui);
     }
 }
