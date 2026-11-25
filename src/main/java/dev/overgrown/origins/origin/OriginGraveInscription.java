@@ -24,7 +24,7 @@ public final class OriginGraveInscription {
             ResourceLocation originId = OriginView.activeOn(player, layer.id());
             if (originId == null) continue;
             Origin origin = OriginRegistry.get(originId);
-            if (origin == null) continue;
+            if (origin == null || origin.hidden()) continue;
             if (line == null) {
                 line = Component.empty().append(origin.name());
             } else {

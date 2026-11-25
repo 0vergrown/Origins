@@ -43,6 +43,7 @@ public final class ViewOriginScreen extends OriginDisplayScreen {
                 ResourceLocation mainId = picks.getOrDefault(layer.id(), OriginRegistry.EMPTY_ID);
                 ResourceLocation chosenId = swaps.getOrDefault(layer.id(), mainId);
                 Origin chosen = OriginRegistry.get(chosenId);
+                if (chosen != null && chosen.hidden()) continue;
                 boolean choosable = OriginManager.hasChoosableOrigins(player, layer);
                 boolean isEmpty = chosen == null || chosenId.equals(OriginRegistry.EMPTY_ID);
                 if (!isEmpty || choosable) {
